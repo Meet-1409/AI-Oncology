@@ -4,5 +4,8 @@ dist-ssr/
 *.local
 .env
 .env.*
+# Templates carry no secrets and must be committed so a new environment
+# can be configured without guessing.
+!.env.example
 .DS_Store
 *.log

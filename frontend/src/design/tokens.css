@@ -1,0 +1,110 @@
+/*
+ * Primitive design tokens.
+ *
+ * These are the raw values only. The semantic layer that maps them to meaning
+ * (surface, text, severity, elevation, motion) is built in Feature 2 — Design System.
+ *
+ * RULE — severity values are literal colors, never var() references.
+ * The severity scale is consumed by both CSS and three.js. three.Color cannot parse
+ * `var(--x)`; it silently yields white. Shipping that once made every diseased organ
+ * render white while appearing to work. Keep these literal, and keep them in sync
+ * with lib/status.ts, which is guarded by a test.  [00 §6.7]
+ */
+
+@theme {
+  /* ---- Neutrals — dominate the interface [04 §9] ---- */
+  --color-neutral-0: #ffffff;
+  --color-neutral-50: #f7f8fa;
+  --color-neutral-100: #eef1f4;
+  --color-neutral-150: #e6e9ed;
+  --color-neutral-200: #dde1e7;
+  --color-neutral-250: #d3d9e0;
+  --color-neutral-300: #c3cad3;
+  --color-neutral-400: #98a2b0;
+  --color-neutral-500: #707b8a;
+  --color-neutral-600: #4f5967;
+  --color-neutral-700: #374050;
+  --color-neutral-800: #212836;
+  --color-neutral-900: #141924;
+  --color-neutral-950: #0a0d14;
+
+  /* ---- Brand — restrained clinical blue-teal. Signals actionable or active. ---- */
+  --color-brand-50: #eff6f8;
+  --color-brand-100: #d9eaf0;
+  --color-brand-200: #b3d5e1;
+  --color-brand-300: #83b9cc;
+  --color-brand-400: #4f97b3;
+  --color-brand-500: #2f7a97;
+  --color-brand-600: #1f607c;
+  --color-brand-700: #1c4d66;
+  --color-brand-800: #193f54;
+  --color-brand-900: #14313f;
+  --color-brand-950: #0b1e28;
+
+  /* ---- Semantic — fixed by documentation [04 §9] ---- */
+  --color-success-50: #f0faf4;
+  --color-success-500: #1f9d55;
+  --color-success-600: #17803f;
+  --color-success-700: #146534;
+
+  --color-warning-50: #fdf7ed;
+  --color-warning-500: #c2790f;
+  --color-warning-600: #a3620a;
+  --color-warning-700: #854d08;
+
+  /* Error red is deliberately distinct from severity red so a validation error
+     can never read as a clinical finding. */
+  --color-danger-50: #fdf1f1;
+  --color-danger-500: #d0342c;
+  --color-danger-600: #b02a24;
+  --color-danger-700: #8f221d;
+
+  --color-info-50: #eff5fd;
+  --color-info-500: #1f6bc2;
+  --color-info-600: #1a58a3;
+  --color-info-700: #164985;
+
+  /* ---- Disease severity — light to dark red, reserved exclusively for
+         disease severity on the Body [00 §6.7]. Literal values only. ---- */
+  --color-severity-0: #dde1e7;
+  --color-severity-1: #f6b8b3;
+  --color-severity-2: #ed8e86;
+  --color-severity-3: #de5b50;
+  --color-severity-4: #c22e23;
+  --color-severity-5: #841a13;
+
+  /* ---- Typography — one family throughout [04 §8] ---- */
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    Helvetica, Arial, sans-serif;
+
+  /* ---- Spacing — 4px base [blueprint 03 §4] ---- */
+  --spacing: 0.25rem;
+
+  /* ---- Elevation — four levels, matching the four depth levels ---- */
+  --shadow-raised: 0 1px 2px rgba(10, 13, 20, 0.04), 0 1px 6px rgba(10, 13, 20, 0.04);
+  --shadow-focus: 0 8px 30px rgba(10, 13, 20, 0.14), 0 2px 8px rgba(10, 13, 20, 0.08);
+  --shadow-overlay: 0 16px 48px rgba(10, 13, 20, 0.2), 0 4px 12px rgba(10, 13, 20, 0.1);
+}
+
+/*
+ * Motion primitives. Durations sit inside the documented 180-420ms envelope [04 §6].
+ * Reduced motion collapses every duration to zero — presentation changes, information
+ * and functionality do not [00 §11.9].
+ */
+:root {
+  --motion-quick: 180ms;
+  --motion-reveal: 260ms;
+  --motion-spatial: 380ms;
+
+  /* Calm and confident. No bounce, no elastic, no overshoot [04 §6]. */
+  --motion-ease-enter: cubic-bezier(0.16, 1, 0.3, 1);
+  --motion-ease-exit: cubic-bezier(0.7, 0, 0.84, 0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-quick: 0ms;
+    --motion-reveal: 0ms;
+    --motion-spatial: 0ms;
+  }
+}
