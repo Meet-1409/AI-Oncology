@@ -120,3 +120,56 @@ if (severityValues.length !== 6 || invalid.length > 0) {
 }
 
 console.log('Severity color invariant: OK')
+
+/*
+ * The severity scale is necessarily duplicated in three places:
+ *   design/tokens.css  (CSS consumers)
+ *   design/theme.ts    (three.js materials)
+ *   lib/status.ts      (status mapping)
+ *
+ * three.Color cannot read CSS custom properties, so a single source is not
+ * possible without a build step. Drift between them would mean the same severity
+ * renders as two different colors in the 3D scene and the surrounding interface,
+ * so equality is checked here instead of trusted.
+ */
+function severityFromCss(source) {
+  return [...source.matchAll(/--color-severity-(\d):\s*(#[0-9a-fA-F]{6})/g)]
+    .sort((a, b) => Number(a[1]) - Number(b[1]))
+    .map((m) => m[2].toLowerCase())
+}
+
+function severityFromTs(source, symbol) {
+  const block = source.match(new RegExp(`${symbol}[^}]*}`, 's'))?.[0] ?? ''
+  return [...block.matchAll(/\d:\s*'(#[0-9a-fA-F]{6})'/g)].map((m) => m[1].toLowerCase())
+}
+
+const cssScale = severityFromCss(readFileSync(join(SRC, 'design', 'tokens.css'), 'utf8'))
+const themeScale = severityFromTs(
+  readFileSync(join(SRC, 'design', 'theme.ts'), 'utf8'),
+  'severityScale',
+)
+const statusScale = severityValues.map((v) => v.toLowerCase())
+
+const sources = { 'tokens.css': cssScale, 'theme.ts': themeScale, 'status.ts': statusScale }
+const mismatches = []
+
+for (let level = 0; level <= 5; level++) {
+  const seen = new Set()
+  for (const scale of Object.values(sources)) seen.add(scale[level])
+  if (seen.size !== 1) {
+    mismatches.push(
+      `  severity ${level}: ` +
+        Object.entries(sources)
+          .map(([name, scale]) => `${name}=${scale[level] ?? 'missing'}`)
+          .join('  '),
+    )
+  }
+}
+
+if (mismatches.length > 0) {
+  console.error('\nSeverity scale drift between sources:\n')
+  for (const line of mismatches) console.error(line)
+  process.exit(1)
+}
+
+console.log('Severity scale synchronised across CSS, theme and status: OK')

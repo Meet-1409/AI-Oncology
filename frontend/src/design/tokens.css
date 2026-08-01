@@ -1,18 +1,26 @@
 /*
- * Primitive design tokens.
+ * Design tokens — the complete visual language.
  *
- * These are the raw values only. The semantic layer that maps them to meaning
- * (surface, text, severity, elevation, motion) is built in Feature 2 — Design System.
+ * Two layers:
+ *   1. PRIMITIVE — raw values. Never referenced directly by components.
+ *   2. SEMANTIC  — meaning. This is what components consume.
+ *
+ * A component that uses a primitive token directly is a defect: it makes theming
+ * and consistency unmaintainable, and [00 §10.16] requires the design language to
+ * stay consistent across the entire environment.
  *
  * RULE — severity values are literal colors, never var() references.
  * The severity scale is consumed by both CSS and three.js. three.Color cannot parse
- * `var(--x)`; it silently yields white. Shipping that once made every diseased organ
- * render white while appearing to work. Keep these literal, and keep them in sync
- * with lib/status.ts, which is guarded by a test.  [00 §6.7]
+ * `var(--x)`; it warns and silently yields white, which once made every diseased
+ * organ render white while appearing to work. Kept in sync with lib/status.ts and
+ * enforced by tools/check-architecture.mjs.  [00 §6.7]
  */
 
 @theme {
-  /* ---- Neutrals — dominate the interface [04 §9] ---- */
+  /* ================================================================
+     PRIMITIVE — Neutrals. Dominate the interface [04 §9].
+     Slightly cool so they sit beside clinical imagery without tinting it.
+     ================================================================ */
   --color-neutral-0: #ffffff;
   --color-neutral-50: #f7f8fa;
   --color-neutral-100: #eef1f4;
@@ -28,7 +36,8 @@
   --color-neutral-900: #141924;
   --color-neutral-950: #0a0d14;
 
-  /* ---- Brand — restrained clinical blue-teal. Signals actionable or active. ---- */
+  /* PRIMITIVE — Brand. Restrained clinical blue-teal.
+     If brand color appears, something is actionable or active. Never decorative. */
   --color-brand-50: #eff6f8;
   --color-brand-100: #d9eaf0;
   --color-brand-200: #b3d5e1;
@@ -41,31 +50,37 @@
   --color-brand-900: #14313f;
   --color-brand-950: #0b1e28;
 
-  /* ---- Semantic — fixed by documentation [04 §9] ---- */
+  /* PRIMITIVE — Semantic hues, fixed by documentation [04 §9]. */
   --color-success-50: #f0faf4;
+  --color-success-100: #d7f0e2;
   --color-success-500: #1f9d55;
   --color-success-600: #17803f;
   --color-success-700: #146534;
 
   --color-warning-50: #fdf7ed;
+  --color-warning-100: #f8e9cd;
   --color-warning-500: #c2790f;
   --color-warning-600: #a3620a;
   --color-warning-700: #854d08;
 
-  /* Error red is deliberately distinct from severity red so a validation error
-     can never read as a clinical finding. */
+  /* Error red is deliberately distinct from severity red, so a validation error
+     can never be misread as a clinical finding. */
   --color-danger-50: #fdf1f1;
+  --color-danger-100: #f9dcdb;
   --color-danger-500: #d0342c;
   --color-danger-600: #b02a24;
   --color-danger-700: #8f221d;
 
   --color-info-50: #eff5fd;
+  --color-info-100: #d8e6fa;
   --color-info-500: #1f6bc2;
   --color-info-600: #1a58a3;
   --color-info-700: #164985;
 
-  /* ---- Disease severity — light to dark red, reserved exclusively for
-         disease severity on the Body [00 §6.7]. Literal values only. ---- */
+  /* PRIMITIVE — Disease severity. Light to dark red [00 §6.7].
+     Reserved exclusively for disease severity on the Body. Literal values only.
+     Level 0 is deliberately off the red scale so healthy organs remain
+     visually distinguishable [09.6 §7]. */
   --color-severity-0: #dde1e7;
   --color-severity-1: #f6b8b3;
   --color-severity-2: #ed8e86;
@@ -73,34 +88,149 @@
   --color-severity-4: #c22e23;
   --color-severity-5: #841a13;
 
-  /* ---- Typography — one family throughout [04 §8] ---- */
+  /* ================================================================
+     TYPOGRAPHY — one family throughout [04 §8].
+     Hierarchy from size, weight and space; never from boxes or borders.
+     ================================================================ */
   --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
     Helvetica, Arial, sans-serif;
 
-  /* ---- Spacing — 4px base [blueprint 03 §4] ---- */
+  /* Restrained ramp. Clinical values never render below --text-body. */
+  --text-display: 3.25rem;
+  --text-display--line-height: 1.04;
+  --text-display--letter-spacing: -0.03em;
+  --text-display--font-weight: 600;
+
+  --text-title: 1.5rem;
+  --text-title--line-height: 1.2;
+  --text-title--letter-spacing: -0.02em;
+  --text-title--font-weight: 600;
+
+  --text-heading: 1.125rem;
+  --text-heading--line-height: 1.3;
+  --text-heading--letter-spacing: -0.011em;
+  --text-heading--font-weight: 600;
+
+  --text-subheading: 0.9375rem;
+  --text-subheading--line-height: 1.4;
+  --text-subheading--font-weight: 600;
+
+  --text-body: 0.90625rem;
+  --text-body--line-height: 1.55;
+
+  --text-secondary: 0.84375rem;
+  --text-secondary--line-height: 1.5;
+
+  --text-caption: 0.78125rem;
+  --text-caption--line-height: 1.45;
+
+  --text-micro: 0.6875rem;
+  --text-micro--line-height: 1.4;
+  --text-micro--letter-spacing: 0.04em;
+  --text-micro--font-weight: 600;
+
+  /* ================================================================
+     SPACING — 4px base [blueprint 03 §4]. One scale for margin,
+     padding and gap. Negative space is a design element [04 §10].
+     ================================================================ */
   --spacing: 0.25rem;
 
-  /* ---- Elevation — four levels, matching the four depth levels ---- */
-  --shadow-raised: 0 1px 2px rgba(10, 13, 20, 0.04), 0 1px 6px rgba(10, 13, 20, 0.04);
+  /* ================================================================
+     BORDER RADIUS — soft but precise. An instrument, not a toy.
+     ================================================================ */
+  --radius-xs: 0.25rem;
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.5rem;
+  --radius-full: 9999px;
+
+  /* ================================================================
+     ELEVATION — four levels, matching the four depth levels, so
+     elevation and depth always mean the same thing [blueprint 03 §1.3].
+     ================================================================ */
+  --shadow-raised: 0 1px 2px rgba(10, 13, 20, 0.04), 0 1px 6px rgba(10, 13, 20, 0.05);
+  --shadow-lifted: 0 2px 6px rgba(10, 13, 20, 0.06), 0 6px 16px rgba(10, 13, 20, 0.07);
   --shadow-focus: 0 8px 30px rgba(10, 13, 20, 0.14), 0 2px 8px rgba(10, 13, 20, 0.08);
   --shadow-overlay: 0 16px 48px rgba(10, 13, 20, 0.2), 0 4px 12px rgba(10, 13, 20, 0.1);
 }
 
-/*
- * Motion primitives. Durations sit inside the documented 180-420ms envelope [04 §6].
- * Reduced motion collapses every duration to zero — presentation changes, information
- * and functionality do not [00 §11.9].
- */
+/* ==================================================================
+   SEMANTIC LAYER — what components actually consume.
+   Renaming a primitive must never require touching a component.
+   ================================================================== */
 :root {
-  --motion-quick: 180ms;
-  --motion-reveal: 260ms;
-  --motion-spatial: 380ms;
+  /* Surfaces */
+  --surface-base: var(--color-neutral-50);
+  --surface-raised: var(--color-neutral-0);
+  --surface-sunken: var(--color-neutral-100);
+  --surface-inverse: var(--color-neutral-900);
+  --surface-scrim: rgba(10, 13, 20, 0.42);
+
+  /* Text — weight, not color, is the primary emphasis mechanism [blueprint 03 §3.3] */
+  --text-primary: var(--color-neutral-900);
+  --text-body-color: var(--color-neutral-800);
+  --text-muted: var(--color-neutral-500);
+  --text-subtle: var(--color-neutral-400);
+  --text-on-inverse: var(--color-neutral-0);
+  --text-on-accent: var(--color-neutral-0);
+
+  /* Borders — the last resort for grouping, after space and weight [blueprint 03 §4.3] */
+  --border-subtle: var(--color-neutral-150);
+  --border-default: var(--color-neutral-200);
+  --border-strong: var(--color-neutral-300);
+
+  /* Accent — actionable or active */
+  --accent: var(--color-brand-700);
+  --accent-hover: var(--color-brand-800);
+  --accent-active: var(--color-brand-900);
+  --accent-subtle: var(--color-brand-50);
+  --accent-border: var(--color-brand-200);
+
+  /* Focus ring — never removed, 3:1 minimum [00 §16.3] */
+  --focus-ring: var(--color-brand-500);
+
+  /* Status — each carries surface, border and foreground so contrast
+     is guaranteed in every context. Never the sole signal [00 §16.2]. */
+  --status-success-surface: var(--color-success-50);
+  --status-success-border: var(--color-success-100);
+  --status-success-text: var(--color-success-700);
+
+  --status-warning-surface: var(--color-warning-50);
+  --status-warning-border: var(--color-warning-100);
+  --status-warning-text: var(--color-warning-700);
+
+  --status-danger-surface: var(--color-danger-50);
+  --status-danger-border: var(--color-danger-100);
+  --status-danger-text: var(--color-danger-700);
+
+  --status-info-surface: var(--color-info-50);
+  --status-info-border: var(--color-info-100);
+  --status-info-text: var(--color-info-700);
+
+  --status-neutral-surface: var(--color-neutral-100);
+  --status-neutral-border: var(--color-neutral-200);
+  --status-neutral-text: var(--color-neutral-700);
+
+  /* ================================================================
+     MOTION — durations sit inside the documented 180-420ms envelope [04 §6].
+     ================================================================ */
+  --motion-quick: 180ms;      /* local feedback: hover, control state */
+  --motion-reveal: 260ms;     /* content revealing on approach, Signals arriving */
+  --motion-spatial: 380ms;    /* depth change, Focus open and close */
 
   /* Calm and confident. No bounce, no elastic, no overshoot [04 §6]. */
   --motion-ease-enter: cubic-bezier(0.16, 1, 0.3, 1);
   --motion-ease-exit: cubic-bezier(0.7, 0, 0.84, 0);
+  --motion-ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/*
+ * Reduced motion is honored at the token level, so every consumer inherits it
+ * without opting in. Presentation changes; information and functionality do not
+ * [00 §11.9].
+ */
 @media (prefers-reduced-motion: reduce) {
   :root {
     --motion-quick: 0ms;
