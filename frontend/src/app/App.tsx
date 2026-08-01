@@ -3,26 +3,31 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { Providers } from './providers'
 import { paths, routePattern } from '@/routes/paths'
 import { LoadingSurface } from '@/components/patterns'
+import { EnvironmentShell } from '@/shell/EnvironmentShell'
 
 /**
  * The environment root.
  *
- * Spaces are code-split at their boundaries so the Entry stays fast and never pays
- * for anything it does not use [04 §14], [blueprint 00 §4.2].
+ * Depth 0 (Entry and authentication) sits outside the shell: it is the
+ * introduction to the environment, not a space within it [04 §14]. Everything
+ * authenticated renders inside EnvironmentShell, which owns depth, motion and the
+ * persistent regions.
  *
- * Placeholder screens are not permitted [00 §17.6]: an address whose space is not
- * built yet resolves to the Entry rather than to an empty page.
+ * Spaces are code-split at their boundaries so the Entry stays fast and never pays
+ * for the 3D runtime it does not use [04 §14].
  */
 
 const EntrySpace = lazy(() => import('@/spaces/entry/EntrySpace'))
 const AuthSpace = lazy(() => import('@/spaces/entry/AuthSpace'))
+const HomeSpace = lazy(() => import('@/spaces/home/HomeSpace'))
+const PatientSpace = lazy(() => import('@/spaces/patient/PatientSpace'))
+const AccountSpace = lazy(() => import('@/spaces/account/AccountSpace'))
 
 /**
  * Design System Showcase — development only.
  *
  * `import.meta.env.DEV` is statically replaced with `false` in production builds,
- * so this branch and its dynamic import are removed entirely by the bundler. The
- * showcase is not merely hidden in production — it is not present.
+ * so this branch and its dynamic import are removed entirely by the bundler.
  */
 const DevShowcase = import.meta.env.DEV
   ? lazy(() => import('@/dev/showcase/routes').then((m) => ({ default: m.ShowcaseRoutes })))
@@ -42,8 +47,16 @@ export function App() {
       <BrowserRouter>
         <Suspense fallback={<SpaceFallback />}>
           <Routes>
+            {/* Depth 0 */}
             <Route path={routePattern.entry} element={<EntrySpace />} />
             <Route path={routePattern.enter} element={<AuthSpace />} />
+
+            {/* Depth 1-3, inside the environment */}
+            <Route element={<EnvironmentShell />}>
+              <Route path={routePattern.home} element={<HomeSpace />} />
+              <Route path={routePattern.account} element={<AccountSpace />} />
+              <Route path={routePattern.patient} element={<PatientSpace />} />
+            </Route>
 
             {DevShowcase && <Route path="/__showcase/*" element={<DevShowcase />} />}
 

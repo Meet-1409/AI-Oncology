@@ -83,7 +83,7 @@ export function Text({
   className,
   ...props
 }: TextProps) {
-  const Component = as ?? 'p'
+  const Component = (as ?? 'p') as ElementType<HTMLAttributes<HTMLElement>>
   return (
     <Component
       className={cn(textVariants({ level, tone, weight, measure, truncate }), className)}

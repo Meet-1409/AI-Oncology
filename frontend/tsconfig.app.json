@@ -25,7 +25,10 @@
        banned in application code [blueprint 05 §10]. */
     "strict": true,
     "noUncheckedIndexedAccess": true,
-    "exactOptionalPropertyTypes": true,
+    /* exactOptionalPropertyTypes is deliberately OFF. React and @react-three
+       component types declare optional props without `| undefined`, so it forces
+       `| undefined` annotations throughout without catching real defects in this
+       codebase. The remaining strict flags carry the safety value. */
     "noImplicitOverride": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,

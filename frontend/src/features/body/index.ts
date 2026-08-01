@@ -1,0 +1,6 @@
+export { BodyView } from './BodyView'
+export type { BodyViewProps } from './BodyView'
+export { BodyStructured } from './BodyStructured'
+export { useBodyViewModel } from './use-body-view-model'
+export type { BodyViewModel, OrganState } from './use-body-view-model'
+export { organLabel, ORGANS, SELECTABLE_IDS } from './anatomy'

@@ -78,7 +78,7 @@ export function Surface({
   className,
   ...props
 }: SurfaceProps) {
-  const Component = as ?? 'div'
+  const Component = (as ?? 'div') as ElementType<HTMLAttributes<HTMLElement>>
   return (
     <Component
       className={cn(surfaceVariants({ elevation, radius, border, inset }), className)}
