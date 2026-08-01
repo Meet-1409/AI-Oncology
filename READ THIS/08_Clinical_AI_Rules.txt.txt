@@ -278,6 +278,10 @@ The AI provides only data.
 
 The frontend renders the visualization.
 
+Every organ-level result must carry its supporting evidence and confidence, so the frontend can reveal them when an organ is selected.
+
+Results should be provided for every available clinical date, so movement through time remains continuous.
+
 --------------------------------------------------
 
 12. Timeline Support
@@ -305,6 +309,8 @@ Every AI result must include supporting evidence.
 Evidence should point back to the original report.
 
 Doctors should always be able to verify AI outputs.
+
+Evidence must be structured so the frontend can present it directly alongside the statement it supports, rather than in a separate area. Verification must never require the doctor to leave their current space.
 
 --------------------------------------------------
 

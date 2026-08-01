@@ -18,6 +18,8 @@ Patients usually receive treatment from multiple hospitals, laboratories, and di
 
 This platform brings all patient reports together, organizes them, creates a complete timeline, and provides AI-assisted insights to help the oncologist understand the patient's condition more efficiently.
 
+The platform is experienced as a continuous environment rather than a set of pages. Users move through it. The patient's body sits at the centre of that environment, and all clinical information is reached from it.
+
 The platform does not replace the oncologist. It only assists in organizing and presenting clinical information.
 
 --------------------------------------------------
@@ -46,7 +48,9 @@ This process is time consuming.
 
 Important information may be difficult to locate quickly.
 
-The platform solves this problem by organizing every report into one intelligent patient record.
+Existing healthcare software makes this worse by requiring doctors to remember where information lives and to navigate through menus, boards and panels to reach it.
+
+The platform solves this problem by organizing every report into one intelligent patient record, and by presenting that record as an environment where relevant information reveals itself in context.
 
 --------------------------------------------------
 
@@ -61,6 +65,8 @@ Secondary User
 - Patient
 
 No other user roles are included in the first version.
+
+Neither user is a software engineer. Neither user should require training.
 
 --------------------------------------------------
 
@@ -86,6 +92,8 @@ Maintain complete patient history.
 
 Provide healthcare-level security.
 
+Deliver an experience that is immediately understandable without training.
+
 --------------------------------------------------
 
 5. Product Objectives
@@ -108,6 +116,8 @@ Reduce manual report searching.
 
 Improve clinical efficiency.
 
+Minimise the number of interactions required to reach any piece of information.
+
 --------------------------------------------------
 
 6. Core Features
@@ -116,35 +126,37 @@ Patient Authentication
 
 Oncologist Authentication
 
-Patient Dashboard
+Patient Dashboard, presented as Patient Home Space
 
-Oncologist Dashboard
+Oncologist Dashboard, presented as Practice Space
 
-Patient Profile
+Patient Profile, presented as Patient Space
 
-Patient Timeline
+Patient Timeline, presented as Journey
 
 Report Upload
 
-Report Library
+Report Library, presented as Evidence
 
 AI Report Summary
 
 AI Report Comparison
 
-Patient Intelligence Dashboard
+Patient Intelligence Dashboard, presented as Understanding
 
-Interactive Digital Twin
+Interactive Digital Twin, presented as the Body
 
-Patient Tasks
+Patient Tasks, presented as Actions
 
-Patient Notes
+Patient Notes, presented as Shared Guidance
 
-Private Clinical Notes
+Private Clinical Notes, presented as Private Observations
 
 Settings
 
-Notifications
+Notifications, presented as Signals
+
+The feature set is unchanged. The names above describe how each feature is presented within the environment. The clinical term is always shown alongside the spatial name so no user needs training.
 
 --------------------------------------------------
 
@@ -155,6 +167,8 @@ Every patient has an interactive Digital Twin.
 The Digital Twin represents the patient's body using available patient information.
 
 It is not intended to be an exact physical replica.
+
+The Digital Twin is the centrepiece of the product and one of its primary navigation spaces.
 
 The Digital Twin should:
 
@@ -175,6 +189,12 @@ Support timeline transitions.
 Support comparison between previous and current patient states.
 
 Display supporting evidence.
+
+Reveal the clinical information related to an organ when that organ is selected.
+
+Integrate directly with reports, timeline and patient intelligence.
+
+Remain responsive at all times.
 
 --------------------------------------------------
 
@@ -202,6 +222,8 @@ Display confidence.
 
 AI must never replace medical judgement.
 
+AI results are presented in context, next to the clinical information they describe, rather than in a separate reporting area.
+
 --------------------------------------------------
 
 9. Patient Workflow
@@ -221,6 +243,8 @@ Patient reads oncologist notes.
 Patient updates profile if required.
 
 Patient logs out.
+
+The patient should never feel overwhelmed at any point in this workflow.
 
 --------------------------------------------------
 
@@ -249,6 +273,8 @@ Oncologist writes private clinical notes.
 Oncologist saves updates.
 
 Oncologist logs out.
+
+The oncologist should never have to search for information. Relevant information reveals itself in context.
 
 --------------------------------------------------
 
@@ -320,7 +346,29 @@ Healthcare-level privacy.
 
 --------------------------------------------------
 
-15. Out of Scope
+15. Experience Requirements
+
+The first screen must immediately communicate product identity, quality and trust.
+
+The entry experience must create curiosity and be memorable.
+
+Navigation must feel continuous. Sudden page changes are avoided.
+
+Motion must communicate movement through the system and explain where the user is.
+
+Three-dimensional design is part of the product identity and is not limited to the Digital Twin.
+
+The interface must feel premium, modern, elegant, confident, minimal and medical.
+
+The interface must never be flashy, childish or game-like.
+
+The application must not imitate existing EMR software.
+
+Usability is never sacrificed for visual effect.
+
+--------------------------------------------------
+
+16. Out of Scope
 
 The following features are not included in the first version.
 
@@ -350,7 +398,7 @@ Hospital administration.
 
 --------------------------------------------------
 
-16. Future Scope
+17. Future Scope
 
 Future versions may include additional AI capabilities and imaging features.
 
@@ -360,7 +408,7 @@ Future features must not change the existing product vision.
 
 --------------------------------------------------
 
-17. Success Criteria
+18. Success Criteria
 
 Patients can upload reports successfully.
 
@@ -380,8 +428,16 @@ Patient notes function correctly.
 
 The platform remains secure, responsive, and easy to use.
 
+A new user can complete their primary workflow without training.
+
+Every important piece of information is reachable within three interactions.
+
+The environment remains smooth and continuous during navigation.
+
 --------------------------------------------------
 
-18. Product Vision
+19. Product Vision
 
 Build a secure AI-powered platform that gives every oncologist a complete, organized, and easy-to-understand view of a patient's cancer journey while allowing patients to manage and submit their medical information from one place.
+
+The experience should feel years ahead of existing healthcare software while remaining practical for daily clinical use.

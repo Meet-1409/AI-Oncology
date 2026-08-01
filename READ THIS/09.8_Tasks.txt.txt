@@ -6,7 +6,7 @@ AI Oncology Patient Intelligence Platform
 
 Feature Name
 
-Tasks
+Actions (Tasks)
 
 Document Purpose
 
@@ -16,9 +16,11 @@ This document defines the Task Management module. The module allows oncologists 
 
 1. Purpose
 
-The Task Management module helps the oncologist request additional information or follow-up actions from the patient.
+Actions help the oncologist request additional information or follow-up from the patient.
 
-It provides a simple workflow for assigning, tracking, and completing patient tasks.
+They provide a simple workflow for assigning, tracking and completing patient tasks.
+
+For the patient, Actions are the clearest answer to the question: what do I need to do next.
 
 --------------------------------------------------
 
@@ -54,7 +56,7 @@ Task assigned to patient.
 
 ↓
 
-Patient receives notification.
+Patient receives a Signal.
 
 ↓
 
@@ -78,9 +80,21 @@ Task marked completed.
 
 --------------------------------------------------
 
-5. Task Information
+5. Spatial Composition
 
-Every task should contain
+For the patient, Actions appear first in Patient Home Space, closest to the viewer, because they are the most urgent thing the patient needs.
+
+For the oncologist, Actions are reached from the Contextual Orbit in Patient Space, and pending Actions across all patients are visible from Practice Space.
+
+Creating, reviewing and completing an Action all happen in place, in Focus above the current space. Neither user leaves their space to work with an Action.
+
+Actions are presented as a short prioritized sequence, not as a board of cards.
+
+--------------------------------------------------
+
+6. Task Information
+
+Every task should contain:
 
 Task Title
 
@@ -100,9 +114,9 @@ Assigned By
 
 --------------------------------------------------
 
-6. Task Categories
+7. Task Categories
 
-The platform should support tasks including
+The platform should support tasks including:
 
 Upload CT Report
 
@@ -126,11 +140,11 @@ Custom Task
 
 --------------------------------------------------
 
-7. Task Status
+8. Task Status
 
 Every task should display its current status.
 
-Available statuses
+Available statuses:
 
 Pending
 
@@ -140,11 +154,13 @@ Completed
 
 Cancelled
 
+Status must never be communicated by color alone.
+
 --------------------------------------------------
 
-8. Patient View
+9. Patient View
 
-Patients should be able to
+Patients should be able to:
 
 View assigned tasks.
 
@@ -160,11 +176,13 @@ Patients cannot edit assigned tasks.
 
 Patients cannot delete assigned tasks.
 
+Instructions are written in simple language. The patient must never feel overwhelmed.
+
 --------------------------------------------------
 
-9. Oncologist View
+10. Oncologist View
 
-Oncologists should be able to
+Oncologists should be able to:
 
 Create tasks.
 
@@ -180,9 +198,9 @@ Create custom tasks.
 
 --------------------------------------------------
 
-10. Task Details
+11. Task Details
 
-Opening a task should display
+Opening a task should display:
 
 Task Title
 
@@ -202,11 +220,9 @@ Completion History
 
 --------------------------------------------------
 
-11. File Upload
+12. File Upload
 
-If a task requires report submission
-
-The patient should be able to
+If a task requires report submission, the patient should be able to:
 
 Upload files.
 
@@ -216,11 +232,13 @@ View upload progress.
 
 Receive upload confirmation.
 
+Uploading happens in place within the task. The patient never leaves their space.
+
 --------------------------------------------------
 
-12. Search
+13. Search
 
-Support searching by
+Support searching by:
 
 Task Title
 
@@ -232,9 +250,9 @@ Date
 
 --------------------------------------------------
 
-13. Filters
+14. Filters
 
-Support filtering by
+Support filtering by:
 
 Pending
 
@@ -248,9 +266,9 @@ Date
 
 --------------------------------------------------
 
-14. Sorting
+15. Sorting
 
-Support sorting by
+Support sorting by:
 
 Newest First
 
@@ -264,9 +282,9 @@ Status
 
 --------------------------------------------------
 
-15. Notifications
+16. Notifications
 
-Patients should receive notifications when
+Patients should receive notifications when:
 
 A new task is assigned.
 
@@ -276,7 +294,7 @@ A task is cancelled.
 
 A task is reviewed.
 
-Oncologists should receive notifications when
+Oncologists should receive notifications when:
 
 A patient completes a task.
 
@@ -284,11 +302,11 @@ A patient uploads requested files.
 
 --------------------------------------------------
 
-16. Timeline Integration
+17. Timeline Integration
 
-Every task should automatically appear in the patient's Timeline.
+Every task should automatically appear in the patient's Journey.
 
-Timeline events should include
+Timeline events should include:
 
 Task Assigned
 
@@ -298,7 +316,19 @@ Task Completed
 
 --------------------------------------------------
 
-17. Business Rules
+18. Motion
+
+Opening a task lifts it into Focus above the current space.
+
+Completing a task is confirmed with motion that communicates the change of state, and the task settles into its completed position rather than disappearing abruptly.
+
+Newly assigned tasks are revealed with motion that draws attention.
+
+Reduced motion replaces these transitions with immediate cross-fades without any loss of information.
+
+--------------------------------------------------
+
+19. Business Rules
 
 Only oncologists can create tasks.
 
@@ -312,7 +342,7 @@ Every completed task remains permanently linked to the Patient Case.
 
 --------------------------------------------------
 
-18. Empty States
+20. Empty States
 
 No Tasks Assigned
 
@@ -324,7 +354,7 @@ Display informative message.
 
 --------------------------------------------------
 
-19. Error States
+21. Error States
 
 Task Creation Failed
 
@@ -336,11 +366,11 @@ Network Error
 
 Permission Denied
 
-Display clear recovery instructions.
+Display clear recovery instructions. A failed upload allows retry without losing the user's position.
 
 --------------------------------------------------
 
-20. Performance Requirements
+22. Performance Requirements
 
 Task list should load quickly.
 
@@ -350,9 +380,9 @@ Status updates should appear immediately after refresh.
 
 --------------------------------------------------
 
-21. Accessibility
+23. Accessibility
 
-Support keyboard navigation.
+Support keyboard navigation. Every task action has a keyboard equivalent.
 
 Maintain readable typography.
 
@@ -360,11 +390,15 @@ Provide descriptive labels for every action.
 
 Maintain consistent spacing.
 
+Status and priority must never rely on color alone.
+
+Respect reduced motion.
+
 --------------------------------------------------
 
-22. Completion Criteria
+24. Completion Criteria
 
-The Task module is complete when
+The Actions module is complete when:
 
 Oncologists can create tasks.
 

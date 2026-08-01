@@ -6,21 +6,23 @@ AI Oncology Patient Intelligence Platform
 
 Feature Name
 
-Patient Intelligence
+Understanding (Patient Intelligence)
 
 Document Purpose
 
-This document defines the Patient Intelligence module. This module combines all validated patient information into a single clinical overview. It helps the oncologist understand the patient's condition without manually reviewing every report first.
+This document defines the Understanding module. It combines all validated patient information into a single clinical overview. It helps the oncologist understand the patient's condition without manually reviewing every report first.
 
 --------------------------------------------------
 
 1. Purpose
 
-Patient Intelligence provides a complete overview of the patient's current clinical condition.
+Understanding provides a complete overview of the patient's current clinical condition.
 
 It summarizes the patient's journey using validated information while keeping every AI output linked to its original evidence.
 
 The original reports always remain the source of truth.
+
+Understanding is what the oncologist reads first. It exists so that no doctor has to search for the state of their patient.
 
 --------------------------------------------------
 
@@ -48,47 +50,41 @@ Provide quick access to related reports.
 
 --------------------------------------------------
 
-4. Module Layout
+4. Spatial Composition
 
-Top Navigation
+Understanding is reached from the Contextual Orbit in Patient Space and is also revealed in context when an organ on the Body or an event on the Journey is selected.
 
-↓
+It is presented as a readable, continuous clinical narrative rather than a grid of metric boxes.
+
+Information is revealed progressively. The summary appears first. Evidence and confidence are always attached to the statement they support, not collected in a separate area.
+
+Every statement can be traced to its source without leaving Patient Space.
+
+--------------------------------------------------
+
+5. Presentation Order
 
 Patient Information
 
-↓
-
 Clinical Summary
-
-↓
 
 Disease Overview
 
-↓
-
 Treatment Overview
-
-↓
 
 Disease Progression
 
-↓
-
 Supporting Evidence
 
-↓
-
 Confidence
-
-↓
 
 Related Reports
 
 --------------------------------------------------
 
-5. Patient Information
+6. Patient Information
 
-Display
+Display:
 
 Patient Name
 
@@ -108,11 +104,11 @@ Treating Oncologist
 
 --------------------------------------------------
 
-6. Clinical Summary
+7. Clinical Summary
 
 Display a structured overview generated from validated patient information.
 
-The summary should focus on
+The summary should focus on:
 
 Current Condition
 
@@ -126,9 +122,9 @@ Recent Investigations
 
 --------------------------------------------------
 
-7. Disease Overview
+8. Disease Overview
 
-Display
+Display:
 
 Primary Cancer
 
@@ -142,11 +138,13 @@ Disease Progression
 
 Disease Severity
 
+Selecting an affected organ moves attention to that organ on the Body.
+
 --------------------------------------------------
 
-8. Treatment Overview
+9. Treatment Overview
 
-Display
+Display:
 
 Current Treatment
 
@@ -158,11 +156,11 @@ Treatment Timeline
 
 --------------------------------------------------
 
-9. Disease Progression
+10. Disease Progression
 
 Display how the patient's condition has changed over time.
 
-Include
+Include:
 
 Recent Improvements
 
@@ -172,13 +170,15 @@ Stable Findings
 
 Recent Clinical Events
 
+Progression, regression and stability must be distinguishable without relying on color alone.
+
 --------------------------------------------------
 
-10. Report Summary
+11. Report Summary
 
 Display a summary of important uploaded reports.
 
-Each report should display
+Each report should display:
 
 Report Name
 
@@ -192,11 +192,11 @@ View Report
 
 --------------------------------------------------
 
-11. Supporting Evidence
+12. Supporting Evidence
 
 Every AI-generated result must provide supporting evidence.
 
-Display
+Display:
 
 Evidence Source
 
@@ -208,13 +208,15 @@ Relevant Findings
 
 Open Report
 
+Evidence is presented alongside the statement it supports. Opening a report enters Focus without leaving Patient Space.
+
 --------------------------------------------------
 
-12. Confidence
+13. Confidence
 
 Every AI-generated result should display its confidence.
 
-Confidence should be shown for
+Confidence should be shown for:
 
 Clinical Summary
 
@@ -224,21 +226,23 @@ Report Comparison
 
 Disease Visualization
 
+Confidence is always visible and is never hidden behind an additional interaction.
+
 --------------------------------------------------
 
-13. Timeline Integration
+14. Timeline Integration
 
-Every section should link back to the patient's timeline.
+Every section links back to the patient's Journey.
 
 Users should be able to open the related timeline event directly.
 
 --------------------------------------------------
 
-14. Digital Twin Integration
+15. Digital Twin Integration
 
-Patient Intelligence should connect directly to the Digital Twin.
+Understanding connects directly to the Body.
 
-Users should be able to
+Users should be able to:
 
 Open the Digital Twin.
 
@@ -246,13 +250,15 @@ View the related disease visualization.
 
 Compare previous and current disease states.
 
+Selecting a finding moves attention to the corresponding site on the Body.
+
 --------------------------------------------------
 
-15. Search
+16. Search
 
-Allow searching within Patient Intelligence.
+Allow searching within Understanding.
 
-Search should include
+Search should include:
 
 Clinical Findings
 
@@ -264,9 +270,9 @@ Timeline Events
 
 --------------------------------------------------
 
-16. Filters
+17. Filters
 
-Support filtering by
+Support filtering by:
 
 Date
 
@@ -278,7 +284,19 @@ Disease Status
 
 --------------------------------------------------
 
-17. User Actions
+18. Motion
+
+Understanding is revealed alongside the Body without displacing it.
+
+Selecting a finding moves attention to the related site on the Body with continuous motion.
+
+Newly generated intelligence is revealed with motion that draws attention to what changed.
+
+Reduced motion replaces these transitions with immediate cross-fades without any loss of information.
+
+--------------------------------------------------
+
+19. User Actions
 
 View Clinical Summary
 
@@ -294,7 +312,7 @@ Filter Information
 
 --------------------------------------------------
 
-18. Business Rules
+20. Business Rules
 
 Every Patient Intelligence result must be generated from validated patient information.
 
@@ -308,7 +326,7 @@ Patient Intelligence must never replace the original reports.
 
 --------------------------------------------------
 
-19. Empty States
+21. Empty States
 
 No Patient Intelligence Available
 
@@ -324,7 +342,7 @@ Display informative message.
 
 --------------------------------------------------
 
-20. Error States
+22. Error States
 
 Unable to Generate Summary
 
@@ -334,13 +352,13 @@ Network Error
 
 AI Processing Error
 
-Display clear recovery instructions.
+Display clear recovery instructions. An AI failure must never break the surrounding space.
 
 --------------------------------------------------
 
-21. Performance Requirements
+23. Performance Requirements
 
-Patient Intelligence should load quickly.
+Understanding should load quickly.
 
 Large patient histories should remain responsive.
 
@@ -350,9 +368,9 @@ Opening related reports should not interrupt the current workflow.
 
 --------------------------------------------------
 
-22. Accessibility
+24. Accessibility
 
-Support keyboard navigation.
+Support keyboard navigation. Every spatial action has a keyboard equivalent.
 
 Maintain readable typography.
 
@@ -360,11 +378,15 @@ Provide descriptive labels for every interactive element.
 
 Maintain consistent spacing.
 
+Progression and confidence must never rely on color alone.
+
+Respect reduced motion.
+
 --------------------------------------------------
 
-23. Completion Criteria
+25. Completion Criteria
 
-The Patient Intelligence module is complete when
+Understanding is complete when:
 
 Clinical Summary is displayed.
 

@@ -6,19 +6,21 @@ AI Oncology Patient Intelligence Platform
 
 Feature Name
 
-Settings
+Account (Settings)
 
 Document Purpose
 
-This document defines the Settings module. The Settings module allows users to manage their account, preferences, security, and application settings. The available options depend on the user's role.
+This document defines the Settings module. It allows users to manage their account, preferences, security and application settings. The available options depend on the user's role.
 
 --------------------------------------------------
 
 1. Purpose
 
-The Settings module allows users to manage their account securely.
+Account allows users to manage their account securely.
 
 Patients and oncologists can update their personal preferences without affecting clinical data.
+
+Account is deliberately quiet. It is entered rarely and must never compete for attention with clinical information.
 
 --------------------------------------------------
 
@@ -44,13 +46,19 @@ Allow users to securely log out from active sessions.
 
 --------------------------------------------------
 
-4. Settings Navigation
+4. Spatial Composition
 
-Settings
+Account is reached from the user's own identity, which is persistently present in the environment. The user moves into their own account rather than locating it in a menu.
+
+Account sits at Depth 1, beside Home Space rather than beneath it, because it does not belong to any Patient Case.
+
+Its sections are presented as one continuous surface in the order below. Moving between sections does not change depth.
+
+Account
 
 ↓
 
-Account
+Profile
 
 ↓
 
@@ -68,11 +76,17 @@ Preferences
 
 Sessions
 
+↓
+
+Privacy
+
+Continuous Return brings the user back to their Home Space.
+
 --------------------------------------------------
 
-5. Account Settings
+5. Profile Settings (Account Settings)
 
-Display
+Display:
 
 Profile Photo (Optional)
 
@@ -94,7 +108,7 @@ Save Changes
 
 6. Security Settings
 
-Allow users to
+Allow users to:
 
 Change Password
 
@@ -112,7 +126,7 @@ Review Recent Login Activity
 
 Allow users to control notifications.
 
-Patients can manage
+Patients can manage:
 
 Task Notifications
 
@@ -122,7 +136,7 @@ Patient Notes
 
 General Notifications
 
-Oncologists can manage
+Oncologists can manage:
 
 Patient Upload Notifications
 
@@ -136,7 +150,7 @@ General Notifications
 
 8. Preferences
 
-Allow users to customize
+Allow users to customize:
 
 Application Theme
 
@@ -148,11 +162,13 @@ Time Format
 
 Time Zone
 
+Reduced motion follows the operating system setting automatically and is not a preference the user must discover here.
+
 --------------------------------------------------
 
 9. Active Sessions
 
-Display
+Display:
 
 Current Device
 
@@ -172,7 +188,7 @@ Users should be able to end any active session except the current one.
 
 10. Privacy
 
-Display
+Display:
 
 Privacy Policy
 
@@ -184,7 +200,17 @@ Users should be able to review these documents at any time.
 
 --------------------------------------------------
 
-11. User Actions
+11. Motion
+
+Entering Account is a lateral movement from the user's identity, not a descent into a Patient Case.
+
+Saving a change is confirmed in place, next to the setting that changed.
+
+Reduced motion replaces these transitions with immediate cross-fades without any loss of information.
+
+--------------------------------------------------
+
+12. User Actions
 
 Update Profile
 
@@ -206,9 +232,9 @@ Logout Other Sessions
 
 --------------------------------------------------
 
-12. Patient View
+13. Patient View
 
-Patients can
+Patients can:
 
 Update profile.
 
@@ -220,7 +246,7 @@ Manage preferences.
 
 Review active sessions.
 
-Patients cannot
+Patients cannot:
 
 Modify clinical information.
 
@@ -232,9 +258,9 @@ Modify AI results.
 
 --------------------------------------------------
 
-13. Oncologist View
+14. Oncologist View
 
-Oncologists can
+Oncologists can:
 
 Update profile.
 
@@ -246,7 +272,7 @@ Manage preferences.
 
 Review active sessions.
 
-Oncologists cannot
+Oncologists cannot:
 
 Modify system settings.
 
@@ -254,7 +280,7 @@ Modify application configuration.
 
 --------------------------------------------------
 
-14. Business Rules
+15. Business Rules
 
 Every user manages only their own account.
 
@@ -268,7 +294,7 @@ Multi-Factor Authentication should be supported.
 
 --------------------------------------------------
 
-15. Empty States
+16. Empty States
 
 No Active Sessions
 
@@ -280,7 +306,7 @@ Display informative message.
 
 --------------------------------------------------
 
-16. Error States
+17. Error States
 
 Failed to Update Profile
 
@@ -294,13 +320,13 @@ Session Expired
 
 Permission Denied
 
-Display clear recovery instructions.
+Display clear recovery instructions. A failed save must never lose the user's entered information.
 
 --------------------------------------------------
 
-17. Performance Requirements
+18. Performance Requirements
 
-Settings should load quickly.
+Account should load quickly.
 
 Profile updates should complete efficiently.
 
@@ -310,7 +336,7 @@ Session updates should reflect immediately.
 
 --------------------------------------------------
 
-18. Accessibility
+19. Accessibility
 
 Support keyboard navigation.
 
@@ -320,11 +346,13 @@ Provide descriptive labels for every setting.
 
 Maintain consistent spacing.
 
+Respect reduced motion.
+
 --------------------------------------------------
 
-19. Completion Criteria
+20. Completion Criteria
 
-The Settings module is complete when
+Account is complete when:
 
 Users can update their profile.
 

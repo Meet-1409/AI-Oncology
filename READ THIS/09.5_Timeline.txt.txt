@@ -6,19 +6,23 @@ AI Oncology Patient Intelligence Platform
 
 Feature Name
 
-Timeline
+Journey (Timeline)
 
 Document Purpose
 
-This document defines the Timeline module. The Timeline represents the patient's complete cancer journey in chronological order. Every important medical event should appear here and remain permanently linked to the Patient Case.
+This document defines the Journey. It represents the patient's complete cancer journey in chronological order. Every important medical event appears here and remains permanently linked to the Patient Case.
 
 --------------------------------------------------
 
 1. Purpose
 
-The Timeline provides a complete chronological view of the patient's cancer journey.
+The Journey provides a complete chronological view of the patient's cancer journey.
 
-It should allow the oncologist to quickly understand what happened, when it happened, and how the patient's condition changed over time.
+It allows the oncologist to quickly understand what happened, when it happened, and how the patient's condition changed over time.
+
+The Journey is both a view and a control. Moving through it moves the entire Patient Space through time, including the Body.
+
+It is presented as a continuous path through time rather than a list of rows.
 
 --------------------------------------------------
 
@@ -48,7 +52,7 @@ Support Patient Intelligence.
 
 4. Timeline Events
 
-The Timeline should display
+The Journey should display:
 
 Diagnosis
 
@@ -88,33 +92,23 @@ Patient Notes
 
 --------------------------------------------------
 
-5. Timeline Layout
+5. Spatial Composition
 
-Top Navigation
+The Journey is a continuous path along Patient Space.
 
-↓
+Events are positioned by their true position in time, so gaps and clusters in treatment are immediately visible.
 
-Timeline Filters
+Density of information increases as the oncologist moves closer to a period of time. Distant periods show only significant events; approaching a period reveals its detail.
 
-↓
+The latest event is the default position.
 
-Timeline Search
-
-↓
-
-Timeline Events
-
-↓
-
-Event Details
-
-The latest event should appear first by default.
+Event detail opens in Focus without leaving Patient Space.
 
 --------------------------------------------------
 
-6. Timeline Card
+6. Journey Event
 
-Every event should display
+Every event should display:
 
 Event Date
 
@@ -134,7 +128,7 @@ View Details
 
 7. Event Details
 
-Opening an event should display
+Opening an event should display:
 
 Full Event Information
 
@@ -156,7 +150,7 @@ Next Related Event
 
 Events should be visually categorized.
 
-Examples
+Examples:
 
 Diagnosis
 
@@ -176,11 +170,13 @@ Upload
 
 Other Clinical Event
 
+Category must never be communicated by color alone.
+
 --------------------------------------------------
 
 9. Search
 
-Allow searching using
+Allow searching using:
 
 Event Name
 
@@ -196,7 +192,7 @@ Treatment
 
 10. Filters
 
-Support filtering by
+Support filtering by:
 
 Date Range
 
@@ -210,11 +206,13 @@ Task
 
 Uploads
 
+Filtering changes what is visible along the path without collapsing the sense of time.
+
 --------------------------------------------------
 
 11. Sorting
 
-Allow sorting by
+Allow sorting by:
 
 Newest First
 
@@ -222,47 +220,63 @@ Oldest First
 
 --------------------------------------------------
 
-12. Timeline Navigation
+12. Journey Navigation
 
-Users should be able to
+Users should be able to:
 
-Scroll through events.
+Move continuously through events.
 
 Open event details.
 
-Return to the Timeline.
+Return to the Journey.
 
 Move between previous and next events.
 
---------------------------------------------------
-
-13. Timeline and Reports
-
-Every report should automatically appear in the Timeline.
-
-Selecting a report event should open the related report.
+Movement along the Journey is continuous. Sudden jumps are avoided.
 
 --------------------------------------------------
 
-14. Timeline and Patient Intelligence
+13. Journey and Reports
 
-Timeline events should link to related AI summaries whenever available.
+Every report automatically appears in the Journey.
 
-The original report should always remain accessible.
-
---------------------------------------------------
-
-15. Timeline and Digital Twin
-
-Timeline should synchronize with the Digital Twin.
-
-Selecting a clinical date should allow the Digital Twin to display the patient's condition for that date.
-
-When comparing two dates, the Timeline should highlight both selected events.
+Selecting a report event opens the related report in Focus.
 
 --------------------------------------------------
 
-16. User Actions
+14. Journey and Patient Intelligence
+
+Journey events link to related AI summaries whenever available.
+
+The original report always remains accessible.
+
+--------------------------------------------------
+
+15. Journey and the Body
+
+The Journey synchronizes with the Body.
+
+Selecting a clinical date updates the Body to display the patient's condition for that date.
+
+Moving through the Journey updates the Body continuously.
+
+When comparing two dates, the Journey highlights both selected events.
+
+--------------------------------------------------
+
+16. Motion
+
+Moving through time is continuous, and the Body updates in step with the movement.
+
+Approaching a period of time progressively reveals its detail.
+
+Selecting an event lifts it into Focus while the Journey remains visible behind it.
+
+Reduced motion presents time changes directly, without continuous interpolation. All information remains identical.
+
+--------------------------------------------------
+
+17. User Actions
 
 Open Event
 
@@ -280,7 +294,7 @@ Open Digital Twin
 
 --------------------------------------------------
 
-17. Business Rules
+18. Business Rules
 
 Timeline events must remain chronological.
 
@@ -296,9 +310,9 @@ Private Clinical Notes should not appear in the patient timeline.
 
 --------------------------------------------------
 
-18. Patient View
+19. Patient View
 
-Patients should only see
+Patients should only see:
 
 Uploaded Reports
 
@@ -310,7 +324,7 @@ Patient Notes
 
 Appointments (Future)
 
-Patients should not see
+Patients should not see:
 
 Private Clinical Notes
 
@@ -318,11 +332,13 @@ AI Confidence
 
 Internal Clinical Information
 
+The patient's Journey remains calm and simple. It must never feel overwhelming.
+
 --------------------------------------------------
 
-19. Oncologist View
+20. Oncologist View
 
-Oncologists should see
+Oncologists should see:
 
 Complete Timeline
 
@@ -342,7 +358,7 @@ Supporting Evidence
 
 --------------------------------------------------
 
-20. Empty States
+21. Empty States
 
 No Timeline Available
 
@@ -354,7 +370,7 @@ Display informative message.
 
 --------------------------------------------------
 
-21. Error States
+22. Error States
 
 Failed to Load Timeline
 
@@ -366,23 +382,25 @@ Display clear recovery instructions.
 
 --------------------------------------------------
 
-22. Performance Requirements
+23. Performance Requirements
 
-Timeline should load quickly.
+The Journey should load quickly.
 
 Large patient histories should support lazy loading.
 
-Scrolling should remain smooth.
+Movement should remain smooth.
 
 Filtering should update immediately.
 
 Searching should remain responsive.
 
+Moving through time must not require a request for every date.
+
 --------------------------------------------------
 
-23. Accessibility
+24. Accessibility
 
-Support keyboard navigation.
+Support keyboard navigation. Moving through time has a keyboard equivalent.
 
 Maintain readable typography.
 
@@ -390,11 +408,15 @@ Provide descriptive labels.
 
 Maintain consistent spacing.
 
+Category must never rely on color alone.
+
+Respect reduced motion.
+
 --------------------------------------------------
 
-24. Completion Criteria
+25. Completion Criteria
 
-The Timeline module is complete when
+The Journey is complete when:
 
 All clinical events are displayed.
 

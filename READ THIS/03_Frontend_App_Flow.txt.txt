@@ -6,7 +6,9 @@ AI Oncology Patient Intelligence Platform
 
 Document Purpose
 
-This document defines the complete frontend flow of the application. Every page, navigation path, button action, and user journey must follow this document. Developers must not change the navigation or workflow unless instructed by the Product Owner.
+This document defines the complete frontend flow of the application. Every space, spatial transition, control action and user journey must follow this document. Developers must not change the navigation or workflow unless instructed by the Product Owner.
+
+The application is one continuous environment. The flows below describe movement through that environment, not navigation between unrelated pages. All vocabulary, depth levels and motion rules are defined in 04_UI_UX_Design_Guide.
 
 --------------------------------------------------
 
@@ -18,51 +20,61 @@ Patient
 
 Oncologist
 
-Every screen belongs to one of these roles.
+Every space belongs to one of these roles.
 
 --------------------------------------------------
 
-2. Public Website
+2. Depth Model
 
-Landing Page
+The environment has four depth levels.
 
-↓
+Depth 0 - Entry (Landing Page and authentication)
+
+Depth 1 - Home Space (Dashboard)
+
+Depth 2 - Patient Space (Patient Profile), centred on the Body
+
+Depth 3 - Focus (a single report, event, task, note or organ, opened in place)
+
+Moving deeper zooms in. Moving back zooms out. The space behind remains visible and recognisable. Depth never exceeds four levels.
+
+--------------------------------------------------
+
+3. Entry (Public Website)
+
+The Entry is a cinematic introduction to the system.
+
+It presents, as one continuous experience:
+
+Introduction
 
 About
 
-↓
-
 Features
-
-↓
 
 How It Works
 
-↓
-
 Contact
 
-↓
+Access to authentication
 
-Login
-
-The public website only provides information about the platform.
+The Entry communicates product identity, quality and trust immediately.
 
 No patient information is accessible without authentication.
 
 --------------------------------------------------
 
-3. Authentication Flow
+4. Authentication Flow
 
-Landing Page
-
-↓
-
-Login
+Entry
 
 ↓
 
-Enter Credentials
+Sign in
+
+↓
+
+Enter credentials
 
 ↓
 
@@ -70,91 +82,115 @@ Authentication
 
 ↓
 
-Redirect Based On Role
+Descend into Home Space based on role
 
 Patient
 
 ↓
 
-Patient Dashboard
+Patient Home Space
 
 Oncologist
 
 ↓
 
-Oncologist Dashboard
+Practice Space
 
 If authentication fails
 
 ↓
 
-Display Error
+Display error in place
 
 ↓
 
-Stay on Login Page
+Remain at the sign in step
+
+Authentication is a descent into the environment, not a jump to an unrelated page. The Entry remains behind the user.
 
 --------------------------------------------------
 
-4. Patient Navigation
+5. Patient Environment
 
-Patient Dashboard
+Patient Home Space (Depth 1)
 
-├── Home
-├── Timeline
-├── Reports
-├── Tasks
-├── Notes
-├── Notifications
-├── Profile
-└── Settings
+Contextual destinations reachable from Patient Home Space:
 
-The patient must always be able to return to the Dashboard from any page.
+Journey (Timeline)
 
---------------------------------------------------
+Evidence (Reports)
 
-5. Oncologist Navigation
+Actions (Tasks)
 
-Oncologist Dashboard
+Guidance (Notes)
 
-├── Home
-├── Patient List
-├── Patient Profile
-├── Timeline
-├── Reports
-├── Patient Intelligence
-├── Digital Twin
-├── Tasks
-├── Notes
-├── Notifications
-├── Profile
-└── Settings
+Signals (Notifications)
+
+Account (Profile and Settings)
+
+The patient always returns to Patient Home Space using Continuous Return.
+
+The patient reaches every destination without a persistent sidebar and without nested menus.
 
 --------------------------------------------------
 
-6. Patient Workflow
+6. Oncologist Environment
 
-Patient opens application.
+Practice Space (Depth 1)
+
+Contextual destinations reachable from Practice Space:
+
+Patient List
+
+Signals (Notifications)
+
+Account (Profile and Settings)
+
+Entering a patient descends into Patient Space (Depth 2).
+
+Inside Patient Space, the Body sits at the centre. The Contextual Orbit provides:
+
+Journey (Timeline)
+
+Evidence (Reports)
+
+Understanding (Patient Intelligence)
+
+Actions (Tasks)
+
+Guidance (Notes)
+
+The oncologist reaches every destination without a persistent sidebar and without nested menus.
+
+--------------------------------------------------
+
+7. Patient Workflow
+
+Patient opens the application.
 
 ↓
 
-Login.
+Entry.
 
 ↓
 
-Dashboard loads.
+Sign in.
 
 ↓
 
-Patient checks assigned tasks.
+Patient Home Space appears.
 
 ↓
 
-If a task requires a report upload
+Patient sees assigned Actions immediately.
 
 ↓
 
-Patient uploads report.
+If an Action requires a report upload
+
+↓
+
+Patient uploads report in place.
 
 ↓
 
@@ -162,37 +198,41 @@ Upload completes.
 
 ↓
 
-Patient receives confirmation.
+Patient receives confirmation in place.
 
 ↓
 
-Timeline updates.
+Journey updates.
 
 ↓
 
-Patient reads any notes from the oncologist.
+Patient reads Guidance from the oncologist.
 
 ↓
 
-Logout.
+Sign out.
 
 --------------------------------------------------
 
-7. Oncologist Workflow
+8. Oncologist Workflow
 
-Oncologist opens application.
-
-↓
-
-Login.
+Oncologist opens the application.
 
 ↓
 
-Dashboard loads.
+Entry.
 
 ↓
 
-View assigned patients.
+Sign in.
+
+↓
+
+Practice Space appears.
+
+↓
+
+Assigned patients are visible.
 
 ↓
 
@@ -200,35 +240,39 @@ Select patient.
 
 ↓
 
-Patient Profile opens.
+Descend into Patient Space. The selected patient becomes the space entered.
 
 ↓
 
-Review Patient Intelligence.
+The Body appears at the centre with the current clinical state.
 
 ↓
 
-Review Timeline.
+Review Understanding.
 
 ↓
 
-Review Reports.
+Review Journey.
 
 ↓
 
-Review Digital Twin.
+Review Evidence.
 
 ↓
 
-Assign tasks if needed.
+Review the Body.
 
 ↓
 
-Write patient notes.
+Assign Actions if needed.
 
 ↓
 
-Write private clinical notes.
+Write Shared Guidance.
+
+↓
+
+Write Private Observations.
 
 ↓
 
@@ -236,31 +280,31 @@ Save.
 
 ↓
 
-Logout.
+Sign out.
 
 --------------------------------------------------
 
-8. Dashboard Flow
+9. Home Space Flow
 
-Dashboard displays
+Home Space presents, in priority order:
 
 Patient Overview
 
 Recent Activity
 
-Notifications
+Signals
 
-Pending Tasks
+Pending Actions
 
-Recent Uploads
+Recent Evidence
 
-Quick Navigation
+Home Space provides access to every major destination through spatial movement rather than a menu.
 
-The dashboard should provide access to every major module.
+Selecting any item zooms into the space that item belongs to.
 
 --------------------------------------------------
 
-9. Patient Profile Flow
+10. Patient Space Flow
 
 Patient List
 
@@ -270,39 +314,33 @@ Select Patient
 
 ↓
 
-Patient Profile
+Patient Space
 
 ↓
+
+Body at centre
+
+Contextual Orbit provides:
 
 Patient Information
 
-↓
+Journey
 
-Timeline
+Evidence
 
-↓
+Understanding
 
-Reports
+Actions
 
-↓
+Guidance
 
-Digital Twin
+Patient identity remains visible at all times inside Patient Space.
 
-↓
-
-Patient Intelligence
-
-↓
-
-Tasks
-
-↓
-
-Notes
+Moving from one patient to another is a lateral movement and must feel continuous.
 
 --------------------------------------------------
 
-10. Report Flow
+11. Evidence Flow (Reports)
 
 Patient uploads report.
 
@@ -316,15 +354,15 @@ Upload complete.
 
 ↓
 
-Processing status shown.
+Processing status shown in place.
 
 ↓
 
-Report added to Report Library.
+Report joins Evidence.
 
 ↓
 
-Timeline updated.
+Journey updates.
 
 ↓
 
@@ -334,15 +372,21 @@ AI processing begins.
 
 Results become available.
 
+↓
+
+The Body and Understanding update.
+
+Opening a report enters Focus. The surrounding Patient Space remains behind it.
+
 --------------------------------------------------
 
-11. Timeline Flow
+12. Journey Flow (Timeline)
 
-Timeline opens.
+Journey opens.
 
 ↓
 
-Clinical events displayed.
+Clinical events appear in chronological order.
 
 ↓
 
@@ -350,7 +394,11 @@ Select event.
 
 ↓
 
-Related report opens.
+Event opens in Focus.
+
+↓
+
+Related report is reachable from Focus.
 
 ↓
 
@@ -358,17 +406,19 @@ Evidence available.
 
 ↓
 
-Return to timeline.
+Return to Journey by zooming out.
+
+The Journey is also a control. Moving through the Journey moves the entire Patient Space through time.
 
 --------------------------------------------------
 
-12. Digital Twin Flow
+13. Body Flow (Digital Twin)
 
-Open Digital Twin.
+Enter the Body.
 
 ↓
 
-3D model loads.
+Model loads progressively.
 
 ↓
 
@@ -384,25 +434,29 @@ Pan.
 
 ↓
 
-Select date.
+Select a clinical date on the Journey.
 
 ↓
 
-Model updates.
+Model updates continuously.
 
 ↓
 
-Compare with previous date.
+Compare with a previous date.
 
 ↓
 
 Evidence panel updates.
 
+Selecting an organ reveals the clinical information and supporting evidence for that organ in place.
+
+Camera movement never changes medical information.
+
 --------------------------------------------------
 
-13. Patient Intelligence Flow
+14. Understanding Flow (Patient Intelligence)
 
-Open Patient Intelligence.
+Open Understanding.
 
 ↓
 
@@ -424,19 +478,21 @@ Supporting Evidence.
 
 Confidence Information.
 
+Every element links back to the Journey, the Body and the original report.
+
 --------------------------------------------------
 
-14. Task Flow
+15. Actions Flow (Tasks)
 
-Oncologist creates task.
-
-↓
-
-Task assigned.
+Oncologist creates an Action.
 
 ↓
 
-Patient notified.
+Action assigned.
+
+↓
+
+Patient receives a Signal.
 
 ↓
 
@@ -444,25 +500,27 @@ Patient uploads requested information.
 
 ↓
 
-Task marked completed.
+Action marked completed.
 
 ↓
 
 Oncologist reviews submission.
 
+Actions are created and reviewed in place, without leaving the current space.
+
 --------------------------------------------------
 
-15. Patient Notes Flow
+16. Shared Guidance Flow (Patient Notes)
 
-Oncologist writes note.
-
-↓
-
-Patient notified.
+Oncologist writes Shared Guidance.
 
 ↓
 
-Patient opens Notes.
+Patient receives a Signal.
+
+↓
+
+Patient opens Guidance.
 
 ↓
 
@@ -470,9 +528,9 @@ Reads instructions.
 
 --------------------------------------------------
 
-16. Private Clinical Notes Flow
+17. Private Observations Flow (Private Clinical Notes)
 
-Oncologist opens Private Notes.
+Oncologist opens Private Observations.
 
 ↓
 
@@ -488,9 +546,9 @@ Visible only to the oncologist.
 
 --------------------------------------------------
 
-17. Notifications
+18. Signals (Notifications)
 
-Patient Notifications
+Patient Signals
 
 New task.
 
@@ -500,7 +558,7 @@ Report uploaded.
 
 New patient note.
 
-Oncologist Notifications
+Oncologist Signals
 
 Patient uploaded report.
 
@@ -510,15 +568,19 @@ AI processing completed.
 
 System alerts.
 
+Selecting a Signal moves the user directly into the relevant space.
+
+Signals never interrupt clinical work.
+
 --------------------------------------------------
 
-18. Search Flow
+19. Intent Flow (Search)
 
-Oncologist opens search.
+Oncologist opens the Intent Bar.
 
 ↓
 
-Search patient.
+Expresses intent, including searching for a patient.
 
 ↓
 
@@ -526,11 +588,13 @@ Select patient.
 
 ↓
 
-Patient Profile opens.
+Descend into Patient Space.
+
+The Intent Bar is always available and replaces menu-based navigation. Patients may search their own records only.
 
 --------------------------------------------------
 
-19. Empty States
+20. Empty States
 
 No reports uploaded.
 
@@ -542,15 +606,19 @@ Display informative message.
 
 No notifications.
 
-Display empty notification screen.
+Display empty notification state.
 
 No notes available.
 
-Display empty notes page.
+Display empty notes state.
+
+No visualization available.
+
+Display informative message.
 
 --------------------------------------------------
 
-20. Error States
+21. Error States
 
 Failed login.
 
@@ -562,17 +630,17 @@ Network error.
 
 Session expired.
 
-Page not found.
+Space not found.
 
 Permission denied.
 
-Every error should display a clear message and provide a way to continue.
+Every error displays a clear message and provides a way to continue. An error inside one space never breaks the surrounding environment.
 
 --------------------------------------------------
 
-21. Logout Flow
+22. Sign Out Flow
 
-User selects Logout.
+User selects Sign out.
 
 ↓
 
@@ -584,22 +652,30 @@ Session ends.
 
 ↓
 
-Return to Login Page.
+Return to Entry.
+
+Sign out is a continuous ascent out of the environment.
 
 --------------------------------------------------
 
-22. Navigation Rules
+23. Navigation Rules
 
-Navigation must remain consistent across all pages.
+Navigation is spatial and remains consistent throughout the environment.
 
-The sidebar should remain identical throughout authenticated pages.
+The Contextual Orbit presents the same destinations in the same order for a given space.
 
-Users should always know where they are.
+Icons and labels remain consistent.
 
-Users should never lose navigation context.
+The current depth and current Patient Case are always identifiable.
 
-Every page should be reachable within a maximum of three interactions.
+Users always know where they are and where they came from.
 
-Back navigation should never lose unsaved work.
+Continuous Return always moves one depth level out.
 
-All workflows should remain simple and predictable.
+Every important piece of information is reachable within three interactions.
+
+Back navigation never loses unsaved work.
+
+There is no persistent sidebar of navigation links and no nested menus.
+
+All workflows remain simple and predictable.

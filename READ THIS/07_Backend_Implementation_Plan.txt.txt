@@ -308,6 +308,10 @@ Provide comparison data.
 
 Provide timeline information.
 
+Provide all available clinical dates together so the frontend can move continuously through time.
+
+Attach supporting evidence references to each organ state.
+
 Deliverables
 
 Digital Twin backend module.
@@ -347,6 +351,10 @@ Implement request validation.
 Implement response validation.
 
 Maintain consistent API structure.
+
+Provide aggregated endpoints shaped around the spaces defined in the Frontend App Flow, so entering a space requires as few requests as possible.
+
+Include contextually related information in responses where the frontend reveals it in context, to avoid additional round trips.
 
 Document every endpoint.
 

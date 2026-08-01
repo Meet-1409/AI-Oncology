@@ -6,23 +6,23 @@ AI Oncology Patient Intelligence Platform
 
 Feature Name
 
-Digital Twin
+Body (Digital Twin)
 
 Document Purpose
 
-This document defines the Digital Twin module. The Digital Twin is the primary visualization feature of the platform. It provides an interactive 3D representation of the patient's anatomy and disease progression using validated patient data.
+This document defines the Body. It is the centrepiece of the platform and one of its primary navigation spaces. It provides an interactive 3D representation of the patient's anatomy and disease progression using validated patient data.
 
 --------------------------------------------------
 
 1. Purpose
 
-The Digital Twin helps the oncologist understand the patient's disease visually.
+The Body helps the oncologist understand the patient's disease visually.
 
-It should provide a clear representation of where the disease exists, how it has changed over time, and how it relates to the patient's anatomy.
+It provides a clear representation of where the disease exists, how it has changed over time, and how it relates to the patient's anatomy.
 
-The Digital Twin is a visualization tool only.
+The Body is a visualization tool and a navigation space. It does not generate medical information.
 
-It does not generate medical information.
+It must feel like a premium medical visualization tool.
 
 --------------------------------------------------
 
@@ -48,37 +48,31 @@ Synchronize with the patient's timeline.
 
 Provide supporting evidence.
 
+Act as a navigation space into related clinical information.
+
 --------------------------------------------------
 
-4. Digital Twin Layout
+4. Spatial Composition
 
-Top Navigation
+The Body sits at the centre of Patient Space and is present from the moment the oncologist arrives. It does not need to be opened.
 
-↓
+Around it:
 
-Patient Information Panel
+Patient identity and clinical context remain persistently visible.
 
-↓
+The Journey is available as a continuous time control.
 
-3D Viewer
+Supporting evidence is revealed in place when a site is selected.
 
-↓
+Comparison controls appear only when comparison is active.
 
-Timeline Controls
-
-↓
-
-Evidence Panel
-
-↓
-
-Comparison Controls
+The interface around the Body must never distract from it. Chrome recedes; the anatomy leads.
 
 --------------------------------------------------
 
 5. 3D Anatomy
 
-The model should represent
+The model should represent:
 
 Patient Body Structure
 
@@ -96,7 +90,7 @@ The model should not be an exact physical replica of the patient.
 
 6. Patient Information
 
-Display
+Display:
 
 Patient Name
 
@@ -130,11 +124,13 @@ Darker shades represent higher severity.
 
 Healthy organs should remain visually distinguishable.
 
+Severity color must never be the only indicator. A text label always accompanies it.
+
 --------------------------------------------------
 
 8. Interaction Controls
 
-The oncologist should be able to
+The oncologist should be able to:
 
 Rotate the model.
 
@@ -150,23 +146,43 @@ Exit full screen mode.
 
 Camera movement must never change the displayed medical information.
 
---------------------------------------------------
-
-9. Timeline Integration
-
-The Digital Twin should synchronize with the patient's timeline.
-
-Selecting a timeline event should update the model to represent that point in time.
-
-Every timeline update should happen smoothly.
+Every control has a keyboard equivalent.
 
 --------------------------------------------------
 
-10. Comparison Mode
+9. Organ Interaction
+
+Selecting an organ reveals, in place:
+
+The clinical information for that organ
+
+The supporting evidence for that organ
+
+Related Journey events
+
+Related Understanding
+
+Selecting an organ is a navigation action. It never requires leaving the Body.
+
+--------------------------------------------------
+
+10. Timeline Integration
+
+The Body synchronizes with the patient's timeline.
+
+Selecting a timeline event updates the model to represent that point in time.
+
+Moving through the Journey updates the Body continuously rather than in discrete jumps.
+
+Every timeline update happens smoothly.
+
+--------------------------------------------------
+
+11. Comparison Mode
 
 Allow comparison between two clinical dates.
 
-Display
+Display:
 
 Previous Digital Twin
 
@@ -174,13 +190,15 @@ Current Digital Twin
 
 Visual disease progression
 
-Comparison controls should remain simple and easy to understand.
+Comparison controls remain simple and easy to understand.
+
+Entering and leaving comparison is a smooth spatial transition, not an abrupt layout change.
 
 --------------------------------------------------
 
-11. Disease Progression
+12. Disease Progression
 
-The Digital Twin should visually represent
+The Body should visually represent:
 
 Disease progression
 
@@ -188,15 +206,15 @@ Disease regression
 
 Stable disease
 
-Changes should be easy to identify.
+Changes should be easy to identify. Motion draws attention to what changed between two clinical dates.
 
 --------------------------------------------------
 
-12. Evidence Panel
+13. Evidence Panel
 
 Every visualized disease location should provide supporting evidence.
 
-Display
+Display:
 
 Related Report
 
@@ -208,23 +226,23 @@ Evidence Source
 
 Confidence
 
-Users should be able to open the related report directly.
+Users should be able to open the related report directly. The report opens in Focus above the Body.
 
 --------------------------------------------------
 
-13. AI Integration
+14. AI Integration
 
-The Digital Twin receives structured information from the backend.
+The Body receives structured information from the backend.
 
 The frontend is responsible only for visualization.
 
-The Digital Twin should never generate medical information independently.
+The Body must never generate medical information independently.
 
 --------------------------------------------------
 
-14. Navigation
+15. Navigation
 
-The oncologist should be able to
+The oncologist should be able to:
 
 Open Timeline
 
@@ -232,11 +250,27 @@ Open Related Report
 
 Open Patient Intelligence
 
-Return to Patient Profile
+Return to Patient Space
+
+Continuous Return always moves one depth level out.
 
 --------------------------------------------------
 
-15. User Actions
+16. Motion
+
+Loading reveals the anatomy progressively rather than displaying a blank area.
+
+Movement between clinical dates is continuous.
+
+Severity changes transition smoothly between shades rather than switching instantly.
+
+Camera movement is damped and confident. No bouncing or elastic motion.
+
+Reduced motion removes camera easing and severity transitions, presenting states directly. All clinical information remains identical.
+
+--------------------------------------------------
+
+17. User Actions
 
 Rotate Model
 
@@ -256,7 +290,7 @@ Open Patient Intelligence
 
 --------------------------------------------------
 
-16. Business Rules
+18. Business Rules
 
 Every patient has one Digital Twin.
 
@@ -270,7 +304,7 @@ The Digital Twin must never display unsupported findings.
 
 --------------------------------------------------
 
-17. Empty States
+19. Empty States
 
 No visualization available.
 
@@ -282,7 +316,7 @@ Display informative messages for each situation.
 
 --------------------------------------------------
 
-18. Error States
+20. Error States
 
 Failed to load Digital Twin.
 
@@ -294,11 +328,13 @@ Rendering error.
 
 Display clear recovery instructions.
 
+A rendering failure must fall back to the non-3D equivalent rather than failing the space.
+
 --------------------------------------------------
 
-19. Performance Requirements
+21. Performance Requirements
 
-The Digital Twin should load efficiently.
+The Body should load efficiently and progressively.
 
 Camera controls should remain smooth.
 
@@ -308,11 +344,19 @@ Timeline transitions should remain smooth.
 
 Comparison mode should not noticeably reduce performance.
 
+Switching between patients should remain smooth.
+
+Target 60 frames per second during all interaction.
+
+Rendering complexity reduces automatically on low-capability devices without reducing clinical meaning.
+
 --------------------------------------------------
 
-20. Accessibility
+22. Accessibility
 
-Support keyboard shortcuts where possible.
+Support keyboard shortcuts for every camera and selection action.
+
+Provide a non-3D equivalent presenting every organ, severity and item of evidence available in the 3D view.
 
 Maintain readable interface elements.
 
@@ -320,11 +364,13 @@ Provide descriptive labels for controls.
 
 Maintain consistent spacing throughout the interface.
 
+Respect reduced motion.
+
 --------------------------------------------------
 
-21. Completion Criteria
+23. Completion Criteria
 
-The Digital Twin module is complete when
+The Body is complete when:
 
 The 3D model loads successfully.
 
@@ -336,8 +382,12 @@ Timeline synchronization works.
 
 Comparison mode functions correctly.
 
+Organ selection reveals related clinical information.
+
 Supporting evidence is accessible.
 
-Navigation integrates with the rest of the application.
+A non-3D equivalent is available.
+
+Navigation integrates with the rest of the environment.
 
 The module is ready for backend integration.

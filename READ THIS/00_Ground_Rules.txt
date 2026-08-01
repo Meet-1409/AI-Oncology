@@ -20,6 +20,10 @@ This document defines the permanent rules of the project. Every developer, desig
 
 1.4 Every feature must improve the workflow of either the patient or the oncologist.
 
+1.5 The platform is experienced as a continuous environment, not as a collection of pages.
+
+1.6 The platform must look and feel years ahead of existing healthcare software while remaining practical for daily clinical use.
+
 --------------------------------------------------
 
 2. User Roles
@@ -125,6 +129,14 @@ This document defines the permanent rules of the project. Every developer, desig
 
 6.14 Previous and current patient states must be comparable side by side.
 
+6.15 The Digital Twin is the centrepiece of the application and one of its primary navigation spaces.
+
+6.16 The Digital Twin integrates directly with reports, timeline and patient intelligence.
+
+6.17 Selecting an organ must reveal the clinical information and supporting evidence related to that organ.
+
+6.18 The visualization must always remain responsive.
+
 --------------------------------------------------
 
 7. Patient Management
@@ -175,96 +187,180 @@ This document defines the permanent rules of the project. Every developer, desig
 
 --------------------------------------------------
 
-10. User Interface
+10. User Experience
 
-10.1 The interface must be clean.
+10.1 The application is experienced as a continuous environment. Users move through it rather than opening unrelated pages.
 
-10.2 The interface must be easy to understand.
+10.2 Navigation is spatial. Moving deeper zooms in. Moving back zooms out.
 
-10.3 Important information must always be easy to find.
+10.3 The interface must explain itself. No user should require training.
 
-10.4 The application must look like professional healthcare software.
+10.4 The application must never look like a traditional dashboard, an admin panel, a generic EMR or a SaaS template.
 
-10.5 The application must not look AI generated.
+10.5 The application must not contain a long sidebar of navigation links or nested menus.
 
-10.6 The application must not look low-code generated.
+10.6 Users must never be required to remember where a feature is located.
 
-10.7 The application must not look like a generic dashboard template.
+10.7 Every important piece of information must be reachable within three interactions.
 
-10.8 Animations must improve usability.
+10.8 The number of clicks required for any task must be minimized.
 
-10.9 Every page must have a clear purpose.
+10.9 Doctors must never have to search for information. Relevant information reveals itself in context.
 
-10.10 The design language must remain consistent across the platform.
+10.10 Patients must never feel overwhelmed.
 
---------------------------------------------------
+10.11 Every space must answer one question: what is the next thing this user needs.
 
-11. Performance
+10.12 The interface must remain clean, readable and easy to understand.
 
-11.1 The application must remain responsive.
+10.13 Important information must always be easy to find.
 
-11.2 Large reports must not slow down the application.
+10.14 The application must look like professional healthcare software suitable for hospitals.
 
-11.3 The Digital Twin must remain smooth during interaction.
+10.15 The application must never look AI generated or low-code generated.
 
-11.4 The application should continue functioning even if AI processing is temporarily unavailable.
+10.16 The design language must remain consistent across the entire environment.
 
---------------------------------------------------
+10.17 The interface must never be flashy, childish or game-like.
 
-12. Explainability
-
-12.1 Every AI output must show where it came from.
-
-12.2 Every visualization must be linked to clinical evidence.
-
-12.3 Doctors must always be able to verify AI-generated information.
+10.18 Usability must never be sacrificed for visual effect.
 
 --------------------------------------------------
 
-13. Timeline
+11. Motion
 
-13.1 Every clinical event must appear in chronological order.
+11.1 Animation is a primary interface element, not decoration.
 
-13.2 Disease progression must be visible over time.
+11.2 Every animation must have a purpose.
 
-13.3 Historical information must never be removed.
+11.3 Motion must communicate movement through the system.
 
-13.4 Every uploaded report becomes part of the patient's permanent timeline.
+11.4 Motion must explain where the user is and where they came from.
 
---------------------------------------------------
+11.5 Motion must guide attention to what changed.
 
-14. Development Rules
+11.6 Transitions must feel like camera movement.
 
-14.1 New features must follow every rule in this document.
+11.7 Sudden page changes must be avoided.
 
-14.2 Existing functionality must never be broken while adding new features.
+11.8 Motion must never delay the user or obscure clinical information.
 
-14.3 Every component should be reusable whenever possible.
-
-14.4 Every page should follow the approved navigation structure.
-
-14.5 Every implementation should follow the project documentation.
+11.9 The operating system reduced motion setting must always be respected, without any loss of functionality or information.
 
 --------------------------------------------------
 
-15. Assistant Rules
+12. Three-Dimensional Design
 
-15.1 The assistant follows the Product Owner's decisions exactly.
+12.1 Three-dimensional design is part of the product identity.
 
-15.2 The assistant never changes the project scope unless instructed.
+12.2 3D is not limited to the Digital Twin.
 
-15.3 The assistant never adds features unless instructed.
+12.3 Depth, lighting, perspective and spatial interaction may be used anywhere they aid understanding.
 
-15.4 The assistant never removes features unless instructed.
+12.4 The application should feel physically layered rather than visually flat.
 
-15.5 The assistant never redesigns workflows unless instructed.
+12.5 Decorative 3D is not permitted. Every use of 3D must be meaningful.
 
-15.6 The assistant asks questions whenever requirements are unclear.
+12.6 Every 3D view must have an equivalent non-3D representation for accessibility and low-capability devices.
 
-15.7 The assistant points out only factual implementation consequences when required.
+12.7 3D must never reduce the legibility of clinical information.
 
-15.8 The assistant keeps every project document consistent with previous approved decisions.
+--------------------------------------------------
 
-15.9 The assistant writes in simple human language unless instructed otherwise.
+13. Performance
 
-15.10 The Ground Rules document is the highest priority document in the project.
+13.1 The application must remain responsive.
+
+13.2 Large reports must not slow down the application.
+
+13.3 The Digital Twin must remain smooth during interaction.
+
+13.4 The application should continue functioning even if AI processing is temporarily unavailable.
+
+13.5 Navigation and motion must target 60 frames per second.
+
+13.6 Where a device cannot sustain the target, visual complexity reduces automatically. Clinical meaning must never be reduced.
+
+13.7 A blank screen must never be displayed while loading.
+
+--------------------------------------------------
+
+14. Explainability
+
+14.1 Every AI output must show where it came from.
+
+14.2 Every visualization must be linked to clinical evidence.
+
+14.3 Doctors must always be able to verify AI-generated information.
+
+--------------------------------------------------
+
+15. Timeline
+
+15.1 Every clinical event must appear in chronological order.
+
+15.2 Disease progression must be visible over time.
+
+15.3 Historical information must never be removed.
+
+15.4 Every uploaded report becomes part of the patient's permanent timeline.
+
+15.5 The timeline is also a control. Moving through time moves the entire patient environment through time.
+
+--------------------------------------------------
+
+16. Accessibility
+
+16.1 Every spatial action must have a keyboard equivalent.
+
+16.2 Color must never be the only means of communicating information.
+
+16.3 Contrast, font sizes and spacing must remain readable.
+
+16.4 Every interactive element must have a descriptive label.
+
+16.5 Screen reader users must be able to reach every piece of information available to sighted users.
+
+--------------------------------------------------
+
+17. Development Rules
+
+17.1 New features must follow every rule in this document.
+
+17.2 Existing functionality must never be broken while adding new features.
+
+17.3 Every component should be reusable whenever possible.
+
+17.4 Every space must follow the approved spatial navigation model defined in the UI/UX Design Guide.
+
+17.5 Every implementation should follow the project documentation.
+
+17.6 Code must be production quality. Placeholder code, incomplete components and unresolved TODO comments are not permitted.
+
+17.7 After each completed feature, verify it against every project document before continuing.
+
+--------------------------------------------------
+
+18. Assistant Rules
+
+18.1 The assistant follows the Product Owner's decisions exactly.
+
+18.2 The assistant never changes the project scope unless instructed.
+
+18.3 The assistant never adds features unless instructed.
+
+18.4 The assistant never removes features unless instructed.
+
+18.5 The assistant never redesigns workflows unless instructed.
+
+18.6 The assistant asks questions whenever requirements are unclear.
+
+18.7 The assistant points out only factual implementation consequences when required.
+
+18.8 The assistant keeps every project document consistent with previous approved decisions.
+
+18.9 The assistant writes in simple human language unless instructed otherwise.
+
+18.10 The Ground Rules document is the highest priority document in the project.
+
+18.11 The UI/UX Design Guide is the single source of truth for the spatial model, motion language, 3D rules and vocabulary.

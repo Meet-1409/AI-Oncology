@@ -6,21 +6,21 @@ AI Oncology Patient Intelligence Platform
 
 Feature Name
 
-Notes
+Guidance (Notes)
 
 Document Purpose
 
-This document defines the Notes module. The module allows oncologists to write notes related to a patient's care. There are two types of notes: Patient Notes and Private Clinical Notes. Every note remains linked to the Patient Case.
+This document defines the Notes module. The module allows oncologists to write notes related to a patient's care. There are two types of notes: Shared Guidance (Patient Notes) and Private Observations (Private Clinical Notes). Every note remains linked to the Patient Case.
 
 --------------------------------------------------
 
 1. Purpose
 
-The Notes module allows oncologists to document important information throughout the patient's treatment journey.
+Guidance allows oncologists to document important information throughout the patient's treatment journey.
 
-Patient Notes are written for the patient.
+Shared Guidance is written for the patient.
 
-Private Clinical Notes are written only for the oncologist.
+Private Observations are written only for the oncologist.
 
 --------------------------------------------------
 
@@ -48,15 +48,15 @@ Link every note to the patient's timeline.
 
 4. Note Types
 
-Patient Notes
+Shared Guidance (Patient Notes)
 
-Visible to
+Visible to:
 
 Patient
 
 Oncologist
 
-Purpose
+Purpose:
 
 Provide instructions.
 
@@ -68,13 +68,13 @@ Use simple language.
 
 --------------------------------------------------
 
-Private Clinical Notes
+Private Observations (Private Clinical Notes)
 
-Visible to
+Visible to:
 
 Oncologist only
 
-Purpose
+Purpose:
 
 Clinical observations.
 
@@ -88,9 +88,21 @@ Private documentation.
 
 --------------------------------------------------
 
-5. Patient Note Information
+5. Spatial Composition
 
-Every Patient Note should contain
+For the patient, Shared Guidance appears in Patient Home Space alongside their Actions, in the patient's own language.
+
+For the oncologist, Guidance is reached from the Contextual Orbit in Patient Space.
+
+The two note types are always visually and spatially distinct so that a private observation can never be mistaken for something the patient can read. The distinction is explicit and never relies on color alone.
+
+Writing a note happens in place, in Focus above the current space. The oncologist never leaves Patient Space to write.
+
+--------------------------------------------------
+
+6. Shared Guidance Information
+
+Every Shared Guidance note should contain:
 
 Title
 
@@ -104,9 +116,9 @@ Last Updated
 
 --------------------------------------------------
 
-6. Private Clinical Note Information
+7. Private Observation Information
 
-Every Private Clinical Note should contain
+Every Private Observation should contain:
 
 Title
 
@@ -120,9 +132,9 @@ Last Updated
 
 --------------------------------------------------
 
-7. Patient View
+8. Patient View
 
-Patients should be able to
+Patients should be able to:
 
 View patient notes.
 
@@ -132,7 +144,7 @@ Search notes.
 
 Filter notes.
 
-Patients must never
+Patients must never:
 
 Create notes.
 
@@ -144,9 +156,9 @@ View private clinical notes.
 
 --------------------------------------------------
 
-8. Oncologist View
+9. Oncologist View
 
-Oncologists should be able to
+Oncologists should be able to:
 
 Create patient notes.
 
@@ -164,9 +176,9 @@ View note history.
 
 --------------------------------------------------
 
-9. Create Patient Note
+10. Create Shared Guidance
 
-The oncologist should enter
+The oncologist should enter:
 
 Title
 
@@ -174,7 +186,7 @@ Message
 
 Save
 
-After saving
+After saving:
 
 The patient receives a notification.
 
@@ -182,11 +194,13 @@ The note becomes visible to the patient.
 
 The note becomes part of the patient's timeline.
 
+Before saving, it must be unmistakably clear that the note will be visible to the patient.
+
 --------------------------------------------------
 
-10. Create Private Clinical Note
+11. Create Private Observation
 
-The oncologist should enter
+The oncologist should enter:
 
 Title
 
@@ -194,7 +208,7 @@ Clinical Observation
 
 Save
 
-After saving
+After saving:
 
 The note is stored.
 
@@ -202,11 +216,13 @@ The note becomes part of the patient's timeline.
 
 The note remains visible only to the oncologist.
 
+Before saving, it must be unmistakably clear that the note is private.
+
 --------------------------------------------------
 
-11. Search
+12. Search
 
-Support searching by
+Support searching by:
 
 Title
 
@@ -218,9 +234,9 @@ Author
 
 --------------------------------------------------
 
-12. Filters
+13. Filters
 
-Support filtering by
+Support filtering by:
 
 Patient Notes
 
@@ -234,9 +250,9 @@ Date
 
 --------------------------------------------------
 
-13. Sorting
+14. Sorting
 
-Support sorting by
+Support sorting by:
 
 Newest First
 
@@ -246,9 +262,9 @@ Title
 
 --------------------------------------------------
 
-14. Notifications
+15. Notifications
 
-Patients receive notifications when
+Patients receive notifications when:
 
 A new patient note is available.
 
@@ -258,23 +274,35 @@ Oncologists do not receive notifications for their own notes.
 
 --------------------------------------------------
 
-15. Timeline Integration
+16. Timeline Integration
 
 Every note becomes part of the patient's timeline.
 
-Patient Notes appear in
+Patient Notes appear in:
 
 Patient Timeline
 
 Oncologist Timeline
 
-Private Clinical Notes appear only in
+Private Clinical Notes appear only in:
 
 Oncologist Timeline
 
 --------------------------------------------------
 
-16. Business Rules
+17. Motion
+
+Writing a note lifts the composer into Focus above the current space.
+
+Saving a note settles it into its position in Guidance and in the Journey, so the oncologist sees where it went.
+
+New Shared Guidance is revealed to the patient with motion that draws attention without alarming them.
+
+Reduced motion replaces these transitions with immediate cross-fades without any loss of information.
+
+--------------------------------------------------
+
+18. Business Rules
 
 Only oncologists can create notes.
 
@@ -292,7 +320,7 @@ Every note keeps its creation history.
 
 --------------------------------------------------
 
-17. Empty States
+19. Empty States
 
 No Patient Notes
 
@@ -304,7 +332,7 @@ Display informative message.
 
 --------------------------------------------------
 
-18. Error States
+20. Error States
 
 Failed to Save Note
 
@@ -314,11 +342,11 @@ Network Error
 
 Permission Denied
 
-Display clear recovery instructions.
+Display clear recovery instructions. A failed save must never lose the oncologist's written text.
 
 --------------------------------------------------
 
-19. Performance Requirements
+21. Performance Requirements
 
 Notes should load quickly.
 
@@ -330,9 +358,9 @@ Large note collections should support pagination.
 
 --------------------------------------------------
 
-20. Accessibility
+22. Accessibility
 
-Support keyboard navigation.
+Support keyboard navigation. Writing and saving have keyboard equivalents.
 
 Maintain readable typography.
 
@@ -340,11 +368,15 @@ Provide descriptive labels for every action.
 
 Maintain consistent spacing.
 
+Note visibility must be communicated in text, never by color alone.
+
+Respect reduced motion.
+
 --------------------------------------------------
 
-21. Completion Criteria
+23. Completion Criteria
 
-The Notes module is complete when
+The Guidance module is complete when:
 
 Oncologists can create Patient Notes.
 

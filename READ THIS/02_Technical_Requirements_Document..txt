@@ -28,33 +28,47 @@ Each part should remain independent and communicate through APIs.
 
 2. Frontend
 
+The frontend is responsible for rendering the continuous environment defined in 04_UI_UX_Design_Guide.
+
 The frontend is responsible for:
 
-Landing Page
+Entry (Landing Page)
 
 Authentication
 
-Patient Dashboard
+Patient Home Space (Patient Dashboard)
 
-Oncologist Dashboard
+Practice Space (Oncologist Dashboard)
 
-Patient Profile
+Patient Space (Patient Profile)
 
-Timeline
+Journey (Timeline)
 
-Report Library
+Evidence (Report Library)
 
-Digital Twin
+Body (Digital Twin)
 
-Patient Intelligence
+Understanding (Patient Intelligence)
 
-Tasks
+Actions (Tasks)
 
-Notes
+Guidance (Notes)
 
-Settings
+Account (Profile and Settings)
 
-Notifications
+Signals (Notifications)
+
+The frontend is additionally responsible for:
+
+The spatial navigation model and depth management.
+
+The motion language and all spatial transitions.
+
+3D rendering and its non-3D equivalents.
+
+Progressive loading of every space.
+
+Maintaining state continuity so the environment is never rebuilt from scratch during navigation.
 
 The frontend must never contain business logic.
 
@@ -234,6 +248,10 @@ Every API should return proper error messages.
 
 Authentication is required for protected APIs.
 
+APIs should be shaped to support continuous navigation. Entering a space should require as few requests as possible.
+
+Data required to render a space should be retrievable in a single aggregated request where practical.
+
 --------------------------------------------------
 
 10. Security
@@ -262,6 +280,8 @@ The Digital Twin should never generate medical information on its own.
 
 Every visualization should come from validated data.
 
+Digital Twin data for all available clinical dates should be retrievable together so that movement through time remains continuous and does not require a request for every date.
+
 --------------------------------------------------
 
 12. Performance
@@ -276,6 +296,14 @@ The application should remain responsive.
 
 Heavy processing should happen in the background.
 
+Navigation and motion must target 60 frames per second.
+
+3D assets must be loaded progressively and must never block interaction.
+
+Rendering complexity must reduce automatically on low-capability devices without reducing clinical meaning.
+
+Entering a previously visited space should not require a full reload.
+
 --------------------------------------------------
 
 13. Error Handling
@@ -289,6 +317,10 @@ Missing data should be handled gracefully.
 Failed uploads should allow retry.
 
 AI failures should not stop the rest of the application.
+
+An error inside one space must never break the surrounding environment.
+
+A failure in 3D rendering must fall back to the non-3D equivalent rather than failing the space.
 
 --------------------------------------------------
 
@@ -336,9 +368,25 @@ AI processing completion
 
 System alerts
 
+Notifications are delivered without interrupting clinical work.
+
 --------------------------------------------------
 
-16. Scalability
+16. Accessibility
+
+Every spatial action must have a keyboard equivalent.
+
+The operating system reduced motion setting must be respected.
+
+Every 3D view must have an equivalent non-3D representation.
+
+Color must never be the only means of communicating information.
+
+Every interactive element must have a descriptive label.
+
+--------------------------------------------------
+
+17. Scalability
 
 Frontend and backend should remain independent.
 
@@ -350,7 +398,7 @@ Future AI models should integrate without changing the overall architecture.
 
 --------------------------------------------------
 
-17. Development Standards
+18. Development Standards
 
 Use modular architecture.
 
@@ -368,9 +416,11 @@ Avoid duplicated code.
 
 Follow project documentation.
 
+Code must be production quality. Placeholder code, incomplete components and unresolved TODO comments are not permitted.
+
 --------------------------------------------------
 
-18. Deployment
+19. Deployment
 
 Frontend
 
@@ -388,7 +438,7 @@ Each service should be deployable without affecting the others.
 
 --------------------------------------------------
 
-19. Project Rules
+20. Project Rules
 
 Never modify Ground Rules.
 

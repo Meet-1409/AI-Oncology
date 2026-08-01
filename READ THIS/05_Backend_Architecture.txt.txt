@@ -196,6 +196,10 @@ The backend supplies only structured information.
 
 The frontend renders the visualization.
 
+Digital Twin data for all available clinical dates should be retrievable together, so that the frontend can move continuously through time without requesting a new state for every date.
+
+Each organ state should carry a reference to the evidence supporting it, so the frontend can reveal supporting evidence when an organ is selected without an additional request.
+
 --------------------------------------------------
 
 10. Task Module
@@ -347,6 +351,14 @@ Backend stores processed information.
 Frontend retrieves processed information through APIs.
 
 The frontend never communicates directly with AI services.
+
+APIs should be shaped around the spaces the user moves through rather than around database tables.
+
+The data required to render a space should be retrievable in a single aggregated request where practical, so that entering a space does not produce a sequence of dependent requests.
+
+Related information that the frontend reveals in context, such as the evidence behind an AI result or the reports linked to an organ, should be reachable without an additional round trip wherever practical.
+
+Response shape must never require the frontend to contain business logic.
 
 --------------------------------------------------
 

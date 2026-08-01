@@ -6,7 +6,9 @@ AI Oncology Patient Intelligence Platform
 
 Document Purpose
 
-This document provides the development roadmap for the frontend team. Every feature should be developed in the defined order. Developers should complete one phase before moving to the next phase. Every completed feature must follow the Ground Rules, Product Requirements Document, Frontend App Flow, UI/UX Design Guide, and Feature Specifications.
+This document provides the development roadmap for the frontend team. Every feature should be developed in the defined order. Developers should complete one phase before moving to the next phase. Every completed feature must follow the Ground Rules, Product Requirements Document, Frontend App Flow, UI/UX Design Guide and Feature Specifications.
+
+The environment is built before the features that live inside it. The spatial model, motion language and depth system are foundations, not finishing work.
 
 --------------------------------------------------
 
@@ -22,7 +24,11 @@ Reuse existing components whenever possible.
 
 Never build functionality outside the approved documentation.
 
-Every screen should be production ready before moving forward.
+Every space should be production ready before moving forward.
+
+Code must be production quality. Placeholder code, incomplete components and unresolved TODO comments are not permitted.
+
+After completing each feature, verify it against every project document before continuing.
 
 --------------------------------------------------
 
@@ -34,13 +40,11 @@ Initialize the project.
 
 Configure the frontend framework.
 
-Configure routing.
+Configure routing that supports continuous spatial navigation.
 
 Configure global styling.
 
 Configure folder structure.
-
-Configure reusable components.
 
 Configure state management.
 
@@ -52,83 +56,79 @@ Deliverables
 
 Project structure.
 
-Navigation.
+Theme and design tokens.
 
-Theme.
-
-Basic layout.
+Routing foundation.
 
 --------------------------------------------------
 
-3. Phase 2 - Public Website
+3. Phase 2 - Spatial Shell and Depth System
 
 Objectives
 
-Develop the Landing Page.
+Implement the four depth levels defined in the UI/UX Design Guide.
 
-Develop About Page.
+Implement spatial zoom into and out of a space.
 
-Develop Features Page.
+Implement Continuous Return.
 
-Develop Contact Page.
+Implement Focus as an in-place layer that never replaces the space behind it.
 
-Develop Login Page.
+Preserve state so a space is never rebuilt from scratch during navigation.
+
+Ensure depth and current context are always identifiable.
 
 Deliverables
 
-Responsive public website.
+Working spatial navigation shell.
 
-Professional design.
+Depth management.
 
-Navigation between public pages.
+State continuity.
 
 --------------------------------------------------
 
-4. Phase 3 - Authentication
+4. Phase 3 - Motion System
 
 Objectives
 
-Create Login page.
+Implement the motion language.
 
-Create Forgot Password page.
+Implement shared element continuity between a selected object and the space it becomes.
 
-Create Reset Password page.
+Implement standard durations and easing.
 
-Implement authentication flow.
+Implement motion for depth change, time change, clinical change and processing state.
 
-Implement role-based redirection.
+Implement full reduced motion support with no loss of functionality or information.
 
 Deliverables
 
-Patient login flow.
+Reusable motion system.
 
-Oncologist login flow.
-
-Session handling.
+Verified reduced motion behaviour.
 
 --------------------------------------------------
 
-5. Phase 4 - Global Layout
+5. Phase 4 - 3D Foundation
 
 Objectives
 
-Build application shell.
+Configure the 3D rendering environment.
 
-Build top navigation.
+Implement lighting, depth, perspective and layering used across the application.
 
-Build sidebar.
+Implement progressive loading of 3D assets.
 
-Build content layout.
+Implement automatic complexity reduction on low-capability devices.
 
-Build notification area.
-
-Create reusable page layouts.
+Implement the non-3D equivalent pattern required for accessibility.
 
 Deliverables
 
-Consistent application layout.
+Reusable 3D foundation.
 
-Responsive navigation.
+Verified performance and fallback behaviour.
 
 --------------------------------------------------
 
@@ -136,37 +136,45 @@ Responsive navigation.
 
 Objectives
 
-Develop reusable UI components.
+Develop reusable interface components consistent with the spatial and motion systems.
 
-Components include
+Components include:
 
-Buttons
+Controls
 
 Inputs
 
 Dropdowns
 
-Cards
+Continuous surfaces
+
+Panels used only for genuine comparison
+
+Lists
 
 Tables
 
 Badges
 
-Modals
+Progressive disclosure
+
+Focus layers
 
 Dialogs
 
-Tabs
+Contextual Orbit
 
-Accordions
+Intent Bar
 
 Loaders
 
-Skeleton Screens
+Progressive loading states
 
 Empty States
 
 Error Components
+
+Tables are retained for genuine row comparison as permitted by the UI/UX Design Guide. Progressive disclosure replaces tabs and accordions as the means of revealing detail on approach.
 
 Deliverables
 
@@ -174,63 +182,109 @@ Reusable component library.
 
 --------------------------------------------------
 
-7. Phase 6 - Patient Dashboard
+7. Phase 6 - Entry
 
 Objectives
 
-Develop Patient Dashboard.
+Develop the cinematic Entry experience.
 
-Develop dashboard widgets.
+Communicate product identity, quality and trust immediately.
 
-Display
+Present About, Features, How It Works and Contact as one continuous experience.
 
-Assigned Tasks
-
-Recent Uploads
-
-Timeline Preview
-
-Patient Notes
-
-Notifications
+Ensure the Entry remains fast, accessible and fully usable without 3D.
 
 Deliverables
 
-Fully functional patient home page.
+Entry experience.
+
+Responsive public presentation.
 
 --------------------------------------------------
 
-8. Phase 7 - Oncologist Dashboard
+8. Phase 7 - Authentication
 
 Objectives
 
-Develop Oncologist Dashboard.
+Create the sign in experience as a descent into the environment.
 
-Display
+Create Forgot Password.
+
+Create Reset Password.
+
+Implement authentication flow.
+
+Implement role-based arrival into the correct Home Space.
+
+Deliverables
+
+Patient authentication flow.
+
+Oncologist authentication flow.
+
+Session handling.
+
+--------------------------------------------------
+
+9. Phase 8 - Patient Home Space
+
+Objectives
+
+Develop Patient Home Space.
+
+Display:
+
+Assigned Actions
+
+Recent Evidence
+
+Journey Preview
+
+Recent Guidance
+
+Signals
+
+Present information in priority order as a continuous surface.
+
+Deliverables
+
+Fully functional patient arrival space.
+
+--------------------------------------------------
+
+10. Phase 9 - Practice Space
+
+Objectives
+
+Develop Practice Space.
+
+Display:
 
 Assigned Patients
 
 Recent Activity
 
-Pending Reports
+Pending Evidence
 
-Notifications
+Signals
 
-Quick Search
+Implement the Intent Bar.
 
 Deliverables
 
-Doctor dashboard.
+Oncologist arrival space.
 
 --------------------------------------------------
 
-9. Phase 8 - Patient Profile
+11. Phase 10 - Patient Space
 
 Objectives
 
-Develop Patient Profile page.
+Develop Patient Space with the Body at its centre.
 
-Display
+Implement the Contextual Orbit.
+
+Display:
 
 Patient Information
 
@@ -238,49 +292,59 @@ Medical History
 
 Current Diagnosis
 
-Timeline
+Persistent patient identity
 
-Reports
-
-Tasks
-
-Notes
+Implement smooth lateral movement between patients.
 
 Deliverables
 
-Complete patient profile.
+Complete Patient Space.
 
 --------------------------------------------------
 
-10. Phase 9 - Report Management
+12. Phase 11 - Body (Digital Twin)
 
 Objectives
 
-Develop Report Library.
+Develop the Body.
 
-Develop Upload Page.
+Support:
 
-Develop Report Preview.
+Rotation
 
-Develop Report Filters.
+Zoom
 
-Develop Report Search.
+Pan
 
-Develop Report Sorting.
+Camera reset
+
+Full screen
+
+Organ selection revealing related clinical information
+
+Timeline synchronization
+
+Comparison view
+
+Evidence panel
+
+Disease visualization
+
+Non-3D equivalent
 
 Deliverables
 
-Complete report management interface.
+Interactive Digital Twin integrated as a navigation space.
 
 --------------------------------------------------
 
-11. Phase 10 - Timeline
+13. Phase 12 - Journey
 
 Objectives
 
-Develop Timeline page.
+Develop the Journey as a continuous path through time.
 
-Display
+Display:
 
 Clinical Events
 
@@ -294,47 +358,43 @@ Tasks
 
 Notes
 
-Deliverables
-
-Interactive timeline.
-
---------------------------------------------------
-
-12. Phase 11 - Digital Twin
-
-Objectives
-
-Develop Digital Twin page.
-
-Support
-
-Rotation
-
-Zoom
-
-Pan
-
-Timeline Slider
-
-Comparison View
-
-Evidence Panel
-
-Disease Visualization
+Implement the Journey as a time control that moves the entire Patient Space, including the Body.
 
 Deliverables
 
-Interactive Digital Twin interface.
+Interactive Journey.
 
 --------------------------------------------------
 
-13. Phase 12 - Patient Intelligence
+14. Phase 13 - Evidence
 
 Objectives
 
-Develop Patient Intelligence page.
+Develop the Evidence library.
 
-Display
+Develop upload in place.
+
+Develop report Focus view.
+
+Develop filters, search and sorting.
+
+Develop report comparison.
+
+Implement contextual scoping when Evidence is reached from an organ or a Journey event.
+
+Deliverables
+
+Complete report management experience.
+
+--------------------------------------------------
+
+15. Phase 14 - Understanding
+
+Objectives
+
+Develop Understanding.
+
+Display:
 
 Clinical Summary
 
@@ -346,19 +406,23 @@ Supporting Evidence
 
 Confidence Information
 
+Attach evidence and confidence to the statements they support.
+
+Connect findings to the Body and the Journey.
+
 Deliverables
 
-Patient Intelligence dashboard.
+Patient Intelligence experience.
 
 --------------------------------------------------
 
-14. Phase 13 - Tasks
+16. Phase 15 - Actions
 
 Objectives
 
 Develop Task Management.
 
-Allow oncologists to
+Allow oncologists to:
 
 Create Tasks.
 
@@ -366,11 +430,13 @@ Assign Tasks.
 
 Monitor Task Status.
 
-Allow patients to
+Allow patients to:
 
 View Tasks.
 
 Complete Tasks.
+
+Implement creation, review and completion in place.
 
 Deliverables
 
@@ -378,21 +444,19 @@ Task workflow.
 
 --------------------------------------------------
 
-15. Phase 14 - Notes
+17. Phase 16 - Guidance
 
 Objectives
 
-Develop Patient Notes.
+Develop Shared Guidance.
 
-Develop Private Clinical Notes.
+Develop Private Observations.
 
-Patient Notes
+Shared Guidance is visible to the patient.
 
-Visible to patient.
+Private Observations are visible only to the oncologist.
 
-Private Notes
-
-Visible only to oncologist.
+Make the visibility of each note type unmistakable before saving.
 
 Deliverables
 
@@ -400,13 +464,13 @@ Complete notes system.
 
 --------------------------------------------------
 
-16. Phase 15 - Notifications
+18. Phase 17 - Signals
 
 Objectives
 
-Develop Notification Center.
+Develop the notification experience.
 
-Display
+Display:
 
 Task Updates
 
@@ -416,39 +480,31 @@ Patient Notes
 
 AI Processing Status
 
+Deliver notifications without interrupting clinical work.
+
+Move the user directly into the relevant space when a Signal is selected.
+
 Deliverables
 
 Notification system.
 
 --------------------------------------------------
 
-17. Phase 16 - Profile
+19. Phase 18 - Account
 
 Objectives
 
-Develop User Profile.
+Develop Profile.
 
-Display
+Develop Settings.
+
+Display:
 
 Personal Information
 
 Account Information
 
 Password Management
-
-Deliverables
-
-Profile management.
-
---------------------------------------------------
-
-18. Phase 17 - Settings
-
-Objectives
-
-Develop Settings page.
-
-Display
 
 Account Settings
 
@@ -458,17 +514,19 @@ Security Settings
 
 Preferences
 
+Sessions
+
 Deliverables
 
-Settings module.
+Account management.
 
 --------------------------------------------------
 
-19. Phase 18 - Responsive Design
+20. Phase 19 - Responsive Design
 
 Objectives
 
-Optimize for
+Optimize for:
 
 Desktop
 
@@ -476,17 +534,21 @@ Tablet
 
 Mobile
 
-Verify
+Verify:
 
-Navigation
+Spatial navigation
 
-Cards
+Contextual Orbit adaptation
 
-Tables
+Continuous surfaces
+
+Lists
 
 Forms
 
-Digital Twin Layout
+Body layout and complexity
+
+Preserve the spatial model at every size.
 
 Deliverables
 
@@ -494,11 +556,11 @@ Responsive frontend.
 
 --------------------------------------------------
 
-20. Phase 19 - Performance Optimization
+21. Phase 20 - Performance Optimization
 
 Objectives
 
-Optimize
+Optimize:
 
 Images
 
@@ -514,21 +576,33 @@ Bundle Size
 
 Rendering
 
+Motion
+
+Verify 60 frames per second during navigation and 3D interaction.
+
+Verify automatic complexity reduction on low-capability devices.
+
 Deliverables
 
 Optimized frontend.
 
 --------------------------------------------------
 
-21. Phase 20 - Quality Assurance
+22. Phase 21 - Quality Assurance
 
-Verify every page.
+Verify every space.
 
-Verify every navigation flow.
+Verify every spatial transition.
+
+Verify depth behaviour and Continuous Return.
 
 Verify responsive layouts.
 
-Verify accessibility.
+Verify accessibility, including keyboard equivalents for every spatial action.
+
+Verify reduced motion behaviour.
+
+Verify non-3D equivalents.
 
 Verify loading states.
 
@@ -544,7 +618,7 @@ Production-ready frontend.
 
 --------------------------------------------------
 
-22. Development Checklist
+23. Development Checklist
 
 Before completing any feature, verify:
 
@@ -558,6 +632,16 @@ UI/UX Guide followed.
 
 Feature Specification followed.
 
+Spatial model followed.
+
+Motion has purpose.
+
+3D is meaningful.
+
+Accessibility verified.
+
+Performance verified.
+
 No unnecessary functionality added.
 
 No approved functionality removed.
@@ -566,17 +650,21 @@ No design inconsistencies introduced.
 
 --------------------------------------------------
 
-23. Completion Criteria
+24. Completion Criteria
 
 The frontend is complete only when:
 
-Every approved page is developed.
+Every approved space is developed.
 
 Every workflow functions correctly.
 
 Every reusable component is implemented.
 
-Navigation is complete.
+Spatial navigation is complete and consistent.
+
+Motion communicates movement throughout the environment.
+
+3D is meaningful everywhere it is used.
 
 Responsive design is verified.
 

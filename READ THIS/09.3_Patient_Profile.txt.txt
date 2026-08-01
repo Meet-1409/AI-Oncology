@@ -6,19 +6,21 @@ AI Oncology Patient Intelligence Platform
 
 Feature Name
 
-Patient Profile
+Patient Space (Patient Profile)
 
 Document Purpose
 
-This document defines the Patient Profile page. It serves as the central location for all patient information. Every report, timeline event, AI insight, Digital Twin visualization, task, and note originates from the Patient Profile.
+This document defines Patient Space. It is the central location for all patient information. Every report, timeline event, AI insight, disease visualization, task and note belongs to this space.
 
 --------------------------------------------------
 
 1. Purpose
 
-The Patient Profile provides the oncologist with a complete overview of the patient.
+Patient Space gives the oncologist a complete understanding of one patient.
 
-It combines patient information, medical history, reports, timeline, AI insights, and disease visualization into a single workspace.
+It combines patient information, medical history, reports, timeline, AI insights and disease visualization into a single continuous environment at Depth 2.
+
+It is not a profile page with tabs. It is a space the oncologist occupies, with the Body at its centre.
 
 --------------------------------------------------
 
@@ -52,9 +54,9 @@ Provide quick access to notes.
 
 --------------------------------------------------
 
-4. Navigation
+4. Entering Patient Space
 
-Patient List
+Patient List or Intent Bar
 
 ↓
 
@@ -62,51 +64,43 @@ Select Patient
 
 ↓
 
-Patient Profile
+Patient Space
 
-↓
+The selected patient transforms into the space entered. Patient identity remains visible at all times.
 
-Overview
-
-Reports
-
-Timeline
-
-Patient Intelligence
-
-Digital Twin
-
-Tasks
-
-Notes
+Moving to another patient is a lateral movement and remains continuous.
 
 --------------------------------------------------
 
-5. Layout
+5. Spatial Composition
 
-Top Navigation
+The Body sits at the centre of Patient Space and shows the patient's current clinical state on arrival.
 
-↓
+Patient identity and essential clinical context remain persistently visible.
 
-Patient Header
+The Contextual Orbit surrounds the Body and provides:
 
-↓
+Patient Information
 
-Patient Overview
+Journey (Timeline)
 
-↓
+Evidence (Reports)
 
-Quick Summary Cards
+Understanding (Patient Intelligence)
 
-↓
+Actions (Tasks)
 
-Tabbed Navigation
+Guidance (Notes)
+
+The Journey is available as a continuous time control along the space. Moving through it moves the entire Patient Space through time, including the Body.
+
+Selecting any destination reveals it alongside the Body rather than replacing the space. The Body always remains present.
 
 --------------------------------------------------
 
-6. Patient Header
+6. Patient Identity
 
-Display
+Display:
 
 Patient Name
 
@@ -130,7 +124,7 @@ Current Treatment Status
 
 7. Patient Overview
 
-Display
+Display:
 
 Primary Cancer
 
@@ -148,7 +142,7 @@ Treating Oncologist
 
 8. Medical Information
 
-Display
+Display:
 
 Height
 
@@ -178,7 +172,7 @@ Other Medical Conditions
 
 Display all known medical conditions.
 
-Examples
+Examples:
 
 Diabetes
 
@@ -196,9 +190,9 @@ Other Chronic Conditions
 
 --------------------------------------------------
 
-10. Quick Summary Cards
+10. Quick Summary
 
-Display
+Display:
 
 Total Reports
 
@@ -210,15 +204,15 @@ Completed Tasks
 
 Latest Upload
 
+These are presented as continuous context, not as a grid of boxes.
+
 --------------------------------------------------
 
-11. Reports Section
+11. Evidence Section (Reports)
 
-Display
+Display all uploaded reports.
 
-All uploaded reports.
-
-Each report should display
+Each report should display:
 
 Report Name
 
@@ -232,15 +226,15 @@ Processing Status
 
 Open Report
 
+Opening a report enters Focus above Patient Space.
+
 --------------------------------------------------
 
-12. Timeline Section
+12. Journey Section (Timeline)
 
-Display
+Display clinical events in chronological order.
 
-Clinical events in chronological order.
-
-Each event should display
+Each event should display:
 
 Date
 
@@ -254,9 +248,9 @@ View Details
 
 --------------------------------------------------
 
-13. Patient Intelligence Section
+13. Understanding Section (Patient Intelligence)
 
-Display
+Display:
 
 Clinical Summary
 
@@ -272,13 +266,11 @@ Confidence
 
 --------------------------------------------------
 
-14. Digital Twin Section
+14. Body Section (Digital Twin)
 
-Provide quick access to the Digital Twin.
+The Body is present at the centre of Patient Space at all times and does not need to be opened.
 
-Display
-
-Open Digital Twin
+Display:
 
 Current Disease Status
 
@@ -286,11 +278,13 @@ Last Updated
 
 Comparison Available
 
+Selecting an organ reveals the clinical information and supporting evidence for that organ.
+
 --------------------------------------------------
 
-15. Tasks Section
+15. Actions Section (Tasks)
 
-Display
+Display:
 
 Assigned Tasks
 
@@ -298,7 +292,7 @@ Completed Tasks
 
 Pending Tasks
 
-Each task should display
+Each task should display:
 
 Title
 
@@ -310,9 +304,9 @@ Review
 
 --------------------------------------------------
 
-16. Notes Section
+16. Guidance Section (Notes)
 
-Display
+Display:
 
 Patient Notes
 
@@ -330,9 +324,9 @@ Visible only to the oncologist.
 
 17. Search
 
-Allow searching within the patient's records.
+Allow searching within the patient's records through the Intent Bar.
 
-Search should include
+Search should include:
 
 Reports
 
@@ -346,7 +340,7 @@ Notes
 
 18. Filters
 
-Support filtering by
+Support filtering by:
 
 Report Type
 
@@ -358,7 +352,21 @@ Task Status
 
 --------------------------------------------------
 
-19. User Actions
+19. Motion
+
+Entering Patient Space uses spatial zoom from the selected patient.
+
+Selecting a destination in the Contextual Orbit reveals it with motion that preserves the position of the Body.
+
+Moving through the Journey updates the Body continuously rather than in discrete jumps.
+
+Continuous Return zooms back out to Practice Space.
+
+Reduced motion replaces spatial transitions with immediate cross-fades without any loss of information.
+
+--------------------------------------------------
+
+20. User Actions
 
 Open Report
 
@@ -380,11 +388,11 @@ Filter Records
 
 --------------------------------------------------
 
-20. Business Rules
+21. Business Rules
 
-Each Patient Profile belongs to only one patient.
+Each Patient Space belongs to only one patient.
 
-Only the assigned oncologist can access the Patient Profile.
+Only the assigned oncologist can access the Patient Space.
 
 Patients cannot edit medical information.
 
@@ -396,7 +404,7 @@ Original reports must never be modified.
 
 --------------------------------------------------
 
-21. Performance Requirements
+22. Performance Requirements
 
 Patient information should load quickly.
 
@@ -404,13 +412,15 @@ Large report collections should support pagination.
 
 Timeline should load efficiently.
 
-Digital Twin should open without blocking the rest of the page.
+The Digital Twin should load without blocking the rest of the space.
+
+Entering a previously visited Patient Space should not require a full reload.
 
 --------------------------------------------------
 
-22. Accessibility
+23. Accessibility
 
-Support keyboard navigation.
+Support keyboard navigation. Every spatial action has a keyboard equivalent.
 
 Maintain readable typography.
 
@@ -418,11 +428,15 @@ Maintain proper spacing.
 
 Provide descriptive labels for interactive elements.
 
+Provide a non-3D equivalent for all Body content.
+
+Respect reduced motion.
+
 --------------------------------------------------
 
-23. Completion Criteria
+24. Completion Criteria
 
-The Patient Profile is complete when
+Patient Space is complete when:
 
 Patient information is displayed.
 
@@ -440,6 +454,6 @@ Tasks are accessible.
 
 Notes are accessible.
 
-Navigation follows the approved application flow.
+Navigation follows the approved spatial model.
 
-The page is ready for backend integration.
+The space is ready for backend integration.

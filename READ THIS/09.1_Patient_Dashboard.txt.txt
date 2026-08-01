@@ -6,23 +6,27 @@ AI Oncology Patient Intelligence Platform
 
 Feature Name
 
-Patient Dashboard
+Patient Home Space (Patient Dashboard)
 
 Document Purpose
 
-This document defines the Patient Dashboard. It explains what the patient sees immediately after logging in, the available actions, and the expected behaviour of every component.
+This document defines the Patient Home Space. It explains what the patient sees immediately after signing in, the available actions, and the expected behaviour of every component.
 
 --------------------------------------------------
 
 1. Purpose
 
-The Patient Dashboard is the patient's home page.
+Patient Home Space is the patient's arrival point in the environment, at Depth 1.
 
-Its purpose is to help the patient quickly understand what actions they need to complete and provide easy access to every important feature.
+Its purpose is to help the patient quickly understand what they need to do and to provide effortless access to every important part of their record.
 
-The dashboard should remain simple and easy to understand.
+It is not a dashboard of widgets. It is a calm, continuous surface that answers one question: what is the next thing this patient needs.
 
-Medical terminology should be minimized wherever possible.
+The space remains simple and easy to understand.
+
+Medical terminology is minimized wherever possible.
+
+The patient must never feel overwhelmed.
 
 --------------------------------------------------
 
@@ -50,75 +54,51 @@ Provide quick access to notes from the oncologist.
 
 --------------------------------------------------
 
-4. Navigation
+4. Contextual Destinations
 
-Dashboard
+Reachable from Patient Home Space through spatial movement, without a sidebar and without nested menus:
 
-↓
+Journey (Timeline)
 
-Timeline
+Evidence (Reports)
 
-↓
+Actions (Tasks)
 
-Reports
+Guidance (Notes)
 
-↓
+Signals (Notifications)
 
-Tasks
+Account (Profile and Settings)
 
-↓
-
-Notes
-
-↓
-
-Notifications
-
-↓
-
-Profile
-
-↓
-
-Settings
+Continuous Return always brings the patient back to Patient Home Space.
 
 --------------------------------------------------
 
-5. Dashboard Layout
+5. Spatial Composition
 
-Top Navigation
+Patient Home Space is presented as a single continuous surface, in priority order:
 
-↓
+Welcome and orientation
 
-Patient Welcome Section
+Quick Summary
 
-↓
+Assigned Actions
 
-Quick Summary Cards
+Recent Evidence
 
-↓
+Recent Guidance
 
-Assigned Tasks
+Journey Preview
 
-↓
+Signals
 
-Recent Uploads
+The most urgent information appears first and closest to the viewer. Less urgent information sits further back and is revealed as the patient moves down through the space.
 
-↓
-
-Recent Notes
-
-↓
-
-Timeline Preview
-
-↓
-
-Notifications
+Entering any item zooms into the space that item belongs to.
 
 --------------------------------------------------
 
-6. Welcome Section
+6. Welcome and Orientation
 
 Display:
 
@@ -130,9 +110,9 @@ Current Date
 
 --------------------------------------------------
 
-7. Quick Summary Cards
+7. Quick Summary
 
-Display
+Display:
 
 Total Reports
 
@@ -142,13 +122,15 @@ Completed Tasks
 
 Recent Upload
 
+These are presented as a single continuous summary line rather than as separate boxes.
+
 --------------------------------------------------
 
-8. Assigned Tasks
+8. Assigned Actions (Tasks)
 
 Display all pending tasks assigned by the oncologist.
 
-Each task should display
+Each task should display:
 
 Task Title
 
@@ -160,17 +142,19 @@ Due Date (if available)
 
 Current Status
 
-Upload Button (if required)
+Upload control (if required)
 
 View Details
 
+Uploading happens in place. The patient never leaves the space to complete a task.
+
 --------------------------------------------------
 
-9. Recent Uploads
+9. Recent Evidence (Recent Uploads)
 
 Display recently uploaded reports.
 
-Each report should display
+Each report should display:
 
 Report Name
 
@@ -182,13 +166,15 @@ Processing Status
 
 View Report
 
+Selecting a report opens it in Focus above the current space.
+
 --------------------------------------------------
 
-10. Timeline Preview
+10. Journey Preview (Timeline Preview)
 
 Display the latest timeline events.
 
-Each event should display
+Each event should display:
 
 Date
 
@@ -198,13 +184,15 @@ Short Description
 
 View Timeline
 
+Selecting the preview zooms into the full Journey.
+
 --------------------------------------------------
 
-11. Patient Notes
+11. Recent Guidance (Patient Notes)
 
 Display notes written by the oncologist.
 
-Each note should display
+Each note should display:
 
 Date
 
@@ -218,11 +206,11 @@ Only notes intended for the patient should appear.
 
 --------------------------------------------------
 
-12. Notifications
+12. Signals (Notifications)
 
 Display recent notifications.
 
-Examples
+Examples:
 
 Task Assigned
 
@@ -232,17 +220,31 @@ New Note Available
 
 Task Completed
 
+Signals never interrupt the patient. Selecting a Signal moves the patient directly to the relevant space.
+
 --------------------------------------------------
 
 13. Search
 
-Patients should be able to search their own reports.
+Patients should be able to search their own reports through the Intent Bar.
 
 Patients cannot search other patients.
 
 --------------------------------------------------
 
-14. Empty States
+14. Motion
+
+Arrival into Patient Home Space is a descent from the Entry.
+
+Entering any destination uses spatial zoom, with the selected item transforming into the space entered.
+
+Newly arrived Signals and completed uploads are revealed with motion that draws attention to the change.
+
+Reduced motion replaces spatial transitions with immediate cross-fades without any loss of information.
+
+--------------------------------------------------
+
+15. Empty States
 
 No Reports
 
@@ -262,7 +264,7 @@ Display informative message.
 
 --------------------------------------------------
 
-15. Error States
+16. Error States
 
 Upload Failed
 
@@ -272,11 +274,11 @@ Session Expired
 
 Permission Denied
 
-Display clear instructions for recovery.
+Display clear instructions for recovery. An error never breaks the surrounding space.
 
 --------------------------------------------------
 
-16. User Actions
+17. User Actions
 
 Upload Report
 
@@ -298,7 +300,7 @@ Logout
 
 --------------------------------------------------
 
-17. Business Rules
+18. Business Rules
 
 Patients can upload reports.
 
@@ -316,21 +318,23 @@ Patients cannot edit timeline events.
 
 --------------------------------------------------
 
-18. Performance Requirements
+19. Performance Requirements
 
-Dashboard should load quickly.
+The space should load quickly.
 
-Summary cards should appear immediately.
+Summary information should appear immediately.
 
 Large report lists should support pagination.
 
 The interface should remain responsive.
 
+The structure of the space appears before its detail. A blank screen is never displayed.
+
 --------------------------------------------------
 
-19. Accessibility
+20. Accessibility
 
-Support keyboard navigation.
+Support keyboard navigation. Every spatial action has a keyboard equivalent.
 
 Maintain readable typography.
 
@@ -338,13 +342,15 @@ Maintain proper spacing.
 
 Provide meaningful labels for every interactive element.
 
+Respect reduced motion.
+
 --------------------------------------------------
 
-20. Completion Criteria
+21. Completion Criteria
 
-The Patient Dashboard is complete when:
+Patient Home Space is complete when:
 
-Patients can access every approved module.
+Patients can access every approved destination.
 
 Assigned tasks are displayed.
 
@@ -356,8 +362,8 @@ Patient notes are displayed.
 
 Notifications are displayed.
 
-Navigation is consistent.
+Navigation is spatial and consistent.
 
-The dashboard follows the approved UI/UX guidelines.
+The space follows the approved UI/UX guidelines.
 
-The dashboard is ready for backend integration.
+The space is ready for backend integration.

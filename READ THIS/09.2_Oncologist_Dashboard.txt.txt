@@ -6,21 +6,23 @@ AI Oncology Patient Intelligence Platform
 
 Feature Name
 
-Oncologist Dashboard
+Practice Space (Oncologist Dashboard)
 
 Document Purpose
 
-This document defines the Oncologist Dashboard. It explains what the oncologist sees immediately after logging in, the available actions, and the expected behaviour of every component.
+This document defines the Practice Space. It explains what the oncologist sees immediately after signing in, the available actions, and the expected behaviour of every component.
 
 --------------------------------------------------
 
 1. Purpose
 
-The Oncologist Dashboard is the main workspace for the oncologist.
+Practice Space is the oncologist's arrival point in the environment, at Depth 1.
 
-Its purpose is to provide a quick overview of assigned patients, recent activities, pending tasks, uploaded reports, and notifications.
+Its purpose is to provide an immediate overview of assigned patients, recent activity, pending tasks, uploaded reports and notifications.
 
-The dashboard should allow the oncologist to reach any patient within a few interactions.
+It is not an administrative dashboard. It is a calm surface that answers one question: which patient needs this oncologist next.
+
+The oncologist must reach any patient within a few interactions and must never have to search through menus.
 
 --------------------------------------------------
 
@@ -48,93 +50,45 @@ Provide quick access to Patient Intelligence.
 
 --------------------------------------------------
 
-4. Navigation
+4. Contextual Destinations
 
-Dashboard
-
-↓
+Reachable from Practice Space through spatial movement, without a sidebar and without nested menus:
 
 Patient List
 
-↓
+Signals (Notifications)
 
-Patient Profile
+Account (Profile and Settings)
 
-↓
-
-Timeline
-
-↓
-
-Reports
-
-↓
-
-Patient Intelligence
-
-↓
-
-Digital Twin
-
-↓
-
-Tasks
-
-↓
-
-Notes
-
-↓
-
-Notifications
-
-↓
-
-Profile
-
-↓
-
-Settings
+Entering a patient descends into Patient Space at Depth 2, where the Body, Journey, Evidence, Understanding, Actions and Guidance become available.
 
 --------------------------------------------------
 
-5. Dashboard Layout
+5. Spatial Composition
 
-Top Navigation
+Practice Space is presented as a single continuous surface, in priority order:
 
-↓
+Orientation
 
-Dashboard Overview
+Practice Summary
 
-↓
+Patients requiring attention
 
-Patient Statistics
+Recent Evidence
 
-↓
+Pending Actions
 
-Recent Patient Activity
+Signals
 
-↓
+The Intent Bar is always available and does not occupy permanent layout space.
 
-Recent Report Uploads
-
-↓
-
-Pending Tasks
-
-↓
-
-Notifications
-
-↓
-
-Quick Actions
+Patients are presented as a set of identifiable presences rather than as rows in an administrative table. Each carries enough clinical context to be recognized without opening it.
 
 --------------------------------------------------
 
-6. Dashboard Overview
+6. Orientation
 
-Display
+Display:
 
 Doctor Name
 
@@ -144,9 +98,9 @@ Assigned Patient Count
 
 --------------------------------------------------
 
-7. Summary Cards
+7. Practice Summary
 
-Display
+Display:
 
 Total Assigned Patients
 
@@ -156,13 +110,15 @@ New Report Uploads
 
 Unread Notifications
 
+These are presented as a single continuous summary rather than as separate boxes.
+
 --------------------------------------------------
 
-8. Patient List Preview
+8. Patient Presence (Patient List Preview)
 
 Display recently accessed patients.
 
-Each patient should display
+Each patient should display:
 
 Patient Name
 
@@ -176,13 +132,15 @@ Current Status
 
 Open Patient
 
+Selecting a patient zooms into Patient Space. The selected patient becomes the space entered.
+
 --------------------------------------------------
 
-9. Recent Report Uploads
+9. Recent Evidence (Recent Report Uploads)
 
 Display recently uploaded reports.
 
-Each report should display
+Each report should display:
 
 Patient Name
 
@@ -196,11 +154,11 @@ Open Report
 
 --------------------------------------------------
 
-10. Pending Tasks
+10. Pending Actions (Pending Tasks)
 
 Display tasks assigned to patients.
 
-Each task should display
+Each task should display:
 
 Patient Name
 
@@ -214,9 +172,9 @@ Review Task
 
 --------------------------------------------------
 
-11. Notifications
+11. Signals (Notifications)
 
-Display
+Display:
 
 New Report Upload
 
@@ -226,13 +184,15 @@ AI Processing Completed
 
 System Notifications
 
+Signals never interrupt clinical work. Selecting a Signal moves the oncologist directly into the relevant space.
+
 --------------------------------------------------
 
-12. Quick Search
+12. Intent Bar (Quick Search)
 
 Allow the oncologist to search patients.
 
-Search by
+Search by:
 
 Patient Name
 
@@ -240,13 +200,15 @@ Patient ID
 
 Mobile Number
 
-Search results should open the Patient Profile.
+Search results open Patient Space directly.
+
+The Intent Bar is always available and replaces menu-based navigation.
 
 --------------------------------------------------
 
 13. Quick Actions
 
-Provide shortcuts to
+Provide direct movement to:
 
 Open Patient
 
@@ -260,9 +222,25 @@ Open Patient Intelligence
 
 Open Digital Twin
 
+These appear in context rather than as a permanent toolbar.
+
 --------------------------------------------------
 
-14. Empty States
+14. Motion
+
+Arrival into Practice Space is a descent from the Entry.
+
+Entering a patient uses spatial zoom, with the patient transforming into Patient Space.
+
+Moving from one patient to another is a lateral movement and remains continuous.
+
+New activity is revealed with motion that draws attention to the change.
+
+Reduced motion replaces spatial transitions with immediate cross-fades without any loss of information.
+
+--------------------------------------------------
+
+15. Empty States
 
 No Assigned Patients
 
@@ -282,7 +260,7 @@ Display informative message.
 
 --------------------------------------------------
 
-15. Error States
+16. Error States
 
 Network Error
 
@@ -292,11 +270,11 @@ Permission Denied
 
 Server Error
 
-Display clear recovery instructions.
+Display clear recovery instructions. An error never breaks the surrounding space.
 
 --------------------------------------------------
 
-16. User Actions
+17. User Actions
 
 Open Patient
 
@@ -326,7 +304,7 @@ Logout
 
 --------------------------------------------------
 
-17. Business Rules
+18. Business Rules
 
 An oncologist can only access assigned patients.
 
@@ -338,13 +316,13 @@ Private Clinical Notes are visible only to the oncologist.
 
 Patient Notes are visible to both the oncologist and the patient.
 
-The dashboard must never expose another oncologist's patients.
+The space must never expose another oncologist's patients.
 
 --------------------------------------------------
 
-18. Performance Requirements
+19. Performance Requirements
 
-Dashboard should load quickly.
+The space should load quickly.
 
 Patient search should return results efficiently.
 
@@ -352,11 +330,13 @@ Recent activities should update automatically after refresh.
 
 Large patient lists should support pagination.
 
+The structure of the space appears before its detail. A blank screen is never displayed.
+
 --------------------------------------------------
 
-19. Accessibility
+20. Accessibility
 
-Support keyboard navigation.
+Support keyboard navigation. Every spatial action has a keyboard equivalent.
 
 Maintain readable typography.
 
@@ -364,11 +344,13 @@ Maintain proper spacing.
 
 Provide descriptive labels for every interactive element.
 
+Respect reduced motion.
+
 --------------------------------------------------
 
-20. Completion Criteria
+21. Completion Criteria
 
-The Oncologist Dashboard is complete when
+Practice Space is complete when:
 
 Assigned patients are displayed.
 
@@ -382,6 +364,6 @@ Notifications are displayed.
 
 Quick actions function correctly.
 
-Navigation follows the approved application flow.
+Navigation follows the approved spatial model.
 
-The dashboard is ready for backend integration.
+The space is ready for backend integration.
