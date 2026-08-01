@@ -9,8 +9,10 @@
     "lint": "oxlint",
     "typecheck": "tsc -b",
     "check:architecture": "node tools/check-architecture.mjs",
+    "check:prod": "node tools/check-production-bundle.mjs",
     "preview": "vite preview",
-    "verify": "npm run typecheck && npm run check:architecture && npm run lint"
+    "verify": "npm run typecheck && npm run check:architecture && npm run lint",
+    "verify:full": "npm run verify && npm run build && npm run check:prod"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.6.0",

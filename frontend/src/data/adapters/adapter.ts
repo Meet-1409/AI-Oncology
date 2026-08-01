@@ -14,9 +14,11 @@ import { ApiFailure } from '@/data/contract/envelope'
  */
 
 export interface RequestOptions {
-  signal?: AbortSignal
+  // Explicit `| undefined` so callers may pass optional values through directly
+  // under exactOptionalPropertyTypes.
+  signal?: AbortSignal | undefined
   /** Query string values; undefined entries are omitted. */
-  params?: Record<string, string | number | boolean | undefined>
+  params?: Record<string, string | number | boolean | undefined> | undefined
 }
 
 export interface DataAdapter {
@@ -47,7 +49,7 @@ export interface DataAdapter {
     schema: T,
     file: File,
     fields: Record<string, string>,
-    options?: RequestOptions & { onProgress?: (fraction: number) => void },
+    options?: (RequestOptions & { onProgress?: ((fraction: number) => void) | undefined }) | undefined,
   ): Promise<z.infer<T>>
 }
 

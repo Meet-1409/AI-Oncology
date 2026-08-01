@@ -1,44 +1,56 @@
+import { lazy, Suspense } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { Providers } from './providers'
-import { routePattern, paths } from '@/routes/paths'
+import { paths, routePattern } from '@/routes/paths'
+import { LoadingSurface } from '@/components/patterns'
 
 /**
  * The environment root.
  *
- * Routing is configured here as the foundation for continuous spatial navigation
- * [06 Phase 1]. The spaces themselves are built in later phases: the spatial shell
- * and depth system in Phase 2, the Entry in Phase 6, and each space thereafter.
+ * Spaces are code-split at their boundaries so the Entry stays fast and never pays
+ * for anything it does not use [04 §14], [blueprint 00 §4.2].
  *
- * Until a space exists, its address resolves to the Entry rather than to a
- * placeholder screen — placeholder components are not permitted [00 §17.6].
+ * Placeholder screens are not permitted [00 §17.6]: an address whose space is not
+ * built yet resolves to the Entry rather than to an empty page.
  */
+
+const EntrySpace = lazy(() => import('@/spaces/entry/EntrySpace'))
+const AuthSpace = lazy(() => import('@/spaces/entry/AuthSpace'))
+
+/**
+ * Design System Showcase — development only.
+ *
+ * `import.meta.env.DEV` is statically replaced with `false` in production builds,
+ * so this branch and its dynamic import are removed entirely by the bundler. The
+ * showcase is not merely hidden in production — it is not present.
+ */
+const DevShowcase = import.meta.env.DEV
+  ? lazy(() => import('@/dev/showcase/routes').then((m) => ({ default: m.ShowcaseRoutes })))
+  : null
+
+function SpaceFallback() {
+  return (
+    <div className="mx-auto w-full max-w-3xl px-6 py-24">
+      <LoadingSurface lines={4} label="Loading" />
+    </div>
+  )
+}
+
 export function App() {
   return (
     <Providers>
       <BrowserRouter>
-        <Routes>
-          <Route path={routePattern.entry} element={<EnvironmentRoot />} />
-          <Route path="*" element={<Navigate to={paths.entry} replace />} />
-        </Routes>
+        <Suspense fallback={<SpaceFallback />}>
+          <Routes>
+            <Route path={routePattern.entry} element={<EntrySpace />} />
+            <Route path={routePattern.enter} element={<AuthSpace />} />
+
+            {DevShowcase && <Route path="/__showcase/*" element={<DevShowcase />} />}
+
+            <Route path="*" element={<Navigate to={paths.entry} replace />} />
+          </Routes>
+        </Suspense>
       </BrowserRouter>
     </Providers>
-  )
-}
-
-/**
- * Temporary root for Phase 1. The Entry experience replaces this in Phase 6, and
- * the spatial shell wraps it in Phase 2. It renders the product identity only —
- * no patient information is reachable without authentication [03 §3].
- */
-function EnvironmentRoot() {
-  return (
-    <main className="flex min-h-screen items-center justify-center px-6">
-      <div className="text-center">
-        <h1 className="text-2xl font-semibold tracking-tight text-neutral-900">
-          AI Oncology
-        </h1>
-        <p className="mt-2 text-sm text-neutral-500">Patient Intelligence Platform</p>
-      </div>
-    </main>
   )
 }

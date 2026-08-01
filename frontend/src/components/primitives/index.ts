@@ -20,3 +20,6 @@ export type { IconProps, IconComponent, IconSize } from './icon'
 
 export { StatusIndicator } from './status-indicator'
 export type { StatusIndicatorProps, StatusTone } from './status-indicator'
+
+export { Field, Input, Textarea, Select } from './field'
+export type { FieldProps, SelectProps, SelectOption } from './field'

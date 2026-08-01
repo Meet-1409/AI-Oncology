@@ -1,4 +1,4 @@
-import type { ComponentType, SVGProps } from 'react'
+import type { ComponentType, CSSProperties, SVGProps } from 'react'
 import { cn } from '@/lib/utils'
 
 /**
@@ -32,6 +32,8 @@ export interface IconProps {
   icon: IconComponent
   size?: IconSize
   className?: string
+  /** For token-driven colors that cannot be expressed as a utility class. */
+  style?: CSSProperties
   /**
    * Accessible name. Provide when the icon carries meaning that is not already
    * present in adjacent text. Omit for purely decorative icons.
@@ -39,11 +41,12 @@ export interface IconProps {
   label?: string
 }
 
-export function Icon({ icon: Component, size = 'sm', className, label }: IconProps) {
+export function Icon({ icon: Component, size = 'sm', className, style, label }: IconProps) {
   const decorative = label === undefined
   return (
     <Component
       className={cn(SIZE_CLASS[size], className)}
+      style={style}
       // Stroke width is fixed so icons keep consistent visual weight at every size.
       strokeWidth={1.9}
       aria-hidden={decorative ? true : undefined}
