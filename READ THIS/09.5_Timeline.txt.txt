@@ -1,0 +1,417 @@
+09.5_Timeline.txt
+
+Project Name
+
+AI Oncology Patient Intelligence Platform
+
+Feature Name
+
+Timeline
+
+Document Purpose
+
+This document defines the Timeline module. The Timeline represents the patient's complete cancer journey in chronological order. Every important medical event should appear here and remain permanently linked to the Patient Case.
+
+--------------------------------------------------
+
+1. Purpose
+
+The Timeline provides a complete chronological view of the patient's cancer journey.
+
+It should allow the oncologist to quickly understand what happened, when it happened, and how the patient's condition changed over time.
+
+--------------------------------------------------
+
+2. Target Users
+
+Patient
+
+Oncologist
+
+--------------------------------------------------
+
+3. Objectives
+
+Display every clinical event.
+
+Maintain chronological order.
+
+Provide quick access to reports.
+
+Display disease progression.
+
+Support Digital Twin synchronization.
+
+Support Patient Intelligence.
+
+--------------------------------------------------
+
+4. Timeline Events
+
+The Timeline should display
+
+Diagnosis
+
+Hospital Visits
+
+Report Uploads
+
+Pathology Reports
+
+CT Reports
+
+MRI Reports
+
+PET Scan Reports
+
+Blood Tests
+
+Biopsies
+
+Surgeries
+
+Treatments
+
+Chemotherapy Sessions
+
+Radiotherapy Sessions
+
+Follow-up Visits
+
+Medication Changes
+
+Assigned Tasks
+
+Completed Tasks
+
+Patient Notes
+
+--------------------------------------------------
+
+5. Timeline Layout
+
+Top Navigation
+
+↓
+
+Timeline Filters
+
+↓
+
+Timeline Search
+
+↓
+
+Timeline Events
+
+↓
+
+Event Details
+
+The latest event should appear first by default.
+
+--------------------------------------------------
+
+6. Timeline Card
+
+Every event should display
+
+Event Date
+
+Event Time (if available)
+
+Event Type
+
+Title
+
+Short Description
+
+Related Report
+
+View Details
+
+--------------------------------------------------
+
+7. Event Details
+
+Opening an event should display
+
+Full Event Information
+
+Related Reports
+
+Supporting Evidence
+
+Patient Intelligence (if available)
+
+Digital Twin Link (if available)
+
+Previous Related Event
+
+Next Related Event
+
+--------------------------------------------------
+
+8. Event Categories
+
+Events should be visually categorized.
+
+Examples
+
+Diagnosis
+
+Report
+
+Treatment
+
+Surgery
+
+Follow-up
+
+Task
+
+Patient Note
+
+Upload
+
+Other Clinical Event
+
+--------------------------------------------------
+
+9. Search
+
+Allow searching using
+
+Event Name
+
+Report Name
+
+Keywords
+
+Date
+
+Treatment
+
+--------------------------------------------------
+
+10. Filters
+
+Support filtering by
+
+Date Range
+
+Report Type
+
+Treatment Type
+
+Clinical Event
+
+Task
+
+Uploads
+
+--------------------------------------------------
+
+11. Sorting
+
+Allow sorting by
+
+Newest First
+
+Oldest First
+
+--------------------------------------------------
+
+12. Timeline Navigation
+
+Users should be able to
+
+Scroll through events.
+
+Open event details.
+
+Return to the Timeline.
+
+Move between previous and next events.
+
+--------------------------------------------------
+
+13. Timeline and Reports
+
+Every report should automatically appear in the Timeline.
+
+Selecting a report event should open the related report.
+
+--------------------------------------------------
+
+14. Timeline and Patient Intelligence
+
+Timeline events should link to related AI summaries whenever available.
+
+The original report should always remain accessible.
+
+--------------------------------------------------
+
+15. Timeline and Digital Twin
+
+Timeline should synchronize with the Digital Twin.
+
+Selecting a clinical date should allow the Digital Twin to display the patient's condition for that date.
+
+When comparing two dates, the Timeline should highlight both selected events.
+
+--------------------------------------------------
+
+16. User Actions
+
+Open Event
+
+Open Report
+
+Search Timeline
+
+Filter Timeline
+
+Sort Timeline
+
+Open Patient Intelligence
+
+Open Digital Twin
+
+--------------------------------------------------
+
+17. Business Rules
+
+Timeline events must remain chronological.
+
+Historical events must never be deleted.
+
+Uploaded reports automatically become timeline events.
+
+Tasks automatically become timeline events.
+
+Patient Notes automatically become timeline events.
+
+Private Clinical Notes should not appear in the patient timeline.
+
+--------------------------------------------------
+
+18. Patient View
+
+Patients should only see
+
+Uploaded Reports
+
+Treatments
+
+Tasks
+
+Patient Notes
+
+Appointments (Future)
+
+Patients should not see
+
+Private Clinical Notes
+
+AI Confidence
+
+Internal Clinical Information
+
+--------------------------------------------------
+
+19. Oncologist View
+
+Oncologists should see
+
+Complete Timeline
+
+Reports
+
+Patient Intelligence
+
+Digital Twin Links
+
+Tasks
+
+Patient Notes
+
+Private Clinical Notes
+
+Supporting Evidence
+
+--------------------------------------------------
+
+20. Empty States
+
+No Timeline Available
+
+Display informative message.
+
+No Matching Events
+
+Display informative message.
+
+--------------------------------------------------
+
+21. Error States
+
+Failed to Load Timeline
+
+Network Error
+
+Permission Denied
+
+Display clear recovery instructions.
+
+--------------------------------------------------
+
+22. Performance Requirements
+
+Timeline should load quickly.
+
+Large patient histories should support lazy loading.
+
+Scrolling should remain smooth.
+
+Filtering should update immediately.
+
+Searching should remain responsive.
+
+--------------------------------------------------
+
+23. Accessibility
+
+Support keyboard navigation.
+
+Maintain readable typography.
+
+Provide descriptive labels.
+
+Maintain consistent spacing.
+
+--------------------------------------------------
+
+24. Completion Criteria
+
+The Timeline module is complete when
+
+All clinical events are displayed.
+
+Events remain in chronological order.
+
+Reports are linked correctly.
+
+Patient Intelligence is accessible.
+
+Digital Twin synchronization works.
+
+Searching functions correctly.
+
+Filtering functions correctly.
+
+Sorting functions correctly.
+
+Patient and Oncologist views display appropriate information.
+
+The module is ready for backend integration.

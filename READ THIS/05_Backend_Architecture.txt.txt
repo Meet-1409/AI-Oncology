@@ -1,0 +1,461 @@
+05_Backend_Architecture.txt
+
+Project Name
+
+AI Oncology Patient Intelligence Platform
+
+Document Purpose
+
+This document defines the backend architecture of the platform. It explains how every backend module is organized, how data flows through the system, and how each service communicates with another. The backend should remain modular, scalable, and independent from the frontend.
+
+--------------------------------------------------
+
+1. Backend Overview
+
+The backend is responsible for:
+
+User Authentication
+
+Authorization
+
+Patient Management
+
+Report Management
+
+File Storage
+
+Timeline Management
+
+Patient Intelligence
+
+Task Management
+
+Notes Management
+
+Notification Management
+
+Digital Twin Data
+
+Artificial Intelligence Integration
+
+Audit Logs
+
+--------------------------------------------------
+
+2. Backend Modules
+
+Authentication Module
+
+Patient Module
+
+Report Module
+
+Timeline Module
+
+Patient Intelligence Module
+
+Digital Twin Module
+
+Task Module
+
+Notes Module
+
+Notification Module
+
+Storage Module
+
+Audit Module
+
+AI Integration Module
+
+--------------------------------------------------
+
+3. Authentication Module
+
+Responsibilities
+
+Authenticate users.
+
+Generate secure sessions.
+
+Validate access permissions.
+
+Handle password management.
+
+Manage user sessions.
+
+--------------------------------------------------
+
+4. Patient Module
+
+Responsibilities
+
+Create patient records.
+
+Update patient information.
+
+Retrieve patient details.
+
+Manage patient profiles.
+
+Assign patients to oncologists.
+
+Every patient belongs to one primary oncologist.
+
+--------------------------------------------------
+
+5. Report Module
+
+Responsibilities
+
+Receive uploaded reports.
+
+Validate uploaded files.
+
+Store original reports.
+
+Maintain report history.
+
+Retrieve reports.
+
+Organize reports by patient.
+
+Reports are never modified after upload.
+
+--------------------------------------------------
+
+6. Storage Module
+
+Responsibilities
+
+Store uploaded reports.
+
+Store medical images.
+
+Store temporary AI files.
+
+Store generated assets.
+
+Original files must always remain unchanged.
+
+--------------------------------------------------
+
+7. Timeline Module
+
+Responsibilities
+
+Create patient timeline.
+
+Maintain chronological events.
+
+Link reports to timeline.
+
+Link tasks to timeline.
+
+Link notes to timeline.
+
+Link AI results to timeline.
+
+Historical events must never be deleted.
+
+--------------------------------------------------
+
+8. Patient Intelligence Module
+
+Responsibilities
+
+Receive processed AI results.
+
+Build patient summary.
+
+Maintain disease progression.
+
+Provide structured information to the frontend.
+
+Generate patient overview.
+
+Patient Intelligence is generated only from validated information.
+
+--------------------------------------------------
+
+9. Digital Twin Module
+
+Responsibilities
+
+Provide Digital Twin data.
+
+Provide organ information.
+
+Provide disease locations.
+
+Provide disease severity.
+
+Provide timeline comparison data.
+
+The backend supplies only structured information.
+
+The frontend renders the visualization.
+
+--------------------------------------------------
+
+10. Task Module
+
+Responsibilities
+
+Create patient tasks.
+
+Assign tasks.
+
+Update task status.
+
+Track completed tasks.
+
+Maintain task history.
+
+Only oncologists create tasks.
+
+Only patients complete assigned tasks.
+
+--------------------------------------------------
+
+11. Notes Module
+
+Responsibilities
+
+Store patient notes.
+
+Store private clinical notes.
+
+Retrieve notes.
+
+Maintain note history.
+
+Patient notes are visible to patients.
+
+Private notes remain visible only to the oncologist.
+
+--------------------------------------------------
+
+12. Notification Module
+
+Responsibilities
+
+Generate notifications.
+
+Deliver notifications.
+
+Track notification status.
+
+Notifications should be generated for:
+
+Assigned Tasks
+
+Completed Tasks
+
+Uploaded Reports
+
+New Patient Notes
+
+AI Processing Completion
+
+--------------------------------------------------
+
+13. AI Integration Module
+
+Responsibilities
+
+Receive uploaded reports.
+
+Send reports for processing.
+
+Receive processed results.
+
+Store AI outputs.
+
+Provide AI outputs to Patient Intelligence.
+
+The backend never modifies AI outputs.
+
+--------------------------------------------------
+
+14. Audit Module
+
+Responsibilities
+
+Record important actions.
+
+Maintain audit history.
+
+Track:
+
+Login
+
+Logout
+
+Report Upload
+
+Task Assignment
+
+Task Completion
+
+Patient Note Creation
+
+Private Note Creation
+
+Profile Updates
+
+--------------------------------------------------
+
+15. Database Structure
+
+The database stores:
+
+Users
+
+Patients
+
+Reports
+
+Timeline Events
+
+Tasks
+
+Patient Notes
+
+Private Clinical Notes
+
+Notifications
+
+AI Results
+
+Audit Logs
+
+Application Settings
+
+--------------------------------------------------
+
+16. API Architecture
+
+Frontend communicates only with backend APIs.
+
+Backend communicates with AI services.
+
+AI services return processed information.
+
+Backend stores processed information.
+
+Frontend retrieves processed information through APIs.
+
+The frontend never communicates directly with AI services.
+
+--------------------------------------------------
+
+17. Data Flow
+
+Patient Uploads Report
+
+↓
+
+Backend Receives File
+
+↓
+
+File Stored
+
+↓
+
+AI Processing Requested
+
+↓
+
+AI Returns Results
+
+↓
+
+Patient Intelligence Updated
+
+↓
+
+Timeline Updated
+
+↓
+
+Digital Twin Updated
+
+↓
+
+Frontend Displays Latest Information
+
+--------------------------------------------------
+
+18. Error Handling
+
+Every API should return:
+
+Success Response
+
+Validation Error
+
+Authentication Error
+
+Authorization Error
+
+File Error
+
+Processing Error
+
+Internal Server Error
+
+Errors should never expose sensitive system information.
+
+--------------------------------------------------
+
+19. Security
+
+Authenticate every request.
+
+Authorize every request.
+
+Encrypt sensitive information.
+
+Validate uploaded files.
+
+Record important actions.
+
+Protect patient privacy.
+
+--------------------------------------------------
+
+20. Scalability
+
+Every module should remain independent.
+
+Modules should communicate only through defined interfaces.
+
+Future services should be added without changing existing modules.
+
+AI services should remain replaceable.
+
+Storage should remain independent from application logic.
+
+--------------------------------------------------
+
+21. Development Rules
+
+Never expose database structure to the frontend.
+
+Never expose private notes to patients.
+
+Never modify uploaded reports.
+
+Never bypass authentication.
+
+Never bypass authorization.
+
+Never mix frontend logic with backend logic.
+
+Maintain modular architecture.
+
+Follow all project documentation.
+
+The backend must always remain independent, secure, maintainable, and scalable.

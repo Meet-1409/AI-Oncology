@@ -1,0 +1,363 @@
+09.1_Patient_Dashboard.txt
+
+Project Name
+
+AI Oncology Patient Intelligence Platform
+
+Feature Name
+
+Patient Dashboard
+
+Document Purpose
+
+This document defines the Patient Dashboard. It explains what the patient sees immediately after logging in, the available actions, and the expected behaviour of every component.
+
+--------------------------------------------------
+
+1. Purpose
+
+The Patient Dashboard is the patient's home page.
+
+Its purpose is to help the patient quickly understand what actions they need to complete and provide easy access to every important feature.
+
+The dashboard should remain simple and easy to understand.
+
+Medical terminology should be minimized wherever possible.
+
+--------------------------------------------------
+
+2. Target User
+
+Patient
+
+--------------------------------------------------
+
+3. Objectives
+
+Provide a clear overview of the patient's account.
+
+Display pending tasks.
+
+Display recent activity.
+
+Display notifications.
+
+Provide quick access to reports.
+
+Provide quick access to the patient's timeline.
+
+Provide quick access to notes from the oncologist.
+
+--------------------------------------------------
+
+4. Navigation
+
+Dashboard
+
+↓
+
+Timeline
+
+↓
+
+Reports
+
+↓
+
+Tasks
+
+↓
+
+Notes
+
+↓
+
+Notifications
+
+↓
+
+Profile
+
+↓
+
+Settings
+
+--------------------------------------------------
+
+5. Dashboard Layout
+
+Top Navigation
+
+↓
+
+Patient Welcome Section
+
+↓
+
+Quick Summary Cards
+
+↓
+
+Assigned Tasks
+
+↓
+
+Recent Uploads
+
+↓
+
+Recent Notes
+
+↓
+
+Timeline Preview
+
+↓
+
+Notifications
+
+--------------------------------------------------
+
+6. Welcome Section
+
+Display:
+
+Patient Name
+
+Greeting
+
+Current Date
+
+--------------------------------------------------
+
+7. Quick Summary Cards
+
+Display
+
+Total Reports
+
+Pending Tasks
+
+Completed Tasks
+
+Recent Upload
+
+--------------------------------------------------
+
+8. Assigned Tasks
+
+Display all pending tasks assigned by the oncologist.
+
+Each task should display
+
+Task Title
+
+Short Description
+
+Assigned Date
+
+Due Date (if available)
+
+Current Status
+
+Upload Button (if required)
+
+View Details
+
+--------------------------------------------------
+
+9. Recent Uploads
+
+Display recently uploaded reports.
+
+Each report should display
+
+Report Name
+
+Report Type
+
+Upload Date
+
+Processing Status
+
+View Report
+
+--------------------------------------------------
+
+10. Timeline Preview
+
+Display the latest timeline events.
+
+Each event should display
+
+Date
+
+Title
+
+Short Description
+
+View Timeline
+
+--------------------------------------------------
+
+11. Patient Notes
+
+Display notes written by the oncologist.
+
+Each note should display
+
+Date
+
+Title
+
+Message
+
+Read More
+
+Only notes intended for the patient should appear.
+
+--------------------------------------------------
+
+12. Notifications
+
+Display recent notifications.
+
+Examples
+
+Task Assigned
+
+Report Uploaded Successfully
+
+New Note Available
+
+Task Completed
+
+--------------------------------------------------
+
+13. Search
+
+Patients should be able to search their own reports.
+
+Patients cannot search other patients.
+
+--------------------------------------------------
+
+14. Empty States
+
+No Reports
+
+Display upload prompt.
+
+No Tasks
+
+Display informative message.
+
+No Notes
+
+Display informative message.
+
+No Notifications
+
+Display informative message.
+
+--------------------------------------------------
+
+15. Error States
+
+Upload Failed
+
+Network Error
+
+Session Expired
+
+Permission Denied
+
+Display clear instructions for recovery.
+
+--------------------------------------------------
+
+16. User Actions
+
+Upload Report
+
+View Reports
+
+Open Timeline
+
+View Tasks
+
+Open Notes
+
+View Notifications
+
+Edit Profile
+
+Open Settings
+
+Logout
+
+--------------------------------------------------
+
+17. Business Rules
+
+Patients can upload reports.
+
+Patients cannot modify uploaded reports.
+
+Patients cannot delete reports.
+
+Patients cannot access AI processing details.
+
+Patients cannot access private clinical notes.
+
+Patients cannot assign tasks.
+
+Patients cannot edit timeline events.
+
+--------------------------------------------------
+
+18. Performance Requirements
+
+Dashboard should load quickly.
+
+Summary cards should appear immediately.
+
+Large report lists should support pagination.
+
+The interface should remain responsive.
+
+--------------------------------------------------
+
+19. Accessibility
+
+Support keyboard navigation.
+
+Maintain readable typography.
+
+Maintain proper spacing.
+
+Provide meaningful labels for every interactive element.
+
+--------------------------------------------------
+
+20. Completion Criteria
+
+The Patient Dashboard is complete when:
+
+Patients can access every approved module.
+
+Assigned tasks are displayed.
+
+Recent uploads are displayed.
+
+Timeline preview is displayed.
+
+Patient notes are displayed.
+
+Notifications are displayed.
+
+Navigation is consistent.
+
+The dashboard follows the approved UI/UX guidelines.
+
+The dashboard is ready for backend integration.

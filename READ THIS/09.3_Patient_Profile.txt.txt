@@ -1,0 +1,445 @@
+09.3_Patient_Profile.txt
+
+Project Name
+
+AI Oncology Patient Intelligence Platform
+
+Feature Name
+
+Patient Profile
+
+Document Purpose
+
+This document defines the Patient Profile page. It serves as the central location for all patient information. Every report, timeline event, AI insight, Digital Twin visualization, task, and note originates from the Patient Profile.
+
+--------------------------------------------------
+
+1. Purpose
+
+The Patient Profile provides the oncologist with a complete overview of the patient.
+
+It combines patient information, medical history, reports, timeline, AI insights, and disease visualization into a single workspace.
+
+--------------------------------------------------
+
+2. Target User
+
+Oncologist
+
+--------------------------------------------------
+
+3. Objectives
+
+Display patient information.
+
+Display medical history.
+
+Display diagnosis.
+
+Display current treatment.
+
+Provide quick access to reports.
+
+Provide quick access to the timeline.
+
+Provide quick access to Patient Intelligence.
+
+Provide quick access to the Digital Twin.
+
+Provide quick access to tasks.
+
+Provide quick access to notes.
+
+--------------------------------------------------
+
+4. Navigation
+
+Patient List
+
+↓
+
+Select Patient
+
+↓
+
+Patient Profile
+
+↓
+
+Overview
+
+Reports
+
+Timeline
+
+Patient Intelligence
+
+Digital Twin
+
+Tasks
+
+Notes
+
+--------------------------------------------------
+
+5. Layout
+
+Top Navigation
+
+↓
+
+Patient Header
+
+↓
+
+Patient Overview
+
+↓
+
+Quick Summary Cards
+
+↓
+
+Tabbed Navigation
+
+--------------------------------------------------
+
+6. Patient Header
+
+Display
+
+Patient Name
+
+Patient ID
+
+Age
+
+Gender
+
+Blood Group
+
+Date of Birth
+
+Profile Picture (Optional)
+
+Current Diagnosis
+
+Current Treatment Status
+
+--------------------------------------------------
+
+7. Patient Overview
+
+Display
+
+Primary Cancer
+
+Primary Site
+
+Stage
+
+Diagnosis Date
+
+Current Treatment
+
+Treating Oncologist
+
+--------------------------------------------------
+
+8. Medical Information
+
+Display
+
+Height
+
+Weight
+
+BMI
+
+Known Allergies
+
+Current Medications
+
+Previous Treatments
+
+Past Surgeries
+
+Family History
+
+Smoking History
+
+Alcohol History
+
+Other Medical Conditions
+
+--------------------------------------------------
+
+9. Comorbidities
+
+Display all known medical conditions.
+
+Examples
+
+Diabetes
+
+Hypertension
+
+Heart Disease
+
+Kidney Disease
+
+Thyroid Disorders
+
+Asthma
+
+Other Chronic Conditions
+
+--------------------------------------------------
+
+10. Quick Summary Cards
+
+Display
+
+Total Reports
+
+Timeline Events
+
+Pending Tasks
+
+Completed Tasks
+
+Latest Upload
+
+--------------------------------------------------
+
+11. Reports Section
+
+Display
+
+All uploaded reports.
+
+Each report should display
+
+Report Name
+
+Report Type
+
+Hospital
+
+Upload Date
+
+Processing Status
+
+Open Report
+
+--------------------------------------------------
+
+12. Timeline Section
+
+Display
+
+Clinical events in chronological order.
+
+Each event should display
+
+Date
+
+Title
+
+Description
+
+Related Report
+
+View Details
+
+--------------------------------------------------
+
+13. Patient Intelligence Section
+
+Display
+
+Clinical Summary
+
+Disease Progression
+
+Recent Findings
+
+Treatment Progress
+
+Evidence
+
+Confidence
+
+--------------------------------------------------
+
+14. Digital Twin Section
+
+Provide quick access to the Digital Twin.
+
+Display
+
+Open Digital Twin
+
+Current Disease Status
+
+Last Updated
+
+Comparison Available
+
+--------------------------------------------------
+
+15. Tasks Section
+
+Display
+
+Assigned Tasks
+
+Completed Tasks
+
+Pending Tasks
+
+Each task should display
+
+Title
+
+Assigned Date
+
+Status
+
+Review
+
+--------------------------------------------------
+
+16. Notes Section
+
+Display
+
+Patient Notes
+
+Private Clinical Notes
+
+Patient Notes
+
+Visible to patient.
+
+Private Notes
+
+Visible only to the oncologist.
+
+--------------------------------------------------
+
+17. Search
+
+Allow searching within the patient's records.
+
+Search should include
+
+Reports
+
+Timeline
+
+Tasks
+
+Notes
+
+--------------------------------------------------
+
+18. Filters
+
+Support filtering by
+
+Report Type
+
+Date
+
+Timeline Events
+
+Task Status
+
+--------------------------------------------------
+
+19. User Actions
+
+Open Report
+
+Open Timeline
+
+Open Patient Intelligence
+
+Open Digital Twin
+
+Assign Task
+
+Write Patient Note
+
+Write Private Clinical Note
+
+Search Records
+
+Filter Records
+
+--------------------------------------------------
+
+20. Business Rules
+
+Each Patient Profile belongs to only one patient.
+
+Only the assigned oncologist can access the Patient Profile.
+
+Patients cannot edit medical information.
+
+Patients cannot modify reports.
+
+Private Clinical Notes are never visible to patients.
+
+Original reports must never be modified.
+
+--------------------------------------------------
+
+21. Performance Requirements
+
+Patient information should load quickly.
+
+Large report collections should support pagination.
+
+Timeline should load efficiently.
+
+Digital Twin should open without blocking the rest of the page.
+
+--------------------------------------------------
+
+22. Accessibility
+
+Support keyboard navigation.
+
+Maintain readable typography.
+
+Maintain proper spacing.
+
+Provide descriptive labels for interactive elements.
+
+--------------------------------------------------
+
+23. Completion Criteria
+
+The Patient Profile is complete when
+
+Patient information is displayed.
+
+Medical history is displayed.
+
+Reports are accessible.
+
+Timeline is accessible.
+
+Patient Intelligence is accessible.
+
+Digital Twin is accessible.
+
+Tasks are accessible.
+
+Notes are accessible.
+
+Navigation follows the approved application flow.
+
+The page is ready for backend integration.

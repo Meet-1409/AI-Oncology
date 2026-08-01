@@ -1,0 +1,605 @@
+03_Frontend_App_Flow.txt
+
+Project Name
+
+AI Oncology Patient Intelligence Platform
+
+Document Purpose
+
+This document defines the complete frontend flow of the application. Every page, navigation path, button action, and user journey must follow this document. Developers must not change the navigation or workflow unless instructed by the Product Owner.
+
+--------------------------------------------------
+
+1. User Roles
+
+There are only two user roles.
+
+Patient
+
+Oncologist
+
+Every screen belongs to one of these roles.
+
+--------------------------------------------------
+
+2. Public Website
+
+Landing Page
+
+↓
+
+About
+
+↓
+
+Features
+
+↓
+
+How It Works
+
+↓
+
+Contact
+
+↓
+
+Login
+
+The public website only provides information about the platform.
+
+No patient information is accessible without authentication.
+
+--------------------------------------------------
+
+3. Authentication Flow
+
+Landing Page
+
+↓
+
+Login
+
+↓
+
+Enter Credentials
+
+↓
+
+Authentication
+
+↓
+
+Redirect Based On Role
+
+Patient
+
+↓
+
+Patient Dashboard
+
+Oncologist
+
+↓
+
+Oncologist Dashboard
+
+If authentication fails
+
+↓
+
+Display Error
+
+↓
+
+Stay on Login Page
+
+--------------------------------------------------
+
+4. Patient Navigation
+
+Patient Dashboard
+
+├── Home
+├── Timeline
+├── Reports
+├── Tasks
+├── Notes
+├── Notifications
+├── Profile
+└── Settings
+
+The patient must always be able to return to the Dashboard from any page.
+
+--------------------------------------------------
+
+5. Oncologist Navigation
+
+Oncologist Dashboard
+
+├── Home
+├── Patient List
+├── Patient Profile
+├── Timeline
+├── Reports
+├── Patient Intelligence
+├── Digital Twin
+├── Tasks
+├── Notes
+├── Notifications
+├── Profile
+└── Settings
+
+--------------------------------------------------
+
+6. Patient Workflow
+
+Patient opens application.
+
+↓
+
+Login.
+
+↓
+
+Dashboard loads.
+
+↓
+
+Patient checks assigned tasks.
+
+↓
+
+If a task requires a report upload
+
+↓
+
+Patient uploads report.
+
+↓
+
+Upload completes.
+
+↓
+
+Patient receives confirmation.
+
+↓
+
+Timeline updates.
+
+↓
+
+Patient reads any notes from the oncologist.
+
+↓
+
+Logout.
+
+--------------------------------------------------
+
+7. Oncologist Workflow
+
+Oncologist opens application.
+
+↓
+
+Login.
+
+↓
+
+Dashboard loads.
+
+↓
+
+View assigned patients.
+
+↓
+
+Select patient.
+
+↓
+
+Patient Profile opens.
+
+↓
+
+Review Patient Intelligence.
+
+↓
+
+Review Timeline.
+
+↓
+
+Review Reports.
+
+↓
+
+Review Digital Twin.
+
+↓
+
+Assign tasks if needed.
+
+↓
+
+Write patient notes.
+
+↓
+
+Write private clinical notes.
+
+↓
+
+Save.
+
+↓
+
+Logout.
+
+--------------------------------------------------
+
+8. Dashboard Flow
+
+Dashboard displays
+
+Patient Overview
+
+Recent Activity
+
+Notifications
+
+Pending Tasks
+
+Recent Uploads
+
+Quick Navigation
+
+The dashboard should provide access to every major module.
+
+--------------------------------------------------
+
+9. Patient Profile Flow
+
+Patient List
+
+↓
+
+Select Patient
+
+↓
+
+Patient Profile
+
+↓
+
+Patient Information
+
+↓
+
+Timeline
+
+↓
+
+Reports
+
+↓
+
+Digital Twin
+
+↓
+
+Patient Intelligence
+
+↓
+
+Tasks
+
+↓
+
+Notes
+
+--------------------------------------------------
+
+10. Report Flow
+
+Patient uploads report.
+
+↓
+
+Upload validation.
+
+↓
+
+Upload complete.
+
+↓
+
+Processing status shown.
+
+↓
+
+Report added to Report Library.
+
+↓
+
+Timeline updated.
+
+↓
+
+AI processing begins.
+
+↓
+
+Results become available.
+
+--------------------------------------------------
+
+11. Timeline Flow
+
+Timeline opens.
+
+↓
+
+Clinical events displayed.
+
+↓
+
+Select event.
+
+↓
+
+Related report opens.
+
+↓
+
+Evidence available.
+
+↓
+
+Return to timeline.
+
+--------------------------------------------------
+
+12. Digital Twin Flow
+
+Open Digital Twin.
+
+↓
+
+3D model loads.
+
+↓
+
+Rotate.
+
+↓
+
+Zoom.
+
+↓
+
+Pan.
+
+↓
+
+Select date.
+
+↓
+
+Model updates.
+
+↓
+
+Compare with previous date.
+
+↓
+
+Evidence panel updates.
+
+--------------------------------------------------
+
+13. Patient Intelligence Flow
+
+Open Patient Intelligence.
+
+↓
+
+Clinical Summary.
+
+↓
+
+Disease Progression.
+
+↓
+
+Treatment Progress.
+
+↓
+
+Supporting Evidence.
+
+↓
+
+Confidence Information.
+
+--------------------------------------------------
+
+14. Task Flow
+
+Oncologist creates task.
+
+↓
+
+Task assigned.
+
+↓
+
+Patient notified.
+
+↓
+
+Patient uploads requested information.
+
+↓
+
+Task marked completed.
+
+↓
+
+Oncologist reviews submission.
+
+--------------------------------------------------
+
+15. Patient Notes Flow
+
+Oncologist writes note.
+
+↓
+
+Patient notified.
+
+↓
+
+Patient opens Notes.
+
+↓
+
+Reads instructions.
+
+--------------------------------------------------
+
+16. Private Clinical Notes Flow
+
+Oncologist opens Private Notes.
+
+↓
+
+Write observation.
+
+↓
+
+Save.
+
+↓
+
+Visible only to the oncologist.
+
+--------------------------------------------------
+
+17. Notifications
+
+Patient Notifications
+
+New task.
+
+Task completed.
+
+Report uploaded.
+
+New patient note.
+
+Oncologist Notifications
+
+Patient uploaded report.
+
+Patient completed task.
+
+AI processing completed.
+
+System alerts.
+
+--------------------------------------------------
+
+18. Search Flow
+
+Oncologist opens search.
+
+↓
+
+Search patient.
+
+↓
+
+Select patient.
+
+↓
+
+Patient Profile opens.
+
+--------------------------------------------------
+
+19. Empty States
+
+No reports uploaded.
+
+Display upload prompt.
+
+No tasks assigned.
+
+Display informative message.
+
+No notifications.
+
+Display empty notification screen.
+
+No notes available.
+
+Display empty notes page.
+
+--------------------------------------------------
+
+20. Error States
+
+Failed login.
+
+Incorrect credentials.
+
+Failed upload.
+
+Network error.
+
+Session expired.
+
+Page not found.
+
+Permission denied.
+
+Every error should display a clear message and provide a way to continue.
+
+--------------------------------------------------
+
+21. Logout Flow
+
+User selects Logout.
+
+↓
+
+Confirmation.
+
+↓
+
+Session ends.
+
+↓
+
+Return to Login Page.
+
+--------------------------------------------------
+
+22. Navigation Rules
+
+Navigation must remain consistent across all pages.
+
+The sidebar should remain identical throughout authenticated pages.
+
+Users should always know where they are.
+
+Users should never lose navigation context.
+
+Every page should be reachable within a maximum of three interactions.
+
+Back navigation should never lose unsaved work.
+
+All workflows should remain simple and predictable.

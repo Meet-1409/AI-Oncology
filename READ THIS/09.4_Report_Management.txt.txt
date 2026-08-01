@@ -1,0 +1,433 @@
+09.4_Report_Management.txt
+
+Project Name
+
+AI Oncology Patient Intelligence Platform
+
+Feature Name
+
+Report Management
+
+Document Purpose
+
+This document defines the complete Report Management module. It covers report upload, report organization, report viewing, report processing status, report comparison, and report history.
+
+--------------------------------------------------
+
+1. Purpose
+
+The Report Management module serves as the central repository for every medical report uploaded by the patient.
+
+It allows patients to upload reports and allows oncologists to review, search, filter, compare, and organize reports throughout the patient's cancer journey.
+
+--------------------------------------------------
+
+2. Target Users
+
+Patient
+
+Oncologist
+
+--------------------------------------------------
+
+3. Objectives
+
+Allow patients to upload reports.
+
+Store reports permanently.
+
+Automatically organize reports.
+
+Allow report searching.
+
+Allow report filtering.
+
+Allow report comparison.
+
+Allow report preview.
+
+Maintain report history.
+
+--------------------------------------------------
+
+4. Report Types
+
+The platform should support reports including
+
+Pathology Reports
+
+MRI Reports
+
+CT Reports
+
+PET Scan Reports
+
+Blood Test Reports
+
+Biopsy Reports
+
+Histopathology Reports
+
+Surgery Reports
+
+Discharge Summaries
+
+Prescriptions
+
+Follow-up Reports
+
+Other Medical Documents
+
+--------------------------------------------------
+
+5. Report Upload
+
+Patients can upload reports.
+
+Upload methods
+
+Drag and Drop
+
+Browse Files
+
+Multiple File Upload
+
+After upload
+
+Validate file.
+
+Store original file.
+
+Display upload confirmation.
+
+Display processing status.
+
+--------------------------------------------------
+
+6. Supported File Types
+
+PDF
+
+JPG
+
+JPEG
+
+PNG
+
+DICOM (Future Support)
+
+Additional formats may be added later.
+
+--------------------------------------------------
+
+7. Upload Validation
+
+Validate
+
+File Type
+
+File Size
+
+Corrupted Files
+
+Duplicate Uploads
+
+Display appropriate validation messages.
+
+--------------------------------------------------
+
+8. Report Library
+
+Display every uploaded report.
+
+Each report should display
+
+Report Name
+
+Report Type
+
+Hospital or Diagnostic Centre
+
+Upload Date
+
+Report Date
+
+Processing Status
+
+View Report
+
+--------------------------------------------------
+
+9. Report Details
+
+Opening a report should display
+
+Original Report
+
+Report Information
+
+Report Metadata
+
+AI Summary
+
+Supporting Evidence
+
+Confidence Information
+
+Related Timeline Events
+
+--------------------------------------------------
+
+10. Search
+
+Search reports using
+
+Report Name
+
+Report Type
+
+Hospital
+
+Keywords
+
+Report Date
+
+--------------------------------------------------
+
+11. Filters
+
+Support filters for
+
+Report Type
+
+Date Range
+
+Hospital
+
+Processing Status
+
+Latest Reports
+
+Oldest Reports
+
+--------------------------------------------------
+
+12. Sorting
+
+Allow sorting by
+
+Newest First
+
+Oldest First
+
+Report Name
+
+Report Type
+
+Hospital
+
+--------------------------------------------------
+
+13. Report Comparison
+
+Allow the oncologist to compare reports.
+
+Comparison should display
+
+Previous Report
+
+Current Report
+
+Detected Changes
+
+Supporting Evidence
+
+Confidence
+
+The original reports should always remain available.
+
+--------------------------------------------------
+
+14. Processing Status
+
+Each uploaded report should display
+
+Uploaded
+
+Processing
+
+Processed
+
+Processing Failed
+
+Status should update automatically after refresh.
+
+--------------------------------------------------
+
+15. Report Preview
+
+Allow users to preview reports without downloading.
+
+Support
+
+Zoom
+
+Page Navigation
+
+Full Screen
+
+Search within Report (Future)
+
+--------------------------------------------------
+
+16. Timeline Integration
+
+Every uploaded report automatically becomes part of the patient's timeline.
+
+Each report should link to
+
+Timeline
+
+Patient Intelligence
+
+Digital Twin
+
+--------------------------------------------------
+
+17. AI Integration
+
+After upload
+
+Backend stores report.
+
+AI processes report.
+
+Results become available.
+
+Patient Intelligence updates.
+
+Timeline updates.
+
+Digital Twin updates.
+
+--------------------------------------------------
+
+18. User Actions
+
+Upload Report
+
+Open Report
+
+Preview Report
+
+Compare Reports
+
+Search Reports
+
+Filter Reports
+
+Sort Reports
+
+Download Original Report
+
+--------------------------------------------------
+
+19. Business Rules
+
+Patients can upload reports.
+
+Patients cannot edit uploaded reports.
+
+Patients cannot delete uploaded reports.
+
+Original reports remain unchanged.
+
+Reports remain permanently linked to the Patient Case.
+
+Every uploaded report becomes part of the patient's permanent medical history.
+
+--------------------------------------------------
+
+20. Empty States
+
+No Reports Uploaded
+
+Display upload prompt.
+
+No Search Results
+
+Display informative message.
+
+No Matching Filters
+
+Display informative message.
+
+--------------------------------------------------
+
+21. Error States
+
+Invalid File
+
+Upload Failed
+
+Unsupported Format
+
+Duplicate File
+
+Network Error
+
+Display clear recovery instructions.
+
+--------------------------------------------------
+
+22. Performance Requirements
+
+Large report collections should support pagination.
+
+Report previews should load efficiently.
+
+Search should remain responsive.
+
+Filtering and sorting should update quickly.
+
+Large PDF files should not block the interface.
+
+--------------------------------------------------
+
+23. Accessibility
+
+Support keyboard navigation.
+
+Maintain readable typography.
+
+Provide descriptive labels for every action.
+
+Support screen readers where applicable.
+
+--------------------------------------------------
+
+24. Completion Criteria
+
+The Report Management module is complete when
+
+Patients can upload reports.
+
+Reports are stored successfully.
+
+Reports are organized correctly.
+
+Search functions correctly.
+
+Filters function correctly.
+
+Sorting functions correctly.
+
+Report preview functions correctly.
+
+Report comparison functions correctly.
+
+Processing status is displayed.
+
+Timeline integration is complete.
+
+The module is ready for backend integration.

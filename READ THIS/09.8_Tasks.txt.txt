@@ -1,0 +1,387 @@
+09.8_Tasks.txt
+
+Project Name
+
+AI Oncology Patient Intelligence Platform
+
+Feature Name
+
+Tasks
+
+Document Purpose
+
+This document defines the Task Management module. The module allows oncologists to assign tasks to patients and allows patients to complete those tasks. Every task becomes part of the patient's journey and remains linked to the Patient Case.
+
+--------------------------------------------------
+
+1. Purpose
+
+The Task Management module helps the oncologist request additional information or follow-up actions from the patient.
+
+It provides a simple workflow for assigning, tracking, and completing patient tasks.
+
+--------------------------------------------------
+
+2. Target Users
+
+Patient
+
+Oncologist
+
+--------------------------------------------------
+
+3. Objectives
+
+Allow oncologists to assign tasks.
+
+Allow patients to view assigned tasks.
+
+Allow patients to complete tasks.
+
+Allow oncologists to review completed tasks.
+
+Maintain complete task history.
+
+--------------------------------------------------
+
+4. Task Workflow
+
+Oncologist creates task.
+
+↓
+
+Task assigned to patient.
+
+↓
+
+Patient receives notification.
+
+↓
+
+Patient views task.
+
+↓
+
+Patient completes task.
+
+↓
+
+Task submitted.
+
+↓
+
+Oncologist reviews submission.
+
+↓
+
+Task marked completed.
+
+--------------------------------------------------
+
+5. Task Information
+
+Every task should contain
+
+Task Title
+
+Short Description
+
+Instructions
+
+Assigned Date
+
+Due Date (Optional)
+
+Priority
+
+Current Status
+
+Assigned By
+
+--------------------------------------------------
+
+6. Task Categories
+
+The platform should support tasks including
+
+Upload CT Report
+
+Upload MRI Report
+
+Upload PET Scan Report
+
+Upload Pathology Report
+
+Upload Blood Test
+
+Upload Prescription
+
+Upload Discharge Summary
+
+Update Current Medication
+
+Upload Other Medical Documents
+
+Custom Task
+
+--------------------------------------------------
+
+7. Task Status
+
+Every task should display its current status.
+
+Available statuses
+
+Pending
+
+In Progress
+
+Completed
+
+Cancelled
+
+--------------------------------------------------
+
+8. Patient View
+
+Patients should be able to
+
+View assigned tasks.
+
+Read task instructions.
+
+Upload requested documents.
+
+Track task status.
+
+View completed tasks.
+
+Patients cannot edit assigned tasks.
+
+Patients cannot delete assigned tasks.
+
+--------------------------------------------------
+
+9. Oncologist View
+
+Oncologists should be able to
+
+Create tasks.
+
+Assign tasks.
+
+View task status.
+
+Review completed tasks.
+
+Cancel tasks.
+
+Create custom tasks.
+
+--------------------------------------------------
+
+10. Task Details
+
+Opening a task should display
+
+Task Title
+
+Instructions
+
+Assigned Date
+
+Due Date
+
+Priority
+
+Current Status
+
+Uploaded Files
+
+Completion History
+
+--------------------------------------------------
+
+11. File Upload
+
+If a task requires report submission
+
+The patient should be able to
+
+Upload files.
+
+Replace failed uploads.
+
+View upload progress.
+
+Receive upload confirmation.
+
+--------------------------------------------------
+
+12. Search
+
+Support searching by
+
+Task Title
+
+Patient Name
+
+Status
+
+Date
+
+--------------------------------------------------
+
+13. Filters
+
+Support filtering by
+
+Pending
+
+Completed
+
+Cancelled
+
+Priority
+
+Date
+
+--------------------------------------------------
+
+14. Sorting
+
+Support sorting by
+
+Newest First
+
+Oldest First
+
+Due Date
+
+Priority
+
+Status
+
+--------------------------------------------------
+
+15. Notifications
+
+Patients should receive notifications when
+
+A new task is assigned.
+
+A task is updated.
+
+A task is cancelled.
+
+A task is reviewed.
+
+Oncologists should receive notifications when
+
+A patient completes a task.
+
+A patient uploads requested files.
+
+--------------------------------------------------
+
+16. Timeline Integration
+
+Every task should automatically appear in the patient's Timeline.
+
+Timeline events should include
+
+Task Assigned
+
+Task Updated
+
+Task Completed
+
+--------------------------------------------------
+
+17. Business Rules
+
+Only oncologists can create tasks.
+
+Only the assigned patient can complete tasks.
+
+Completed tasks cannot be edited.
+
+Cancelled tasks remain in the patient's history.
+
+Every completed task remains permanently linked to the Patient Case.
+
+--------------------------------------------------
+
+18. Empty States
+
+No Tasks Assigned
+
+Display informative message.
+
+No Completed Tasks
+
+Display informative message.
+
+--------------------------------------------------
+
+19. Error States
+
+Task Creation Failed
+
+Task Update Failed
+
+Upload Failed
+
+Network Error
+
+Permission Denied
+
+Display clear recovery instructions.
+
+--------------------------------------------------
+
+20. Performance Requirements
+
+Task list should load quickly.
+
+Large task lists should support pagination.
+
+Status updates should appear immediately after refresh.
+
+--------------------------------------------------
+
+21. Accessibility
+
+Support keyboard navigation.
+
+Maintain readable typography.
+
+Provide descriptive labels for every action.
+
+Maintain consistent spacing.
+
+--------------------------------------------------
+
+22. Completion Criteria
+
+The Task module is complete when
+
+Oncologists can create tasks.
+
+Patients can view tasks.
+
+Patients can complete tasks.
+
+Task statuses update correctly.
+
+Notifications function correctly.
+
+Timeline integration functions correctly.
+
+Search functions correctly.
+
+Filtering functions correctly.
+
+Sorting functions correctly.
+
+The module is ready for backend integration.

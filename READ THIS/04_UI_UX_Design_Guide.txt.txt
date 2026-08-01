@@ -1,0 +1,469 @@
+04_UI_UX_Design_Guide.txt
+
+Project Name
+
+AI Oncology Patient Intelligence Platform
+
+Document Purpose
+
+This document defines the complete visual identity and user experience of the platform. Every screen, component, interaction, animation, and layout must follow this document. The application should feel like enterprise healthcare software and maintain a consistent design language throughout the platform.
+
+--------------------------------------------------
+
+1. Design Philosophy
+
+The application should look modern, premium, and trustworthy.
+
+The design should focus on usability before aesthetics.
+
+Every screen should have a clear purpose.
+
+The interface should reduce cognitive load for doctors.
+
+The interface should remain simple for patients.
+
+The application should never look like:
+
+AI generated
+
+Low-code generated
+
+Template based
+
+Generic SaaS dashboard
+
+Student project
+
+Prototype
+
+Vibe coded
+
+--------------------------------------------------
+
+2. Design Principles
+
+Professional
+
+Minimal
+
+Modern
+
+Clean
+
+Readable
+
+Consistent
+
+Interactive
+
+Responsive
+
+Accessible
+
+--------------------------------------------------
+
+3. Visual Identity
+
+The interface should create trust.
+
+The design should feel suitable for hospitals, healthcare institutions, and enterprise medical software.
+
+Avoid unnecessary decorative elements.
+
+Avoid excessive gradients.
+
+Avoid gaming-style interfaces.
+
+Avoid flashy animations.
+
+--------------------------------------------------
+
+4. Layout
+
+Every authenticated page should follow the same structure.
+
+Top Navigation
+
+↓
+
+Left Sidebar
+
+↓
+
+Main Content Area
+
+↓
+
+Right Information Panel (only when required)
+
+The layout should remain consistent throughout the application.
+
+--------------------------------------------------
+
+5. Navigation
+
+Navigation should never change between pages.
+
+Sidebar items should remain in the same order.
+
+Icons should remain consistent.
+
+Navigation labels should remain unchanged.
+
+Current page should always be highlighted.
+
+--------------------------------------------------
+
+6. Typography
+
+Use one font family throughout the application.
+
+Headings should clearly separate sections.
+
+Body text should remain readable.
+
+Avoid large paragraphs.
+
+Maintain consistent spacing.
+
+--------------------------------------------------
+
+7. Color Guidelines
+
+Primary colors should represent trust and professionalism.
+
+Neutral colors should dominate the interface.
+
+Accent colors should only highlight important actions.
+
+Error messages should use red.
+
+Warnings should use amber.
+
+Success messages should use green.
+
+Information messages should use blue.
+
+Disease visualization inside the Digital Twin should use shades of red.
+
+--------------------------------------------------
+
+8. Buttons
+
+Buttons should clearly indicate their purpose.
+
+Primary buttons should represent the main action.
+
+Secondary buttons should represent optional actions.
+
+Danger buttons should only be used for destructive actions.
+
+Buttons should provide hover and click feedback.
+
+--------------------------------------------------
+
+9. Forms
+
+Every input should have a label.
+
+Validation messages should be clear.
+
+Required fields should be obvious.
+
+Error messages should explain how to fix the issue.
+
+Forms should remain simple.
+
+--------------------------------------------------
+
+10. Tables
+
+Tables should support:
+
+Sorting
+
+Filtering
+
+Searching
+
+Pagination
+
+Responsive layouts
+
+Long text should never break layouts.
+
+--------------------------------------------------
+
+11. Cards
+
+Cards should group related information.
+
+Every card should have a clear hierarchy.
+
+Important information should appear first.
+
+Cards should maintain consistent spacing.
+
+--------------------------------------------------
+
+12. Dashboard
+
+Dashboards should provide an overview before details.
+
+The most important information should appear first.
+
+Avoid clutter.
+
+Information should be grouped logically.
+
+--------------------------------------------------
+
+13. Digital Twin
+
+The Digital Twin is the flagship feature.
+
+The interface should prioritize the Digital Twin when opened.
+
+The Digital Twin should support:
+
+Rotation
+
+Zoom
+
+Pan
+
+Timeline slider
+
+Side-by-side comparison
+
+Organ interaction
+
+Evidence panel
+
+Disease visualization
+
+The interface around the Digital Twin should never distract from the model.
+
+--------------------------------------------------
+
+14. Timeline
+
+Timeline should be easy to understand.
+
+Clinical events should appear chronologically.
+
+Every event should display:
+
+Date
+
+Type
+
+Title
+
+Summary
+
+Selecting an event should open its details.
+
+--------------------------------------------------
+
+15. Reports
+
+Reports should be easy to browse.
+
+Support:
+
+Search
+
+Filter
+
+Sort
+
+Preview
+
+Comparison
+
+Version history
+
+Report status should always be visible.
+
+--------------------------------------------------
+
+16. Patient Dashboard
+
+Patients should immediately see:
+
+Assigned Tasks
+
+Recent Notes
+
+Recent Uploads
+
+Timeline
+
+Notifications
+
+The interface should remain simple.
+
+Medical terminology should be minimized.
+
+--------------------------------------------------
+
+17. Oncologist Dashboard
+
+Doctors should immediately see:
+
+Assigned Patients
+
+Recent Activity
+
+Pending Reports
+
+AI Processing Status
+
+Notifications
+
+Quick Search
+
+Dashboard information should help doctors begin their work quickly.
+
+--------------------------------------------------
+
+18. Animations
+
+Animations should improve usability.
+
+Use animations only for:
+
+Page transitions
+
+Loading states
+
+Notifications
+
+Timeline transitions
+
+Digital Twin transitions
+
+Avoid decorative animations.
+
+Animations should remain smooth.
+
+--------------------------------------------------
+
+19. Loading States
+
+Every page should display loading feedback.
+
+Large content should load progressively.
+
+Never display a blank screen during loading.
+
+--------------------------------------------------
+
+20. Empty States
+
+Every empty page should explain why it is empty.
+
+Examples:
+
+No reports uploaded.
+
+No assigned tasks.
+
+No notifications.
+
+No notes.
+
+Provide the next possible action whenever appropriate.
+
+--------------------------------------------------
+
+21. Error States
+
+Every error should:
+
+Explain the problem.
+
+Explain what the user can do next.
+
+Avoid technical language.
+
+Allow recovery whenever possible.
+
+--------------------------------------------------
+
+22. Notifications
+
+Notifications should be short.
+
+Easy to understand.
+
+Clearly categorized.
+
+Dismissible.
+
+--------------------------------------------------
+
+23. Responsive Design
+
+Desktop is the primary platform.
+
+Tablet should remain fully functional.
+
+Mobile should support patient workflows.
+
+Layouts should adapt without losing functionality.
+
+--------------------------------------------------
+
+24. Accessibility
+
+Maintain proper color contrast.
+
+Support keyboard navigation.
+
+Use readable font sizes.
+
+Maintain proper spacing.
+
+Do not rely only on color to communicate information.
+
+--------------------------------------------------
+
+25. Consistency
+
+Every page should use the same:
+
+Spacing
+
+Typography
+
+Buttons
+
+Forms
+
+Cards
+
+Tables
+
+Icons
+
+Navigation
+
+Interactions
+
+Design patterns
+
+--------------------------------------------------
+
+26. Final Design Rules
+
+Every interface should feel intentional.
+
+Every interaction should have a purpose.
+
+Every page should be easy to understand without training.
+
+The platform should reflect the quality of enterprise healthcare software.
+
+The interface should create confidence and trust for both patients and oncologists.

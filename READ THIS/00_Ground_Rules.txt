@@ -1,0 +1,270 @@
+00_Ground_Rules.txt
+
+Project Name
+
+AI Oncology Patient Intelligence Platform
+
+Project Purpose
+
+This document defines the permanent rules of the project. Every developer, designer, AI model, and contributor must follow these rules throughout development. These rules are the highest priority and cannot be overridden unless the Product Owner explicitly changes them.
+
+--------------------------------------------------
+
+1. Project Vision
+
+1.1 The platform is built to help oncologists understand a patient's complete cancer journey.
+
+1.2 The platform assists doctors and never replaces their medical judgement.
+
+1.3 Every feature must solve a real clinical problem.
+
+1.4 Every feature must improve the workflow of either the patient or the oncologist.
+
+--------------------------------------------------
+
+2. User Roles
+
+2.1 There are only two user roles.
+
+- Patient
+- Oncologist
+
+2.2 No other doctors or healthcare professionals will use the platform directly.
+
+2.3 Every patient is assigned to one primary oncologist.
+
+--------------------------------------------------
+
+3. Patient Case
+
+3.1 Everything belongs to a Patient Case.
+
+3.2 Every report remains linked to the Patient Case.
+
+3.3 Every AI result remains linked to the Patient Case.
+
+3.4 Every note remains linked to the Patient Case.
+
+3.5 Every task remains linked to the Patient Case.
+
+3.6 Every timeline event remains linked to the Patient Case.
+
+3.7 Patient history must never be deleted.
+
+--------------------------------------------------
+
+4. Patient Reports
+
+4.1 Patients upload their own reports.
+
+4.2 Reports may come from any hospital, laboratory or diagnostic centre.
+
+4.3 The platform is independent of hospitals.
+
+4.4 Original reports must always be preserved.
+
+4.5 Reports must never be modified.
+
+4.6 Previous reports must always remain accessible.
+
+--------------------------------------------------
+
+5. Artificial Intelligence
+
+5.1 AI is an assistant.
+
+5.2 AI never replaces the oncologist.
+
+5.3 AI organizes patient information.
+
+5.4 AI summarizes reports.
+
+5.5 AI compares reports.
+
+5.6 AI builds the patient's clinical timeline.
+
+5.7 AI must only use validated patient data.
+
+5.8 AI must never create information that does not exist.
+
+5.9 Every AI output must display supporting evidence.
+
+5.10 Every AI output must display confidence.
+
+5.11 Doctors must always be able to verify AI outputs.
+
+--------------------------------------------------
+
+6. Digital Twin
+
+6.1 Every patient must have an interactive Digital Twin.
+
+6.2 The Digital Twin is a clinical visualization.
+
+6.3 The Digital Twin is generated using patient information and available medical data.
+
+6.4 The Digital Twin is not an exact copy of the patient's appearance.
+
+6.5 The Digital Twin should represent the patient's body structure using available patient information.
+
+6.6 Cancer should be displayed on the correct organs whenever supported by the available data.
+
+6.7 Disease severity should be represented using different shades of red.
+
+6.8 Disease progression should be visible across time.
+
+6.9 Doctors must be able to rotate the model.
+
+6.10 Doctors must be able to zoom the model.
+
+6.11 Doctors must be able to pan the model.
+
+6.12 Camera movement must never change medical information.
+
+6.13 Transitions between different clinical dates must be smooth.
+
+6.14 Previous and current patient states must be comparable side by side.
+
+--------------------------------------------------
+
+7. Patient Management
+
+7.1 Patients can upload reports.
+
+7.2 Oncologists can assign tasks to patients.
+
+7.3 Patients complete tasks by uploading requested information.
+
+7.4 Oncologists can write notes for patients.
+
+7.5 Oncologists can maintain private clinical notes.
+
+7.6 Patients can only view notes intended for them.
+
+7.7 Patients cannot view private clinical notes.
+
+--------------------------------------------------
+
+8. Patient Portal
+
+8.1 Patients can upload reports.
+
+8.2 Patients can view assigned tasks.
+
+8.3 Patients can read oncologist notes intended for them.
+
+8.4 Patients can view their medical timeline.
+
+8.5 Patients can only access information intended for them.
+
+--------------------------------------------------
+
+9. Security
+
+9.1 Patient data must always remain secure.
+
+9.2 Only authorized users may access patient data.
+
+9.3 Every login must be recorded.
+
+9.4 Every important action must be recorded.
+
+9.5 Role-based access control is mandatory.
+
+9.6 Multi-factor authentication must be supported.
+
+--------------------------------------------------
+
+10. User Interface
+
+10.1 The interface must be clean.
+
+10.2 The interface must be easy to understand.
+
+10.3 Important information must always be easy to find.
+
+10.4 The application must look like professional healthcare software.
+
+10.5 The application must not look AI generated.
+
+10.6 The application must not look low-code generated.
+
+10.7 The application must not look like a generic dashboard template.
+
+10.8 Animations must improve usability.
+
+10.9 Every page must have a clear purpose.
+
+10.10 The design language must remain consistent across the platform.
+
+--------------------------------------------------
+
+11. Performance
+
+11.1 The application must remain responsive.
+
+11.2 Large reports must not slow down the application.
+
+11.3 The Digital Twin must remain smooth during interaction.
+
+11.4 The application should continue functioning even if AI processing is temporarily unavailable.
+
+--------------------------------------------------
+
+12. Explainability
+
+12.1 Every AI output must show where it came from.
+
+12.2 Every visualization must be linked to clinical evidence.
+
+12.3 Doctors must always be able to verify AI-generated information.
+
+--------------------------------------------------
+
+13. Timeline
+
+13.1 Every clinical event must appear in chronological order.
+
+13.2 Disease progression must be visible over time.
+
+13.3 Historical information must never be removed.
+
+13.4 Every uploaded report becomes part of the patient's permanent timeline.
+
+--------------------------------------------------
+
+14. Development Rules
+
+14.1 New features must follow every rule in this document.
+
+14.2 Existing functionality must never be broken while adding new features.
+
+14.3 Every component should be reusable whenever possible.
+
+14.4 Every page should follow the approved navigation structure.
+
+14.5 Every implementation should follow the project documentation.
+
+--------------------------------------------------
+
+15. Assistant Rules
+
+15.1 The assistant follows the Product Owner's decisions exactly.
+
+15.2 The assistant never changes the project scope unless instructed.
+
+15.3 The assistant never adds features unless instructed.
+
+15.4 The assistant never removes features unless instructed.
+
+15.5 The assistant never redesigns workflows unless instructed.
+
+15.6 The assistant asks questions whenever requirements are unclear.
+
+15.7 The assistant points out only factual implementation consequences when required.
+
+15.8 The assistant keeps every project document consistent with previous approved decisions.
+
+15.9 The assistant writes in simple human language unless instructed otherwise.
+
+15.10 The Ground Rules document is the highest priority document in the project.

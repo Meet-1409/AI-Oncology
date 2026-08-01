@@ -1,0 +1,403 @@
+02_Technical_Requirements_Document.txt
+
+Project Name
+
+AI Oncology Patient Intelligence Platform
+
+Document Purpose
+
+This document defines the technical requirements of the platform. Every developer must follow these requirements throughout development. The technology stack must remain consistent unless the Product Owner changes it.
+
+--------------------------------------------------
+
+1. Project Architecture
+
+The application consists of four major parts.
+
+Frontend
+
+Backend
+
+Artificial Intelligence Services
+
+Cloud Infrastructure
+
+Each part should remain independent and communicate through APIs.
+
+--------------------------------------------------
+
+2. Frontend
+
+The frontend is responsible for:
+
+Landing Page
+
+Authentication
+
+Patient Dashboard
+
+Oncologist Dashboard
+
+Patient Profile
+
+Timeline
+
+Report Library
+
+Digital Twin
+
+Patient Intelligence
+
+Tasks
+
+Notes
+
+Settings
+
+Notifications
+
+The frontend must never contain business logic.
+
+The frontend must communicate with the backend only through APIs.
+
+--------------------------------------------------
+
+3. Backend
+
+The backend is responsible for:
+
+Authentication
+
+Authorization
+
+Patient Management
+
+Report Management
+
+Timeline Management
+
+Digital Twin Data
+
+Task Management
+
+Notes Management
+
+Notifications
+
+AI Integration
+
+Database Operations
+
+File Storage
+
+Audit Logs
+
+--------------------------------------------------
+
+4. Artificial Intelligence
+
+The AI system is responsible for:
+
+Reading reports
+
+Organizing reports
+
+Classifying reports
+
+Extracting important information
+
+Generating summaries
+
+Comparing reports
+
+Building patient timelines
+
+Generating Patient Intelligence
+
+Providing evidence
+
+Providing confidence
+
+The AI should never modify original reports.
+
+--------------------------------------------------
+
+5. Database
+
+The database stores:
+
+Users
+
+Patients
+
+Reports
+
+Timeline Events
+
+Tasks
+
+Patient Notes
+
+Private Clinical Notes
+
+AI Results
+
+Notifications
+
+Audit Logs
+
+Application Settings
+
+--------------------------------------------------
+
+6. Authentication
+
+Every user must log in.
+
+Only authenticated users may access the platform.
+
+Patients can access only their own data.
+
+Oncologists can access only their assigned patients.
+
+Sessions must remain secure.
+
+--------------------------------------------------
+
+7. Authorization
+
+Role-based access control is mandatory.
+
+Patient permissions:
+
+View own profile
+
+Upload reports
+
+View timeline
+
+View assigned tasks
+
+View patient notes
+
+Update profile
+
+Oncologist permissions:
+
+View assigned patients
+
+Review reports
+
+Review timeline
+
+Review Digital Twin
+
+Review AI results
+
+Assign tasks
+
+Write patient notes
+
+Write private clinical notes
+
+--------------------------------------------------
+
+8. File Storage
+
+The platform stores:
+
+PDF Reports
+
+Images
+
+Scans
+
+Medical Documents
+
+Temporary AI Files
+
+Reports must never be modified after upload.
+
+Original files must always remain available.
+
+--------------------------------------------------
+
+9. API Rules
+
+Every frontend request must use an API.
+
+The frontend must never access the database directly.
+
+Every API should return consistent responses.
+
+Every API should return proper error messages.
+
+Authentication is required for protected APIs.
+
+--------------------------------------------------
+
+10. Security
+
+Sensitive information must remain encrypted.
+
+Passwords must never be stored as plain text.
+
+All communication must use HTTPS.
+
+Every important action must be logged.
+
+Patient information must remain private.
+
+--------------------------------------------------
+
+11. Digital Twin
+
+The frontend renders the Digital Twin.
+
+The backend provides the required patient data.
+
+The AI provides disease information.
+
+The Digital Twin should never generate medical information on its own.
+
+Every visualization should come from validated data.
+
+--------------------------------------------------
+
+12. Performance
+
+Large reports should load efficiently.
+
+Patient timelines should load quickly.
+
+Digital Twin interactions should remain smooth.
+
+The application should remain responsive.
+
+Heavy processing should happen in the background.
+
+--------------------------------------------------
+
+13. Error Handling
+
+Every error should display a meaningful message.
+
+The application should never crash because of invalid data.
+
+Missing data should be handled gracefully.
+
+Failed uploads should allow retry.
+
+AI failures should not stop the rest of the application.
+
+--------------------------------------------------
+
+14. Logging
+
+The system should record:
+
+User logins
+
+Report uploads
+
+Task creation
+
+Task completion
+
+Patient note creation
+
+Private note creation
+
+AI processing
+
+System errors
+
+--------------------------------------------------
+
+15. Notifications
+
+Patients receive notifications for:
+
+Assigned tasks
+
+Completed uploads
+
+New patient notes
+
+Important updates
+
+Oncologists receive notifications for:
+
+Completed patient tasks
+
+New report uploads
+
+AI processing completion
+
+System alerts
+
+--------------------------------------------------
+
+16. Scalability
+
+Frontend and backend should remain independent.
+
+AI services should remain independent.
+
+Every module should be replaceable without affecting the rest of the application.
+
+Future AI models should integrate without changing the overall architecture.
+
+--------------------------------------------------
+
+17. Development Standards
+
+Use modular architecture.
+
+Use reusable components.
+
+Keep frontend and backend independent.
+
+Use clear folder structures.
+
+Maintain consistent naming conventions.
+
+Write maintainable code.
+
+Avoid duplicated code.
+
+Follow project documentation.
+
+--------------------------------------------------
+
+18. Deployment
+
+Frontend
+
+Independent deployment.
+
+Backend
+
+Independent deployment.
+
+AI Services
+
+Independent deployment.
+
+Each service should be deployable without affecting the others.
+
+--------------------------------------------------
+
+19. Project Rules
+
+Never modify Ground Rules.
+
+Never change project scope.
+
+Never change user roles.
+
+Never redesign workflows.
+
+Never implement features outside the approved documentation.
+
+All development must follow the project documents.

@@ -1,0 +1,385 @@
+09.7_Patient_Intelligence.txt
+
+Project Name
+
+AI Oncology Patient Intelligence Platform
+
+Feature Name
+
+Patient Intelligence
+
+Document Purpose
+
+This document defines the Patient Intelligence module. This module combines all validated patient information into a single clinical overview. It helps the oncologist understand the patient's condition without manually reviewing every report first.
+
+--------------------------------------------------
+
+1. Purpose
+
+Patient Intelligence provides a complete overview of the patient's current clinical condition.
+
+It summarizes the patient's journey using validated information while keeping every AI output linked to its original evidence.
+
+The original reports always remain the source of truth.
+
+--------------------------------------------------
+
+2. Target User
+
+Oncologist
+
+--------------------------------------------------
+
+3. Objectives
+
+Provide a complete patient overview.
+
+Display AI-generated clinical summary.
+
+Display disease progression.
+
+Display treatment progression.
+
+Display supporting evidence.
+
+Display confidence.
+
+Provide quick access to related reports.
+
+--------------------------------------------------
+
+4. Module Layout
+
+Top Navigation
+
+↓
+
+Patient Information
+
+↓
+
+Clinical Summary
+
+↓
+
+Disease Overview
+
+↓
+
+Treatment Overview
+
+↓
+
+Disease Progression
+
+↓
+
+Supporting Evidence
+
+↓
+
+Confidence
+
+↓
+
+Related Reports
+
+--------------------------------------------------
+
+5. Patient Information
+
+Display
+
+Patient Name
+
+Patient ID
+
+Age
+
+Gender
+
+Primary Diagnosis
+
+Current Stage
+
+Current Treatment
+
+Treating Oncologist
+
+--------------------------------------------------
+
+6. Clinical Summary
+
+Display a structured overview generated from validated patient information.
+
+The summary should focus on
+
+Current Condition
+
+Important Clinical Findings
+
+Recent Changes
+
+Current Treatment Status
+
+Recent Investigations
+
+--------------------------------------------------
+
+7. Disease Overview
+
+Display
+
+Primary Cancer
+
+Primary Site
+
+Affected Organs
+
+Current Disease Status
+
+Disease Progression
+
+Disease Severity
+
+--------------------------------------------------
+
+8. Treatment Overview
+
+Display
+
+Current Treatment
+
+Previous Treatments
+
+Recent Treatment Changes
+
+Treatment Timeline
+
+--------------------------------------------------
+
+9. Disease Progression
+
+Display how the patient's condition has changed over time.
+
+Include
+
+Recent Improvements
+
+Recent Progression
+
+Stable Findings
+
+Recent Clinical Events
+
+--------------------------------------------------
+
+10. Report Summary
+
+Display a summary of important uploaded reports.
+
+Each report should display
+
+Report Name
+
+Report Type
+
+Report Date
+
+Summary
+
+View Report
+
+--------------------------------------------------
+
+11. Supporting Evidence
+
+Every AI-generated result must provide supporting evidence.
+
+Display
+
+Evidence Source
+
+Report Name
+
+Report Date
+
+Relevant Findings
+
+Open Report
+
+--------------------------------------------------
+
+12. Confidence
+
+Every AI-generated result should display its confidence.
+
+Confidence should be shown for
+
+Clinical Summary
+
+Disease Progression
+
+Report Comparison
+
+Disease Visualization
+
+--------------------------------------------------
+
+13. Timeline Integration
+
+Every section should link back to the patient's timeline.
+
+Users should be able to open the related timeline event directly.
+
+--------------------------------------------------
+
+14. Digital Twin Integration
+
+Patient Intelligence should connect directly to the Digital Twin.
+
+Users should be able to
+
+Open the Digital Twin.
+
+View the related disease visualization.
+
+Compare previous and current disease states.
+
+--------------------------------------------------
+
+15. Search
+
+Allow searching within Patient Intelligence.
+
+Search should include
+
+Clinical Findings
+
+Reports
+
+Treatments
+
+Timeline Events
+
+--------------------------------------------------
+
+16. Filters
+
+Support filtering by
+
+Date
+
+Treatment
+
+Report Type
+
+Disease Status
+
+--------------------------------------------------
+
+17. User Actions
+
+View Clinical Summary
+
+Open Timeline
+
+Open Report
+
+Open Digital Twin
+
+Search Information
+
+Filter Information
+
+--------------------------------------------------
+
+18. Business Rules
+
+Every Patient Intelligence result must be generated from validated patient information.
+
+Every AI output must be linked to supporting evidence.
+
+Every AI output must display confidence.
+
+The original report must always remain accessible.
+
+Patient Intelligence must never replace the original reports.
+
+--------------------------------------------------
+
+19. Empty States
+
+No Patient Intelligence Available
+
+Display informative message.
+
+No Supporting Evidence Available
+
+Display informative message.
+
+No Reports Available
+
+Display informative message.
+
+--------------------------------------------------
+
+20. Error States
+
+Unable to Generate Summary
+
+Missing Patient Data
+
+Network Error
+
+AI Processing Error
+
+Display clear recovery instructions.
+
+--------------------------------------------------
+
+21. Performance Requirements
+
+Patient Intelligence should load quickly.
+
+Large patient histories should remain responsive.
+
+Search and filtering should update efficiently.
+
+Opening related reports should not interrupt the current workflow.
+
+--------------------------------------------------
+
+22. Accessibility
+
+Support keyboard navigation.
+
+Maintain readable typography.
+
+Provide descriptive labels for every interactive element.
+
+Maintain consistent spacing.
+
+--------------------------------------------------
+
+23. Completion Criteria
+
+The Patient Intelligence module is complete when
+
+Clinical Summary is displayed.
+
+Disease Overview is displayed.
+
+Treatment Overview is displayed.
+
+Disease Progression is displayed.
+
+Supporting Evidence is displayed.
+
+Confidence is displayed.
+
+Timeline integration functions correctly.
+
+Digital Twin integration functions correctly.
+
+The module is ready for backend integration.

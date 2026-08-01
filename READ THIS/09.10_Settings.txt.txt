@@ -1,0 +1,343 @@
+09.10_Settings.txt
+
+Project Name
+
+AI Oncology Patient Intelligence Platform
+
+Feature Name
+
+Settings
+
+Document Purpose
+
+This document defines the Settings module. The Settings module allows users to manage their account, preferences, security, and application settings. The available options depend on the user's role.
+
+--------------------------------------------------
+
+1. Purpose
+
+The Settings module allows users to manage their account securely.
+
+Patients and oncologists can update their personal preferences without affecting clinical data.
+
+--------------------------------------------------
+
+2. Target Users
+
+Patient
+
+Oncologist
+
+--------------------------------------------------
+
+3. Objectives
+
+Allow users to manage their profile.
+
+Allow users to manage account security.
+
+Allow users to manage notification preferences.
+
+Allow users to change passwords.
+
+Allow users to securely log out from active sessions.
+
+--------------------------------------------------
+
+4. Settings Navigation
+
+Settings
+
+↓
+
+Account
+
+↓
+
+Security
+
+↓
+
+Notifications
+
+↓
+
+Preferences
+
+↓
+
+Sessions
+
+--------------------------------------------------
+
+5. Account Settings
+
+Display
+
+Profile Photo (Optional)
+
+Full Name
+
+Email Address
+
+Mobile Number
+
+Date of Birth
+
+Gender
+
+Update Profile
+
+Save Changes
+
+--------------------------------------------------
+
+6. Security Settings
+
+Allow users to
+
+Change Password
+
+Enable Multi-Factor Authentication
+
+View Active Sessions
+
+Logout from Other Devices
+
+Review Recent Login Activity
+
+--------------------------------------------------
+
+7. Notification Settings
+
+Allow users to control notifications.
+
+Patients can manage
+
+Task Notifications
+
+Report Upload Notifications
+
+Patient Notes
+
+General Notifications
+
+Oncologists can manage
+
+Patient Upload Notifications
+
+Task Completion Notifications
+
+AI Processing Notifications
+
+General Notifications
+
+--------------------------------------------------
+
+8. Preferences
+
+Allow users to customize
+
+Application Theme
+
+Language
+
+Date Format
+
+Time Format
+
+Time Zone
+
+--------------------------------------------------
+
+9. Active Sessions
+
+Display
+
+Current Device
+
+Device Name
+
+Browser
+
+Operating System
+
+Login Date
+
+Last Activity
+
+Users should be able to end any active session except the current one.
+
+--------------------------------------------------
+
+10. Privacy
+
+Display
+
+Privacy Policy
+
+Terms of Service
+
+Data Usage Information
+
+Users should be able to review these documents at any time.
+
+--------------------------------------------------
+
+11. User Actions
+
+Update Profile
+
+Save Changes
+
+Change Password
+
+Enable MFA
+
+Disable MFA
+
+Manage Notifications
+
+Change Preferences
+
+Logout Current Session
+
+Logout Other Sessions
+
+--------------------------------------------------
+
+12. Patient View
+
+Patients can
+
+Update profile.
+
+Manage password.
+
+Manage notifications.
+
+Manage preferences.
+
+Review active sessions.
+
+Patients cannot
+
+Modify clinical information.
+
+Modify reports.
+
+Modify timeline events.
+
+Modify AI results.
+
+--------------------------------------------------
+
+13. Oncologist View
+
+Oncologists can
+
+Update profile.
+
+Manage password.
+
+Manage notifications.
+
+Manage preferences.
+
+Review active sessions.
+
+Oncologists cannot
+
+Modify system settings.
+
+Modify application configuration.
+
+--------------------------------------------------
+
+14. Business Rules
+
+Every user manages only their own account.
+
+Passwords must never be displayed.
+
+Sensitive information must require authentication.
+
+Security settings must be protected.
+
+Multi-Factor Authentication should be supported.
+
+--------------------------------------------------
+
+15. Empty States
+
+No Active Sessions
+
+Display informative message.
+
+No Notifications Configured
+
+Display informative message.
+
+--------------------------------------------------
+
+16. Error States
+
+Failed to Update Profile
+
+Failed to Change Password
+
+Failed to Save Preferences
+
+Network Error
+
+Session Expired
+
+Permission Denied
+
+Display clear recovery instructions.
+
+--------------------------------------------------
+
+17. Performance Requirements
+
+Settings should load quickly.
+
+Profile updates should complete efficiently.
+
+Password changes should complete securely.
+
+Session updates should reflect immediately.
+
+--------------------------------------------------
+
+18. Accessibility
+
+Support keyboard navigation.
+
+Maintain readable typography.
+
+Provide descriptive labels for every setting.
+
+Maintain consistent spacing.
+
+--------------------------------------------------
+
+19. Completion Criteria
+
+The Settings module is complete when
+
+Users can update their profile.
+
+Users can change passwords.
+
+Users can manage notifications.
+
+Users can manage preferences.
+
+Users can review active sessions.
+
+Security features function correctly.
+
+Role-based access is maintained.
+
+The module is ready for backend integration.

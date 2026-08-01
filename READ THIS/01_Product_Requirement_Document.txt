@@ -1,0 +1,387 @@
+01_Product_Requirements_Document.txt
+
+Project Name
+
+AI Oncology Patient Intelligence Platform
+
+Document Purpose
+
+This document explains what the product is, who will use it, what problems it solves, the features included in the first version, and the future direction of the platform.
+
+--------------------------------------------------
+
+1. Product Overview
+
+The AI Oncology Patient Intelligence Platform is designed to help oncologists understand a patient's complete cancer journey from a single platform.
+
+Patients usually receive treatment from multiple hospitals, laboratories, and diagnostic centres. As a result, their reports are scattered across different locations and are difficult to review during follow-up consultations.
+
+This platform brings all patient reports together, organizes them, creates a complete timeline, and provides AI-assisted insights to help the oncologist understand the patient's condition more efficiently.
+
+The platform does not replace the oncologist. It only assists in organizing and presenting clinical information.
+
+--------------------------------------------------
+
+2. Problem Statement
+
+Cancer patients undergo multiple investigations throughout their treatment.
+
+These may include:
+
+- Pathology Reports
+- CT Scan Reports
+- MRI Reports
+- PET Scan Reports
+- Blood Tests
+- Biopsy Reports
+- Surgery Notes
+- Discharge Summaries
+- Prescriptions
+
+These reports are usually generated at different hospitals and over long periods of time.
+
+During follow-up visits, oncologists often need to review many reports before understanding the patient's current condition.
+
+This process is time consuming.
+
+Important information may be difficult to locate quickly.
+
+The platform solves this problem by organizing every report into one intelligent patient record.
+
+--------------------------------------------------
+
+3. Target Users
+
+Primary User
+
+- Oncologist
+
+Secondary User
+
+- Patient
+
+No other user roles are included in the first version.
+
+--------------------------------------------------
+
+4. Project Goals
+
+Create one place for all patient reports.
+
+Reduce the time required to understand a patient's history.
+
+Provide AI-assisted summaries of reports.
+
+Show disease progression over time.
+
+Provide an interactive Digital Twin.
+
+Allow patients to upload reports easily.
+
+Allow oncologists to assign tasks.
+
+Allow oncologists to write notes for patients.
+
+Maintain complete patient history.
+
+Provide healthcare-level security.
+
+--------------------------------------------------
+
+5. Product Objectives
+
+Organize patient reports automatically.
+
+Maintain a chronological timeline.
+
+Generate AI summaries.
+
+Provide evidence for every AI result.
+
+Provide confidence for every AI result.
+
+Visualize disease progression.
+
+Improve follow-up consultations.
+
+Reduce manual report searching.
+
+Improve clinical efficiency.
+
+--------------------------------------------------
+
+6. Core Features
+
+Patient Authentication
+
+Oncologist Authentication
+
+Patient Dashboard
+
+Oncologist Dashboard
+
+Patient Profile
+
+Patient Timeline
+
+Report Upload
+
+Report Library
+
+AI Report Summary
+
+AI Report Comparison
+
+Patient Intelligence Dashboard
+
+Interactive Digital Twin
+
+Patient Tasks
+
+Patient Notes
+
+Private Clinical Notes
+
+Settings
+
+Notifications
+
+--------------------------------------------------
+
+7. Digital Twin
+
+Every patient has an interactive Digital Twin.
+
+The Digital Twin represents the patient's body using available patient information.
+
+It is not intended to be an exact physical replica.
+
+The Digital Twin should:
+
+Display disease location.
+
+Display disease severity.
+
+Display disease progression.
+
+Support rotation.
+
+Support zoom.
+
+Support pan.
+
+Support timeline transitions.
+
+Support comparison between previous and current patient states.
+
+Display supporting evidence.
+
+--------------------------------------------------
+
+8. Artificial Intelligence
+
+The AI should:
+
+Read reports.
+
+Organize reports.
+
+Summarize reports.
+
+Compare reports.
+
+Build patient timelines.
+
+Identify disease progression.
+
+Generate patient intelligence.
+
+Display supporting evidence.
+
+Display confidence.
+
+AI must never replace medical judgement.
+
+--------------------------------------------------
+
+9. Patient Workflow
+
+Patient logs in.
+
+Patient views assigned tasks.
+
+Patient uploads requested reports.
+
+Patient views upload status.
+
+Patient views personal timeline.
+
+Patient reads oncologist notes.
+
+Patient updates profile if required.
+
+Patient logs out.
+
+--------------------------------------------------
+
+10. Oncologist Workflow
+
+Oncologist logs in.
+
+Oncologist opens assigned patient.
+
+Oncologist reviews patient profile.
+
+Oncologist reviews AI summary.
+
+Oncologist reviews timeline.
+
+Oncologist reviews Digital Twin.
+
+Oncologist reviews uploaded reports.
+
+Oncologist assigns patient tasks.
+
+Oncologist writes patient notes.
+
+Oncologist writes private clinical notes.
+
+Oncologist saves updates.
+
+Oncologist logs out.
+
+--------------------------------------------------
+
+11. Reports
+
+Patients upload reports.
+
+Original reports remain unchanged.
+
+Reports remain permanently stored.
+
+Reports are organized automatically.
+
+Reports become part of the patient's timeline.
+
+Previous reports remain available.
+
+--------------------------------------------------
+
+12. Patient Management
+
+Each patient is assigned to one oncologist.
+
+The oncologist manages the patient's case.
+
+The oncologist assigns tasks.
+
+The patient completes assigned tasks.
+
+The oncologist reviews uploaded information.
+
+--------------------------------------------------
+
+13. Notes
+
+Patient Notes
+
+Visible to the patient.
+
+Written in simple language.
+
+Used for instructions and follow-up.
+
+Private Clinical Notes
+
+Visible only to the oncologist.
+
+Used for clinical observations.
+
+Never shown to the patient.
+
+--------------------------------------------------
+
+14. Security
+
+Secure authentication.
+
+Role-based access.
+
+Encrypted patient data.
+
+Activity logging.
+
+Audit history.
+
+Secure file storage.
+
+Healthcare-level privacy.
+
+--------------------------------------------------
+
+15. Out of Scope
+
+The following features are not included in the first version.
+
+Doctor-to-doctor chat.
+
+Internal messaging.
+
+Tumor board discussions.
+
+Doctor collaboration.
+
+Hospital management.
+
+Appointment scheduling.
+
+Billing.
+
+Payment systems.
+
+Inventory management.
+
+Electronic prescriptions.
+
+Video consultations.
+
+Hospital administration.
+
+--------------------------------------------------
+
+16. Future Scope
+
+Future versions may include additional AI capabilities and imaging features.
+
+Future additions must follow the Ground Rules document.
+
+Future features must not change the existing product vision.
+
+--------------------------------------------------
+
+17. Success Criteria
+
+Patients can upload reports successfully.
+
+Oncologists can review complete patient history.
+
+Reports are organized automatically.
+
+The timeline is generated correctly.
+
+The Digital Twin displays disease progression.
+
+AI summaries include supporting evidence.
+
+Patient tasks function correctly.
+
+Patient notes function correctly.
+
+The platform remains secure, responsive, and easy to use.
+
+--------------------------------------------------
+
+18. Product Vision
+
+Build a secure AI-powered platform that gives every oncologist a complete, organized, and easy-to-understand view of a patient's cancer journey while allowing patients to manage and submit their medical information from one place.

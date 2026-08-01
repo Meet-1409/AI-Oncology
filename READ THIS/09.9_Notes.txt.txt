@@ -1,0 +1,367 @@
+09.9_Notes.txt
+
+Project Name
+
+AI Oncology Patient Intelligence Platform
+
+Feature Name
+
+Notes
+
+Document Purpose
+
+This document defines the Notes module. The module allows oncologists to write notes related to a patient's care. There are two types of notes: Patient Notes and Private Clinical Notes. Every note remains linked to the Patient Case.
+
+--------------------------------------------------
+
+1. Purpose
+
+The Notes module allows oncologists to document important information throughout the patient's treatment journey.
+
+Patient Notes are written for the patient.
+
+Private Clinical Notes are written only for the oncologist.
+
+--------------------------------------------------
+
+2. Target Users
+
+Patient
+
+Oncologist
+
+--------------------------------------------------
+
+3. Objectives
+
+Allow oncologists to create notes.
+
+Allow patients to read patient notes.
+
+Allow oncologists to maintain private clinical notes.
+
+Maintain complete note history.
+
+Link every note to the patient's timeline.
+
+--------------------------------------------------
+
+4. Note Types
+
+Patient Notes
+
+Visible to
+
+Patient
+
+Oncologist
+
+Purpose
+
+Provide instructions.
+
+Explain follow-up steps.
+
+Share important updates.
+
+Use simple language.
+
+--------------------------------------------------
+
+Private Clinical Notes
+
+Visible to
+
+Oncologist only
+
+Purpose
+
+Clinical observations.
+
+Follow-up planning.
+
+Personal reminders.
+
+Treatment observations.
+
+Private documentation.
+
+--------------------------------------------------
+
+5. Patient Note Information
+
+Every Patient Note should contain
+
+Title
+
+Message
+
+Created By
+
+Created Date
+
+Last Updated
+
+--------------------------------------------------
+
+6. Private Clinical Note Information
+
+Every Private Clinical Note should contain
+
+Title
+
+Clinical Observation
+
+Created By
+
+Created Date
+
+Last Updated
+
+--------------------------------------------------
+
+7. Patient View
+
+Patients should be able to
+
+View patient notes.
+
+Read note details.
+
+Search notes.
+
+Filter notes.
+
+Patients must never
+
+Create notes.
+
+Edit notes.
+
+Delete notes.
+
+View private clinical notes.
+
+--------------------------------------------------
+
+8. Oncologist View
+
+Oncologists should be able to
+
+Create patient notes.
+
+Edit patient notes.
+
+Create private clinical notes.
+
+Edit private clinical notes.
+
+Search notes.
+
+Filter notes.
+
+View note history.
+
+--------------------------------------------------
+
+9. Create Patient Note
+
+The oncologist should enter
+
+Title
+
+Message
+
+Save
+
+After saving
+
+The patient receives a notification.
+
+The note becomes visible to the patient.
+
+The note becomes part of the patient's timeline.
+
+--------------------------------------------------
+
+10. Create Private Clinical Note
+
+The oncologist should enter
+
+Title
+
+Clinical Observation
+
+Save
+
+After saving
+
+The note is stored.
+
+The note becomes part of the patient's timeline.
+
+The note remains visible only to the oncologist.
+
+--------------------------------------------------
+
+11. Search
+
+Support searching by
+
+Title
+
+Keywords
+
+Date
+
+Author
+
+--------------------------------------------------
+
+12. Filters
+
+Support filtering by
+
+Patient Notes
+
+Private Clinical Notes
+
+Newest
+
+Oldest
+
+Date
+
+--------------------------------------------------
+
+13. Sorting
+
+Support sorting by
+
+Newest First
+
+Oldest First
+
+Title
+
+--------------------------------------------------
+
+14. Notifications
+
+Patients receive notifications when
+
+A new patient note is available.
+
+An existing patient note is updated.
+
+Oncologists do not receive notifications for their own notes.
+
+--------------------------------------------------
+
+15. Timeline Integration
+
+Every note becomes part of the patient's timeline.
+
+Patient Notes appear in
+
+Patient Timeline
+
+Oncologist Timeline
+
+Private Clinical Notes appear only in
+
+Oncologist Timeline
+
+--------------------------------------------------
+
+16. Business Rules
+
+Only oncologists can create notes.
+
+Patients cannot create notes.
+
+Patients cannot edit notes.
+
+Patients cannot delete notes.
+
+Private Clinical Notes are never visible to patients.
+
+Every note remains permanently linked to the Patient Case.
+
+Every note keeps its creation history.
+
+--------------------------------------------------
+
+17. Empty States
+
+No Patient Notes
+
+Display informative message.
+
+No Private Clinical Notes
+
+Display informative message.
+
+--------------------------------------------------
+
+18. Error States
+
+Failed to Save Note
+
+Failed to Update Note
+
+Network Error
+
+Permission Denied
+
+Display clear recovery instructions.
+
+--------------------------------------------------
+
+19. Performance Requirements
+
+Notes should load quickly.
+
+Searching should remain responsive.
+
+Filtering should update immediately.
+
+Large note collections should support pagination.
+
+--------------------------------------------------
+
+20. Accessibility
+
+Support keyboard navigation.
+
+Maintain readable typography.
+
+Provide descriptive labels for every action.
+
+Maintain consistent spacing.
+
+--------------------------------------------------
+
+21. Completion Criteria
+
+The Notes module is complete when
+
+Oncologists can create Patient Notes.
+
+Oncologists can create Private Clinical Notes.
+
+Patients can view Patient Notes.
+
+Patients cannot access Private Clinical Notes.
+
+Searching functions correctly.
+
+Filtering functions correctly.
+
+Sorting functions correctly.
+
+Timeline integration functions correctly.
+
+Notifications function correctly.
+
+The module is ready for backend integration.

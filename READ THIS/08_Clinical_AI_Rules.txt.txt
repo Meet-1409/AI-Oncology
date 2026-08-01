@@ -1,0 +1,413 @@
+08_Clinical_AI_Rules.txt
+
+Project Name
+
+AI Oncology Patient Intelligence Platform
+
+Document Purpose
+
+This document defines how Artificial Intelligence behaves throughout the platform. Every AI service, AI model, and AI-generated output must follow these rules. AI exists to assist the oncologist by organizing and presenting information. AI never replaces clinical judgement.
+
+--------------------------------------------------
+
+1. Purpose of AI
+
+The AI exists to assist the oncologist.
+
+The AI helps organize patient information.
+
+The AI helps summarize reports.
+
+The AI helps compare reports.
+
+The AI helps build the patient's clinical timeline.
+
+The AI helps visualize disease progression.
+
+The AI never makes medical decisions.
+
+--------------------------------------------------
+
+2. AI Responsibilities
+
+Read uploaded reports.
+
+Classify reports.
+
+Extract structured information.
+
+Generate report summaries.
+
+Compare reports over time.
+
+Generate patient intelligence.
+
+Support the Digital Twin.
+
+Support timeline generation.
+
+Identify report relationships.
+
+Provide supporting evidence.
+
+Provide confidence scores.
+
+--------------------------------------------------
+
+3. AI Limitations
+
+AI must never diagnose a patient.
+
+AI must never prescribe treatment.
+
+AI must never recommend medications.
+
+AI must never replace the oncologist.
+
+AI must never change uploaded reports.
+
+AI must never hide original information.
+
+AI must never modify patient history.
+
+AI must never generate unsupported medical information.
+
+--------------------------------------------------
+
+4. AI Data Sources
+
+AI only uses approved patient data.
+
+Approved data includes:
+
+Uploaded Reports
+
+Medical Images
+
+Laboratory Reports
+
+Patient Information
+
+Clinical Notes (if permitted)
+
+Timeline Information
+
+No external medical information should be mixed with patient data unless explicitly approved.
+
+--------------------------------------------------
+
+5. AI Processing Flow
+
+Patient uploads report.
+
+↓
+
+Backend validates report.
+
+↓
+
+AI receives report.
+
+↓
+
+AI processes report.
+
+↓
+
+Structured information generated.
+
+↓
+
+Summary generated.
+
+↓
+
+Evidence linked.
+
+↓
+
+Confidence calculated.
+
+↓
+
+Patient Intelligence updated.
+
+↓
+
+Timeline updated.
+
+↓
+
+Digital Twin updated.
+
+--------------------------------------------------
+
+6. AI Report Classification
+
+AI should identify the report type.
+
+Examples include:
+
+Pathology Report
+
+MRI Report
+
+CT Report
+
+PET Report
+
+Blood Test
+
+Prescription
+
+Discharge Summary
+
+Surgery Report
+
+Follow-up Report
+
+Every report should be linked to the correct Patient Case.
+
+--------------------------------------------------
+
+7. AI Information Extraction
+
+AI should extract available information including:
+
+Cancer Type
+
+Primary Site
+
+Metastatic Sites
+
+Tumor Stage
+
+Tumor Size
+
+Affected Organs
+
+Treatment Information
+
+Investigation Dates
+
+Clinical Findings
+
+Laboratory Values
+
+Extract only information present in the uploaded data.
+
+--------------------------------------------------
+
+8. AI Report Summaries
+
+Every summary should be:
+
+Short
+
+Clear
+
+Clinically relevant
+
+Easy to understand
+
+Summaries must not replace the original report.
+
+The original report should always remain available.
+
+--------------------------------------------------
+
+9. AI Report Comparison
+
+Compare previous and current reports.
+
+Identify changes.
+
+Identify progression.
+
+Identify regression.
+
+Identify stable findings.
+
+Highlight differences clearly.
+
+Do not interpret findings beyond available evidence.
+
+--------------------------------------------------
+
+10. Patient Intelligence
+
+Generate a structured overview of the patient's condition.
+
+Present:
+
+Current Disease State
+
+Disease History
+
+Recent Changes
+
+Recent Treatments
+
+Recent Investigations
+
+Current Timeline
+
+Supporting Evidence
+
+Confidence
+
+--------------------------------------------------
+
+11. Digital Twin Support
+
+Provide structured information required for the Digital Twin.
+
+Provide:
+
+Affected Organ
+
+Disease Location
+
+Disease Severity
+
+Timeline Changes
+
+Comparison Data
+
+The AI provides only data.
+
+The frontend renders the visualization.
+
+--------------------------------------------------
+
+12. Timeline Support
+
+Generate chronological events.
+
+Every event should include:
+
+Date
+
+Event Type
+
+Related Report
+
+Related Evidence
+
+Events should never be reordered incorrectly.
+
+--------------------------------------------------
+
+13. Evidence
+
+Every AI result must include supporting evidence.
+
+Evidence should point back to the original report.
+
+Doctors should always be able to verify AI outputs.
+
+--------------------------------------------------
+
+14. Confidence
+
+Every AI result must include a confidence value.
+
+Confidence should represent how certain the AI is based on available information.
+
+Confidence should never be hidden.
+
+--------------------------------------------------
+
+15. Error Handling
+
+If information cannot be extracted:
+
+Do not guess.
+
+Do not generate missing information.
+
+Clearly indicate unavailable information.
+
+Allow the oncologist to review the original report.
+
+--------------------------------------------------
+
+16. Explainability
+
+Every AI output should answer:
+
+What information was found?
+
+Where was it found?
+
+Which report contains it?
+
+Why was this result generated?
+
+Doctors should always understand how the AI reached its output.
+
+--------------------------------------------------
+
+17. Patient Safety
+
+Patient safety is the highest priority.
+
+AI must always preserve original medical information.
+
+AI must never overwrite reports.
+
+AI must never remove historical information.
+
+AI must never hide conflicting information.
+
+--------------------------------------------------
+
+18. Future AI Models
+
+Future AI models should follow these same rules.
+
+New models should integrate without changing existing workflows.
+
+Existing AI behavior should remain consistent.
+
+--------------------------------------------------
+
+19. Development Rules
+
+AI services should remain independent.
+
+AI should communicate only through backend APIs.
+
+AI should not communicate directly with the frontend.
+
+AI outputs should remain structured.
+
+Every AI output should remain traceable.
+
+--------------------------------------------------
+
+20. Completion Criteria
+
+The AI module is complete only when:
+
+Reports are classified correctly.
+
+Structured information is extracted.
+
+Summaries are generated.
+
+Comparisons are generated.
+
+Patient Intelligence is generated.
+
+Timeline information is generated.
+
+Digital Twin data is generated.
+
+Evidence is linked.
+
+Confidence is displayed.
+
+Original reports remain unchanged.
+
+The oncologist can verify every AI-generated result.

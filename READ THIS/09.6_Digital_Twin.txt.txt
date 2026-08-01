@@ -1,0 +1,343 @@
+09.6_Digital_Twin.txt
+
+Project Name
+
+AI Oncology Patient Intelligence Platform
+
+Feature Name
+
+Digital Twin
+
+Document Purpose
+
+This document defines the Digital Twin module. The Digital Twin is the primary visualization feature of the platform. It provides an interactive 3D representation of the patient's anatomy and disease progression using validated patient data.
+
+--------------------------------------------------
+
+1. Purpose
+
+The Digital Twin helps the oncologist understand the patient's disease visually.
+
+It should provide a clear representation of where the disease exists, how it has changed over time, and how it relates to the patient's anatomy.
+
+The Digital Twin is a visualization tool only.
+
+It does not generate medical information.
+
+--------------------------------------------------
+
+2. Target User
+
+Oncologist
+
+--------------------------------------------------
+
+3. Objectives
+
+Display an interactive 3D human anatomy.
+
+Display disease location.
+
+Display disease severity.
+
+Display disease progression.
+
+Support historical comparison.
+
+Synchronize with the patient's timeline.
+
+Provide supporting evidence.
+
+--------------------------------------------------
+
+4. Digital Twin Layout
+
+Top Navigation
+
+↓
+
+Patient Information Panel
+
+↓
+
+3D Viewer
+
+↓
+
+Timeline Controls
+
+↓
+
+Evidence Panel
+
+↓
+
+Comparison Controls
+
+--------------------------------------------------
+
+5. 3D Anatomy
+
+The model should represent
+
+Patient Body Structure
+
+Skeleton
+
+Major Organs
+
+Affected Organs
+
+Disease Locations
+
+The model should not be an exact physical replica of the patient.
+
+--------------------------------------------------
+
+6. Patient Information
+
+Display
+
+Patient Name
+
+Patient ID
+
+Age
+
+Gender
+
+Height
+
+Weight
+
+Current Diagnosis
+
+Current Stage
+
+Current Treatment
+
+--------------------------------------------------
+
+7. Disease Visualization
+
+Disease should be displayed on the affected organs.
+
+Severity should be represented using different shades of red.
+
+Lighter shades represent lower severity.
+
+Darker shades represent higher severity.
+
+Healthy organs should remain visually distinguishable.
+
+--------------------------------------------------
+
+8. Interaction Controls
+
+The oncologist should be able to
+
+Rotate the model.
+
+Zoom the model.
+
+Pan the model.
+
+Reset camera.
+
+Enter full screen mode.
+
+Exit full screen mode.
+
+Camera movement must never change the displayed medical information.
+
+--------------------------------------------------
+
+9. Timeline Integration
+
+The Digital Twin should synchronize with the patient's timeline.
+
+Selecting a timeline event should update the model to represent that point in time.
+
+Every timeline update should happen smoothly.
+
+--------------------------------------------------
+
+10. Comparison Mode
+
+Allow comparison between two clinical dates.
+
+Display
+
+Previous Digital Twin
+
+Current Digital Twin
+
+Visual disease progression
+
+Comparison controls should remain simple and easy to understand.
+
+--------------------------------------------------
+
+11. Disease Progression
+
+The Digital Twin should visually represent
+
+Disease progression
+
+Disease regression
+
+Stable disease
+
+Changes should be easy to identify.
+
+--------------------------------------------------
+
+12. Evidence Panel
+
+Every visualized disease location should provide supporting evidence.
+
+Display
+
+Related Report
+
+Report Date
+
+Report Type
+
+Evidence Source
+
+Confidence
+
+Users should be able to open the related report directly.
+
+--------------------------------------------------
+
+13. AI Integration
+
+The Digital Twin receives structured information from the backend.
+
+The frontend is responsible only for visualization.
+
+The Digital Twin should never generate medical information independently.
+
+--------------------------------------------------
+
+14. Navigation
+
+The oncologist should be able to
+
+Open Timeline
+
+Open Related Report
+
+Open Patient Intelligence
+
+Return to Patient Profile
+
+--------------------------------------------------
+
+15. User Actions
+
+Rotate Model
+
+Zoom Model
+
+Pan Model
+
+Reset Camera
+
+Select Timeline Date
+
+Compare Dates
+
+Open Related Report
+
+Open Patient Intelligence
+
+--------------------------------------------------
+
+16. Business Rules
+
+Every patient has one Digital Twin.
+
+The Digital Twin is generated from validated patient information.
+
+Original reports remain the source of truth.
+
+Disease visualization must always be supported by available evidence.
+
+The Digital Twin must never display unsupported findings.
+
+--------------------------------------------------
+
+17. Empty States
+
+No visualization available.
+
+No supporting evidence available.
+
+No comparison available.
+
+Display informative messages for each situation.
+
+--------------------------------------------------
+
+18. Error States
+
+Failed to load Digital Twin.
+
+Missing visualization data.
+
+Network error.
+
+Rendering error.
+
+Display clear recovery instructions.
+
+--------------------------------------------------
+
+19. Performance Requirements
+
+The Digital Twin should load efficiently.
+
+Camera controls should remain smooth.
+
+Model interaction should remain responsive.
+
+Timeline transitions should remain smooth.
+
+Comparison mode should not noticeably reduce performance.
+
+--------------------------------------------------
+
+20. Accessibility
+
+Support keyboard shortcuts where possible.
+
+Maintain readable interface elements.
+
+Provide descriptive labels for controls.
+
+Maintain consistent spacing throughout the interface.
+
+--------------------------------------------------
+
+21. Completion Criteria
+
+The Digital Twin module is complete when
+
+The 3D model loads successfully.
+
+Disease visualization is displayed.
+
+Camera controls function correctly.
+
+Timeline synchronization works.
+
+Comparison mode functions correctly.
+
+Supporting evidence is accessible.
+
+Navigation integrates with the rest of the application.
+
+The module is ready for backend integration.
