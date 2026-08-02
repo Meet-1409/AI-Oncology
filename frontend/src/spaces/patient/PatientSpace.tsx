@@ -15,7 +15,7 @@ import { BodyView } from '@/features/body'
 import { JourneyView } from '@/features/journey'
 import { EvidenceView, UploadComposer } from '@/features/evidence'
 import { UnderstandingView } from '@/features/understanding'
-import { ActionsView } from '@/features/actions'
+import { ActionsView, TaskComposer } from '@/features/actions'
 import { GuidanceView, NoteComposer } from '@/features/guidance'
 import { usePatientSpace } from '@/data/queries'
 import { useSessionStore } from '@/state/session-store'
@@ -77,6 +77,7 @@ export default function PatientSpace() {
   const [orbit, setOrbit] = useState<OrbitId>('journey')
   const [uploadFor, setUploadFor] = useState<{ taskId?: string; name?: string } | null>(null)
   const [noteOpen, setNoteOpen] = useState(false)
+  const [taskOpen, setTaskOpen] = useState(false)
   const [focusReport, setFocusReport] = useState<Report | null>(null)
   const [focusEvent, setFocusEvent] = useState<TimelineEvent | null>(null)
   const [focusTask, setFocusTask] = useState<PatientTask | null>(null)
@@ -165,6 +166,10 @@ export default function PatientSpace() {
 
         {isOncologist && (
           <div className="flex flex-wrap gap-2">
+            <Control intent="primary" size="sm" onClick={() => setTaskOpen(true)}>
+              <Icon icon={ListChecks} size="xs" />
+              Assign a task
+            </Control>
             <Control intent="secondary" size="sm" onClick={() => setNoteOpen(true)}>
               <Icon icon={StickyNote} size="xs" />
               Write a note
@@ -256,7 +261,7 @@ export default function PatientSpace() {
                 ? undefined
                 : (task) => setUploadFor({ taskId: task.id, name: task.title.replace(/^Upload /, '') })
             }
-            onCreateTask={undefined}
+            onCreateTask={isOncologist ? () => setTaskOpen(true) : undefined}
           />
         )}
 
@@ -283,6 +288,15 @@ export default function PatientSpace() {
           patientId={patientId}
           taskId={uploadFor.taskId}
           defaultName={uploadFor.name}
+        />
+      )}
+
+      {taskOpen && patientId && (
+        <TaskComposer
+          open={taskOpen}
+          onOpenChange={setTaskOpen}
+          patientId={patientId}
+          assignedBy="Dr. Ananya Rao"
         />
       )}
 

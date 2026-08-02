@@ -75,13 +75,19 @@ function resolveSnapshot(
   return resolved
 }
 
-export function useBodyViewModel(
+/**
+ * The view-model, as a pure function.
+ *
+ * Separated from the hook so its safety properties — that a resolved date is
+ * always a real validated snapshot, and that every renderable site is exposed —
+ * can be tested without a React renderer.
+ */
+export function buildBodyViewModel(
   snapshots: readonly BodySnapshot[],
-  options: { date?: string | undefined; compareDate?: string | undefined },
+  options: { date?: string | undefined; compareDate?: string | undefined } = {},
 ): BodyViewModel {
   const { date, compareDate } = options
-
-  return useMemo(() => {
+  {
     const ordered = [...snapshots].sort((a, b) => a.date.localeCompare(b.date))
     const current = resolveSnapshot(ordered, date)
     const comparison = compareDate ? resolveSnapshot(ordered, compareDate) : undefined
@@ -113,5 +119,16 @@ export function useBodyViewModel(
       isEmpty: ordered.length === 0,
       canCompare: ordered.length > 1,
     }
-  }, [snapshots, date, compareDate])
+  }
+}
+
+export function useBodyViewModel(
+  snapshots: readonly BodySnapshot[],
+  options: { date?: string | undefined; compareDate?: string | undefined },
+): BodyViewModel {
+  const { date, compareDate } = options
+  return useMemo(
+    () => buildBodyViewModel(snapshots, { date, compareDate }),
+    [snapshots, date, compareDate],
+  )
 }

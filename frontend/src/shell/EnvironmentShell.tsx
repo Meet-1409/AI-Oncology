@@ -8,6 +8,7 @@ import { useSession, useSignOut, useSignals } from '@/data/queries'
 import { useSessionStore } from '@/state/session-store'
 import { paths } from '@/routes/paths'
 import { AppShell } from './AppShell'
+import { IntentBar } from './IntentBar'
 
 /**
  * The authenticated environment.
@@ -68,26 +69,26 @@ export function EnvironmentShell() {
           </Control>
         }
         identity={
-          <Control
-            size="icon"
-            intent="quiet"
-            onClick={() => navigate(paths.account)}
-            aria-label={user ? `Account — ${user.name}` : 'Account'}
-          >
-            <Icon icon={UserRound} size="sm" />
-          </Control>
+          <>
+            <Control
+              size="icon"
+              intent="quiet"
+              onClick={() => navigate(paths.account)}
+              aria-label={user ? `Account — ${user.name}` : 'Account'}
+            >
+              <Icon icon={UserRound} size="sm" />
+            </Control>
+            <Control
+              size="icon"
+              intent="quiet"
+              onClick={() => setSignOutOpen(true)}
+              aria-label="Sign out"
+            >
+              <Icon icon={LogOut} size="sm" />
+            </Control>
+          </>
         }
-        intent={
-          <Control
-            size="sm"
-            intent="quiet"
-            onClick={() => setSignOutOpen(true)}
-            aria-label="Sign out"
-          >
-            <Icon icon={LogOut} size="xs" />
-            <span className="hidden sm:inline">Sign out</span>
-          </Control>
-        }
+        intent={<IntentBar />}
       />
 
       {/* Signals open in place and never interrupt clinical work [04 §20]. */}

@@ -11,8 +11,9 @@
     "check:architecture": "node tools/check-architecture.mjs",
     "check:prod": "node tools/check-production-bundle.mjs",
     "preview": "vite preview",
-    "verify": "npm run typecheck && npm run check:architecture && npm run lint",
-    "verify:full": "npm run verify && npm run build && npm run check:prod"
+    "verify": "npm run typecheck && npm run check:architecture && npm run test:safety && npm run lint",
+    "verify:full": "npm run verify && npm run build && npm run check:prod",
+    "test:safety": "vite build --ssr tools/safety-tests.ts --outDir tools/.out-safety --emptyOutDir --logLevel error && node tools/.out-safety/safety-tests.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.6.0",
