@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { Suspense, lazy, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   Activity,
@@ -13,27 +13,28 @@ import {
   ShieldCheck,
   UploadCloud,
 } from 'lucide-react'
-import { Control, Icon, Surface, Text } from '@/components/primitives'
-import { Reveal } from '@/components/motion'
+import { Icon } from '@/components/primitives'
+import { useReducedMotion } from '@/components/motion'
 import { paths } from '@/routes/paths'
-import { CancerStatement } from './CancerStatement'
 import { cn } from '@/lib/utils'
 
 /**
  * The Entry — Depth 0.
  *
- * A cinematic introduction to the system, not a traditional landing page [04 §14].
- * It communicates identity, quality and trust immediately, and presents About,
- * Features, How It Works and Contact as stations along one continuous descent
- * rather than as separate pages [03 §3].
+ * A cinematic introduction, not a landing page [04 §14]. The visitor descends
+ * through one continuous environment: the statement, then the body as a field of
+ * points, then the stations — About, Features, How It Works, Contact [03 §3].
  *
- * NO PATIENT INFORMATION IS REACHABLE HERE [04 §14], [03 §3]. Nothing on this
- * screen is derived from a patient record. The anatomical motif is an anonymous
- * illustration of the product's visual language, carrying no clinical data.
+ * NO PATIENT INFORMATION IS REACHABLE HERE [04 §14], [03 §3]. The anatomical form
+ * is anonymous and carries no clinical data.
  *
- * The Entry never loads the 3D runtime — it must stay fast and remain fully usable
- * without 3D [04 §14].
+ * The 3D scene is loaded lazily and never blocks first paint. Every word is
+ * readable with WebGL absent or reduced motion enabled.
  */
+
+const EntryScene = lazy(() =>
+  import('./scene/EntryScene').then((m) => ({ default: m.EntryScene })),
+)
 
 const FEATURES = [
   {
@@ -44,7 +45,7 @@ const FEATURES = [
   {
     icon: BrainCircuit,
     title: 'Summaries you can verify',
-    body: 'Each AI summary shows the evidence it came from and how confident it is. The original report always remains the source of truth.',
+    body: 'Each summary shows the evidence it came from and how confident it is. The original report always remains the source of truth.',
   },
   {
     icon: Activity,
@@ -54,7 +55,7 @@ const FEATURES = [
   {
     icon: Boxes,
     title: 'The body at the centre',
-    body: 'An interactive anatomical view showing where disease is, how severe it is, and how it has changed — rotated, compared and moved through time.',
+    body: 'An interactive anatomical view showing where disease is, how severe it is, and how it has changed — rotated, compared, moved through time.',
   },
   {
     icon: ClipboardCheck,
@@ -86,208 +87,358 @@ const STEPS = [
   },
 ] as const
 
-function Section({
+/** Reveals a section as it enters the viewport. */
+function useInView<T extends HTMLElement>() {
+  const ref = useRef<T>(null)
+  const [visible, setVisible] = useState(false)
+
+  useEffect(() => {
+    const node = ref.current
+    if (!node) return
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting) {
+          setVisible(true)
+          observer.disconnect()
+        }
+      },
+      { threshold: 0.15, rootMargin: '0px 0px -8% 0px' },
+    )
+    observer.observe(node)
+    return () => observer.disconnect()
+  }, [])
+
+  return { ref, visible }
+}
+
+function Station({
   id,
   eyebrow,
   title,
   children,
-  className,
 }: {
   id: string
   eyebrow: string
   title: string
   children: React.ReactNode
-  className?: string
 }) {
+  const { ref, visible } = useInView<HTMLElement>()
+
   return (
-    <section id={id} className={cn('mx-auto w-full max-w-5xl px-6 py-24', className)}>
-      <Text level="micro" tone="accent">
-        {eyebrow}
-      </Text>
-      <Text as="h2" level="title" tone="primary" measure="comfortable" className="mt-3">
+    <section
+      id={id}
+      ref={ref}
+      className={cn(
+        'mx-auto w-full max-w-5xl px-6 py-28',
+        'transition-[opacity,transform] duration-[900ms] ease-[var(--motion-ease-enter)]',
+        'motion-reduce:transition-none',
+        visible ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0',
+      )}
+    >
+      <p className="text-micro uppercase tracking-[0.18em] text-[#5f8ba0]">{eyebrow}</p>
+      <h2 className="mt-4 max-w-3xl text-[clamp(1.75rem,3.4vw,2.75rem)] font-semibold leading-[1.12] tracking-[-0.025em] text-white">
         {title}
-      </Text>
-      <div className="mt-10">{children}</div>
+      </h2>
+      <div className="mt-12">{children}</div>
     </section>
   )
 }
 
 export default function EntrySpace() {
-  const [settled, setSettled] = useState(false)
-  const handleSettled = useCallback(() => setSettled(true), [])
+  const reduced = useReducedMotion()
+  const progressRef = useRef(0)
+  const cinematicRef = useRef<HTMLDivElement>(null)
+
+  const [struck, setStruck] = useState(reduced)
+  const [withdrawn, setWithdrawn] = useState(reduced)
+  const [scrolled, setScrolled] = useState(false)
+
+  // The opening: the word held close, a stroke drawn across it, the camera
+  // withdrawing to reveal the figure behind.
+  useEffect(() => {
+    if (reduced) return
+    const strike = setTimeout(() => setStruck(true), 850)
+    const withdraw = setTimeout(() => setWithdrawn(true), 1950)
+    return () => {
+      clearTimeout(strike)
+      clearTimeout(withdraw)
+    }
+  }, [reduced])
+
+  // Scroll progress across the cinematic section drives the camera.
+  useEffect(() => {
+    let frame = 0
+    function onScroll() {
+      cancelAnimationFrame(frame)
+      frame = requestAnimationFrame(() => {
+        const height = cinematicRef.current?.offsetHeight ?? window.innerHeight * 3
+        const raw = window.scrollY / Math.max(1, height - window.innerHeight)
+        progressRef.current = Math.min(1, Math.max(0, raw))
+        setScrolled(window.scrollY > 40)
+      })
+    }
+    window.addEventListener('scroll', onScroll, { passive: true })
+    onScroll()
+    return () => {
+      window.removeEventListener('scroll', onScroll)
+      cancelAnimationFrame(frame)
+    }
+  }, [])
 
   return (
-    <main className="bg-[var(--surface-base)]">
-      {/* Station 1 — the statement. */}
-      <CancerStatement onSettled={handleSettled} />
-
-      {/* The invitation to descend appears only once the statement has resolved,
-          so the opening is never competing for attention. */}
-      <div
-        className={cn(
-          'mx-auto -mt-[10vh] flex max-w-5xl flex-col items-center px-6 pb-24',
-          'transition-opacity duration-[var(--motion-spatial)] ease-[var(--motion-ease-enter)]',
-          'motion-reduce:transition-none',
-          settled ? 'opacity-100' : 'opacity-0',
-        )}
-      >
-        <Text level="body" tone="body" measure="comfortable" className="text-center">
-          Cancer care is scattered across hospitals, laboratories and years. Understanding
-          it should not be.
-        </Text>
-        <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-          <Control intent="primary" size="lg" asChild>
-            <Link to={paths.enter}>
-              Enter the platform
-              <Icon icon={ArrowRight} size="sm" />
-            </Link>
-          </Control>
-          <Control intent="quiet" size="lg" asChild>
-            <a href="#how-it-works">See how it works</a>
-          </Control>
-        </div>
-        <Text level="caption" tone="subtle" className="mt-6">
-          Assists the oncologist. Never replaces clinical judgement.
-        </Text>
+    <main className="relative min-h-svh bg-[#05080c] text-white">
+      {/* The scene sits behind everything and persists as the visitor descends —
+          one continuous environment rather than separate screens. */}
+      <div className="pointer-events-none fixed inset-0 z-0">
+        <Suspense fallback={null}>
+          <EntryScene progressRef={progressRef} />
+        </Suspense>
+        {/* Depth: a vignette and a soft core glow give the darkness volume. */}
+        <div
+          aria-hidden
+          className="absolute inset-0"
+          style={{
+            background:
+              'radial-gradient(ellipse 60% 50% at 50% 45%, rgba(47,122,151,0.16), transparent 70%)',
+          }}
+        />
+        <div
+          aria-hidden
+          className="absolute inset-0"
+          style={{
+            background:
+              'radial-gradient(ellipse 90% 70% at 50% 50%, transparent 35%, rgba(5,8,12,0.85) 100%)',
+          }}
+        />
       </div>
 
-      {/* Station 2 — About. */}
-      <Section
-        id="about"
-        eyebrow="About"
-        title="A patient's history should be understood, not reconstructed."
-        className="border-t border-[var(--border-subtle)]"
+      {/* Quiet persistent header. */}
+      <header
+        className={cn(
+          'fixed inset-x-0 top-0 z-30 flex items-center justify-between px-6 py-5 sm:px-10',
+          'transition-colors duration-[var(--motion-spatial)]',
+          scrolled && 'bg-[#05080c]/70 backdrop-blur-md',
+        )}
       >
-        <div className="grid gap-6 sm:grid-cols-2">
-          <Text level="body" tone="body" measure="comfortable">
-            Cancer patients undergo pathology, imaging and laboratory investigations across
-            multiple institutions, often over several years. By the time of a follow-up
-            consultation, that history is spread across documents that were never designed
-            to be read together.
-          </Text>
-          <Text level="body" tone="body" measure="comfortable">
-            This platform brings those reports into one record, organizes them, and presents
-            them as a continuous clinical picture — with every derived statement traceable to
-            the document it came from.
-          </Text>
-        </div>
-      </Section>
+        <span className="flex items-center gap-2.5">
+          <span className="flex size-7 items-center justify-center rounded-md bg-white/10">
+            <Icon icon={Activity} size="xs" className="text-white" />
+          </span>
+          <span className="text-caption font-medium tracking-wide text-white/80">AI Oncology</span>
+        </span>
 
-      {/* Station 3 — Features. */}
-      <Section
-        id="features"
-        eyebrow="Features"
-        title="Built for the way oncology actually works."
-        className="border-t border-[var(--border-subtle)]"
-      >
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {FEATURES.map((feature, index) => (
-            <Reveal key={feature.title} index={index}>
-              <div className="h-full">
-                <span className="flex size-10 items-center justify-center rounded-lg bg-[var(--accent-subtle)]">
-                  <Icon icon={feature.icon} size="sm" className="text-[var(--accent)]" />
-                </span>
-                <Text level="subheading" tone="primary" className="mt-4">
-                  {feature.title}
-                </Text>
-                <Text level="secondary" tone="muted" className="mt-2">
-                  {feature.body}
-                </Text>
-              </div>
-            </Reveal>
-          ))}
-        </div>
-      </Section>
+        <Link
+          to={paths.enter}
+          className="group flex items-center gap-2 rounded-full border border-white/15 px-4 py-1.5 text-caption text-white/85 transition-colors duration-[var(--motion-quick)] hover:border-white/40 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+        >
+          Sign in
+          <Icon
+            icon={ArrowRight}
+            size="xs"
+            className="transition-transform duration-[var(--motion-quick)] group-hover:translate-x-0.5"
+          />
+        </Link>
+      </header>
 
-      {/* Station 4 — How It Works. */}
-      <Section
-        id="how-it-works"
-        eyebrow="How it works"
-        title="From scattered documents to a single clinical picture."
-        className="border-t border-[var(--border-subtle)]"
-      >
-        <ol className="grid gap-10 lg:grid-cols-3">
-          {STEPS.map((step, index) => (
-            <li key={step.title}>
-              <div className="flex items-center gap-3">
-                <span className="flex size-9 items-center justify-center rounded-full bg-[var(--accent)] text-caption font-semibold text-[var(--text-on-accent)]">
-                  {index + 1}
-                </span>
-                <Icon icon={step.icon} size="sm" className="text-[var(--accent)]" />
-              </div>
-              <Text level="subheading" tone="primary" className="mt-4">
-                {step.title}
-              </Text>
-              <Text level="secondary" tone="muted" className="mt-2">
-                {step.body}
-              </Text>
-            </li>
-          ))}
-        </ol>
-      </Section>
+      {/* ---- The cinematic section. Tall, so the scroll has room to move. ---- */}
+      <div ref={cinematicRef} className="relative z-10 h-[280svh]">
+        <div className="sticky top-0 flex h-svh flex-col items-center justify-center px-6">
+          <h1
+            className={cn(
+              'relative select-none text-center font-semibold leading-none tracking-[-0.045em]',
+              'text-[clamp(3.25rem,15vw,10.5rem)]',
+              'transition-transform duration-[1600ms] ease-[var(--motion-ease-enter)]',
+              'motion-reduce:transition-none',
+              withdrawn ? 'scale-100' : 'scale-[1.55]',
+            )}
+          >
+            <span className="relative inline-block bg-gradient-to-b from-white to-[#9fc3d4] bg-clip-text text-transparent">
+              CANCER
+              <span
+                aria-hidden
+                className={cn(
+                  'absolute left-0 top-1/2 h-[0.055em] -translate-y-1/2 origin-left rounded-full',
+                  'bg-[#c22e23] shadow-[0_0_24px_rgba(194,46,35,0.65)]',
+                  'transition-[width] ease-[var(--motion-ease-enter)] motion-reduce:transition-none',
+                  struck ? 'w-full duration-[1000ms]' : 'w-0 duration-0',
+                )}
+              />
+            </span>
+          </h1>
 
-      {/* Station 5 — Contact and entry. */}
-      <Section
-        id="contact"
-        eyebrow="Contact"
-        title="Bring it to your hospital."
-        className="border-t border-[var(--border-subtle)]"
-      >
-        <div className="grid gap-10 lg:grid-cols-2">
-          <div className="space-y-4">
-            <Text level="body" tone="body" measure="comfortable">
-              For questions about deploying the platform within a hospital or clinic, reach
-              our team directly.
-            </Text>
-            <ul className="space-y-3">
-              {[
-                { icon: Mail, value: 'contact@aioncology.example' },
-                { icon: Phone, value: '+91 22 4000 1234' },
-                { icon: MapPin, value: 'Sunrise Cancer Institute, Mumbai, India' },
-              ].map((item) => (
-                <li key={item.value} className="flex items-center gap-3">
-                  <Icon icon={item.icon} size="sm" className="text-[var(--accent)]" />
-                  <Text level="secondary" tone="body">
-                    {item.value}
-                  </Text>
-                </li>
-              ))}
-            </ul>
+          <p
+            className={cn(
+              'mt-10 max-w-md text-center text-body text-white/65',
+              'transition-opacity duration-[900ms] ease-[var(--motion-ease-enter)]',
+              'motion-reduce:transition-none',
+              withdrawn ? 'opacity-100' : 'opacity-0',
+            )}
+          >
+            One organized view of a patient's entire cancer journey.
+          </p>
+
+          <div
+            className={cn(
+              'mt-10 flex flex-wrap items-center justify-center gap-3',
+              'transition-opacity delay-200 duration-[900ms] ease-[var(--motion-ease-enter)]',
+              'motion-reduce:transition-none motion-reduce:delay-0',
+              withdrawn ? 'opacity-100' : 'opacity-0',
+            )}
+          >
+            <Link
+              to={paths.enter}
+              className="group inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-secondary font-medium text-[#05080c] transition-transform duration-[var(--motion-quick)] hover:scale-[1.02] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            >
+              Enter the platform
+              <Icon
+                icon={ArrowRight}
+                size="sm"
+                className="transition-transform duration-[var(--motion-quick)] group-hover:translate-x-0.5"
+              />
+            </Link>
+            <a
+              href="#how-it-works"
+              className="rounded-full border border-white/20 px-6 py-3 text-secondary text-white/80 transition-colors duration-[var(--motion-quick)] hover:border-white/45 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            >
+              See how it works
+            </a>
           </div>
 
-          <Surface elevation="raised" radius="xl" border="subtle" inset="lg">
-            <Text level="subheading" tone="primary">
-              Already have an account?
-            </Text>
-            <Text level="secondary" tone="muted" className="mt-2">
-              Sign in to continue to your space. Patient information is never accessible
-              without authentication.
-            </Text>
-            <Control intent="primary" block className="mt-6" asChild>
-              <Link to={paths.enter}>
-                Sign in
-                <Icon icon={ArrowRight} size="sm" />
-              </Link>
-            </Control>
-          </Surface>
+          {/* Descent cue. */}
+          <div
+            className={cn(
+              'absolute bottom-10 flex flex-col items-center gap-2',
+              'transition-opacity duration-500',
+              withdrawn && !scrolled ? 'opacity-60' : 'opacity-0',
+            )}
+            aria-hidden
+          >
+            <span className="text-micro uppercase tracking-[0.2em] text-white/50">Scroll</span>
+            <span className="h-10 w-px bg-gradient-to-b from-white/50 to-transparent" />
+          </div>
         </div>
-      </Section>
+      </div>
 
-      <footer className="border-t border-[var(--border-subtle)] py-10">
-        <div className="mx-auto flex max-w-5xl flex-col items-center justify-between gap-4 px-6 sm:flex-row">
-          <span className="flex items-center gap-2">
-            <span className="flex size-7 items-center justify-center rounded-md bg-[var(--accent)]">
-              <Icon icon={Activity} size="xs" className="text-[var(--text-on-accent)]" />
+      {/* ---- Stations. Layered above the persisting scene. ---- */}
+      <div className="relative z-10 bg-gradient-to-b from-transparent via-[#05080c]/85 to-[#05080c]">
+        <Station
+          id="about"
+          eyebrow="About"
+          title="A patient's history should be understood, not reconstructed."
+        >
+          <div className="grid gap-8 sm:grid-cols-2">
+            <p className="text-body leading-relaxed text-white/70">
+              Cancer patients undergo pathology, imaging and laboratory investigations across
+              multiple institutions, often over several years. By the time of a follow-up
+              consultation, that history is spread across documents that were never designed to
+              be read together.
+            </p>
+            <p className="text-body leading-relaxed text-white/70">
+              This platform brings those reports into one record, organizes them, and presents
+              them as a continuous clinical picture — with every derived statement traceable to
+              the document it came from.
+            </p>
+          </div>
+        </Station>
+
+        <Station id="features" eyebrow="Features" title="Built for the way oncology actually works.">
+          <div className="grid gap-px overflow-hidden rounded-2xl border border-white/10 bg-white/10 sm:grid-cols-2 lg:grid-cols-3">
+            {FEATURES.map((feature) => (
+              <div
+                key={feature.title}
+                className="group bg-[#070b11] p-7 transition-colors duration-[var(--motion-reveal)] hover:bg-[#0b1219]"
+              >
+                <span className="flex size-10 items-center justify-center rounded-lg bg-white/[0.07] transition-colors duration-[var(--motion-reveal)] group-hover:bg-[#2f7a97]/25">
+                  <Icon icon={feature.icon} size="sm" className="text-[#8fb6c7]" />
+                </span>
+                <h3 className="mt-5 text-subheading text-white">{feature.title}</h3>
+                <p className="mt-2.5 text-secondary leading-relaxed text-white/60">
+                  {feature.body}
+                </p>
+              </div>
+            ))}
+          </div>
+        </Station>
+
+        <Station
+          id="how-it-works"
+          eyebrow="How it works"
+          title="From scattered documents to a single clinical picture."
+        >
+          <ol className="grid gap-12 lg:grid-cols-3">
+            {STEPS.map((step, index) => (
+              <li key={step.title} className="relative">
+                <span className="flex items-center gap-3">
+                  <span className="flex size-9 items-center justify-center rounded-full border border-white/20 text-caption font-semibold text-white/80">
+                    {index + 1}
+                  </span>
+                  <Icon icon={step.icon} size="sm" className="text-[#8fb6c7]" />
+                </span>
+                <h3 className="mt-5 text-subheading text-white">{step.title}</h3>
+                <p className="mt-2.5 text-secondary leading-relaxed text-white/60">{step.body}</p>
+              </li>
+            ))}
+          </ol>
+        </Station>
+
+        <Station id="contact" eyebrow="Contact" title="Bring it to your hospital.">
+          <div className="grid gap-12 lg:grid-cols-2">
+            <div>
+              <p className="max-w-md text-body leading-relaxed text-white/70">
+                For questions about deploying the platform within a hospital or clinic, reach our
+                team directly.
+              </p>
+              <ul className="mt-8 space-y-4">
+                {[
+                  { icon: Mail, value: 'contact@aioncology.example' },
+                  { icon: Phone, value: '+91 22 4000 1234' },
+                  { icon: MapPin, value: 'Sunrise Cancer Institute, Mumbai, India' },
+                ].map((item) => (
+                  <li key={item.value} className="flex items-center gap-3">
+                    <Icon icon={item.icon} size="sm" className="text-[#8fb6c7]" />
+                    <span className="text-secondary text-white/75">{item.value}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-8 backdrop-blur-sm">
+              <h3 className="text-subheading text-white">Already have an account?</h3>
+              <p className="mt-2.5 text-secondary leading-relaxed text-white/60">
+                Sign in to continue to your space. Patient information is never accessible
+                without authentication.
+              </p>
+              <Link
+                to={paths.enter}
+                className="group mt-7 inline-flex w-full items-center justify-center gap-2 rounded-full bg-white px-6 py-3 text-secondary font-medium text-[#05080c] transition-transform duration-[var(--motion-quick)] hover:scale-[1.01] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+              >
+                Sign in
+                <Icon
+                  icon={ArrowRight}
+                  size="sm"
+                  className="transition-transform duration-[var(--motion-quick)] group-hover:translate-x-0.5"
+                />
+              </Link>
+            </div>
+          </div>
+        </Station>
+
+        <footer className="border-t border-white/10">
+          <div className="mx-auto flex max-w-5xl flex-col items-center justify-between gap-4 px-6 py-10 sm:flex-row">
+            <span className="flex items-center gap-2">
+              <span className="flex size-7 items-center justify-center rounded-md bg-white/10">
+                <Icon icon={Activity} size="xs" className="text-white" />
+              </span>
+              <span className="text-caption text-white/50">
+                AI Oncology Patient Intelligence Platform
+              </span>
             </span>
-            <Text level="caption" tone="muted">
-              AI Oncology Patient Intelligence Platform
-            </Text>
-          </span>
-          <Text level="caption" tone="subtle">
-            © 2026 AI Oncology
-          </Text>
-        </div>
-      </footer>
+            <span className="text-caption text-white/35">
+              Assists the oncologist. Never replaces clinical judgement.
+            </span>
+          </div>
+        </footer>
+      </div>
     </main>
   )
 }

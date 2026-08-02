@@ -12,6 +12,7 @@ import { severityColor, severityLabel, isSeverityLevel, SEVERITY_LEVELS } from '
 import { severityScale } from '@/design/theme'
 import { buildBodyViewModel } from '@/features/body/use-body-view-model'
 import { ORGANS, SELECTABLE_IDS, organLabel } from '@/features/body/anatomy'
+import { ORGAN_SCALE } from '@/features/body/figure'
 import { mockStore } from '@/data/adapters/mock-store'
 import { patientSpaceSchema } from '@/data/contract/domain'
 import { digitalTwinSnapshots } from '@/data/mock-data'
@@ -216,3 +217,60 @@ if (failures > 0) {
 function buildModel(snapshots: typeof digitalTwinSnapshots, date?: string) {
   return buildBodyViewModel(snapshots, date ? { date } : {})
 }
+
+/* 10 — Anatomical containment.
+   Every organ must sit inside the body silhouette. An organ poking through the
+   skin reads as a rendering fault and undermines trust in the visualization. */
+check('every organ sits inside the body silhouette', () => {
+  // Half-width and half-depth of the torso/head at a given height, derived from
+  // the figure segments that form the trunk.
+  const TRUNK = [
+    { y: 1.185, halfW: 0.108 * 0.92, halfD: 0.108, span: 0.108 * 1.18 },
+    { y: 1.005, halfW: 0.054, halfD: 0.054, span: 0.055 },
+    { y: 0.945, halfW: 0.12 * 1.45, halfD: 0.12 * 0.85, span: 0.12 * 0.5 },
+    { y: 0.8, halfW: 0.155 * 1.2, halfD: 0.155 * 0.72, span: 0.155 + 0.1 },
+    { y: 0.6, halfW: 0.128 * 1.14, halfD: 0.128 * 0.76, span: 0.128 + 0.05 },
+    { y: 0.42, halfW: 0.142 * 1.16, halfD: 0.142 * 0.8, span: 0.142 + 0.055 },
+    { y: 0.33, halfW: 0.135 * 1.24, halfD: 0.135 * 0.86, span: 0.135 * 0.72 },
+  ]
+
+  function bounds(y: number): { halfW: number; halfD: number } | null {
+    let best: { halfW: number; halfD: number } | null = null
+    for (const part of TRUNK) {
+      if (Math.abs(y - part.y) <= part.span) {
+        if (!best || part.halfW > best.halfW) best = { halfW: part.halfW, halfD: part.halfD }
+      }
+    }
+    return best
+  }
+
+  const offenders: string[] = []
+
+  for (const organ of ORGANS) {
+    const [x, y, z] = organ.position
+    const scale = organ.scale ?? [1, 1, 1]
+    const radius = organ.args[0] ?? 0
+    // Widest horizontal extent of the organ mesh, after its own scale and the
+    // global organ scale factor.
+    const extentX = radius * scale[0] * ORGAN_SCALE
+    const extentZ = radius * scale[2] * ORGAN_SCALE
+
+    const limit = bounds(y)
+    if (!limit) {
+      offenders.push(`${organ.label}: no trunk segment covers y=${y}`)
+      continue
+    }
+    if (Math.abs(x) + extentX > limit.halfW) {
+      offenders.push(
+        `${organ.label}: reaches x=${(Math.abs(x) + extentX).toFixed(3)}, body half-width is ${limit.halfW.toFixed(3)}`,
+      )
+    }
+    if (Math.abs(z) + extentZ > limit.halfD + 0.02) {
+      offenders.push(
+        `${organ.label}: reaches z=${(Math.abs(z) + extentZ).toFixed(3)}, body half-depth is ${limit.halfD.toFixed(3)}`,
+      )
+    }
+  }
+
+  assert(offenders.length === 0, `organs outside the body:\n        ${offenders.join('\n        ')}`)
+})

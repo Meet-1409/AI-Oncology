@@ -8,6 +8,8 @@ import { maxPixelRatio } from '@/lib/capability'
 import type { RenderTier } from '@/lib/capability'
 import { useReducedMotion } from '@/components/motion'
 import { BONES, LYMPH_NODES, ORGANS } from './anatomy'
+import { FIGURE, ORGAN_SCALE } from './figure'
+import type { FigureSegment } from './figure'
 import type { OrganDefinition } from './anatomy'
 import type { BodyViewModel } from './use-body-view-model'
 import type { SeverityLevel } from '@/lib/status'
@@ -120,60 +122,49 @@ function organGeometry(organ: OrganDefinition): ReactNode {
   }
 }
 
-/** The body silhouette. Translucent, so internal anatomy reads clearly. */
-function BodyShell({ tier }: { tier: RenderTier }) {
-  const segments = tier === 'reduced' ? 8 : 14
-  const skin = (
-    <meshStandardMaterial
-      color={anatomyPalette.skin}
-      transparent
-      opacity={0.15}
-      roughness={1}
-      depthWrite={false}
-    />
-  )
+/**
+ * The body silhouette.
+ *
+ * Rendered BackSide only: the viewer sees the inside of the far surface, which
+ * produces a soft, volumetric shell that reads as a body without occluding the
+ * organs inside it. Front faces are omitted entirely, so nothing sits between the
+ * eye and the anatomy.
+ */
+function figureGeometry(segment: FigureSegment) {
+  const args = segment.args as number[]
+  switch (segment.shape) {
+    case 'sphere':
+      return <sphereGeometry args={args as [number, number, number]} />
+    case 'capsule':
+      return <capsuleGeometry args={args as [number, number, number, number]} />
+    case 'cylinder':
+      return <cylinderGeometry args={args as [number, number, number, number]} />
+    case 'box':
+      return <boxGeometry args={args as [number, number, number]} />
+  }
+}
 
+function BodyShell({ tier }: { tier: RenderTier }) {
   return (
     <group>
-      <mesh position={[0, 1.18, 0]}>
-        <sphereGeometry args={[0.135, segments + 6, segments + 6]} />
-        {skin}
-      </mesh>
-      <mesh position={[0, 1.0, 0]}>
-        <cylinderGeometry args={[0.045, 0.05, 0.13, segments]} />
-        {skin}
-      </mesh>
-      <mesh position={[0, 0.78, 0]}>
-        <capsuleGeometry args={[0.195, 0.32, 3, segments]} />
-        {skin}
-      </mesh>
-      <mesh position={[0, 0.44, 0]}>
-        <capsuleGeometry args={[0.17, 0.24, 3, segments]} />
-        {skin}
-      </mesh>
-      <mesh position={[0, 0.15, 0]}>
-        <capsuleGeometry args={[0.155, 0.1, 3, segments]} />
-        {skin}
-      </mesh>
-      {[-1, 1].map((side) => (
-        <group key={`limb-${side}`}>
-          <mesh position={[0.245 * side, 0.66, 0]} rotation={[0, 0, side * 0.06]}>
-            <capsuleGeometry args={[0.052, 0.34, 3, segments - 4]} />
-            {skin}
-          </mesh>
-          <mesh position={[0.27 * side, 0.28, 0]}>
-            <capsuleGeometry args={[0.042, 0.32, 3, segments - 4]} />
-            {skin}
-          </mesh>
-          <mesh position={[0.09 * side, -0.16, 0]}>
-            <capsuleGeometry args={[0.075, 0.36, 3, segments - 4]} />
-            {skin}
-          </mesh>
-          <mesh position={[0.09 * side, -0.58, 0]}>
-            <capsuleGeometry args={[0.058, 0.34, 3, segments - 4]} />
-            {skin}
-          </mesh>
-        </group>
+      {FIGURE.map((segment) => (
+        <mesh
+          key={segment.key}
+          position={segment.position as [number, number, number]}
+          rotation={(segment.rotation ?? [0, 0, 0]) as [number, number, number]}
+          scale={(segment.scale ?? [1, 1, 1]) as [number, number, number]}
+        >
+          {figureGeometry(segment)}
+          <meshStandardMaterial
+            color={anatomyPalette.skin}
+            transparent
+            opacity={tier === 'reduced' ? 0.3 : 0.24}
+            roughness={0.85}
+            metalness={0}
+            side={THREE.BackSide}
+            depthWrite={false}
+          />
+        </mesh>
       ))}
     </group>
   )
@@ -233,7 +224,15 @@ function Anatomy({
             geometry={organGeometry(organ)}
             position={organ.position}
             rotation={organ.rotation}
-            scale={organ.scale}
+            scale={
+              (organ.scale
+                ? [
+                    organ.scale[0] * ORGAN_SCALE,
+                    organ.scale[1] * ORGAN_SCALE,
+                    organ.scale[2] * ORGAN_SCALE,
+                  ]
+                : [ORGAN_SCALE, ORGAN_SCALE, ORGAN_SCALE]) as [number, number, number]
+            }
             color={colorFor(state?.severity ?? 0, anatomyPalette.organ)}
             selected={selectedOrgan === organ.id}
             onSelect={() => onSelectOrgan(organ.id)}
@@ -277,10 +276,14 @@ export function BodyScene({
       frameloop="always"
       gl={{ antialias: tier === 'full', powerPreference: 'high-performance' }}
     >
-      <ambientLight intensity={0.68} />
-      <directionalLight position={[2, 3, 2]} intensity={0.9} castShadow={false} />
-      <directionalLight position={[-2, 1, -1]} intensity={0.28} />
-      {tier === 'full' && <pointLight position={[0, 1.2, 1.5]} intensity={0.3} />}
+      <ambientLight intensity={0.45} />
+      {/* Key */}
+      <directionalLight position={[2.2, 2.6, 2.4]} intensity={1.15} castShadow={false} />
+      {/* Cool fill from the opposite side, so shadowed faces stay readable */}
+      <directionalLight position={[-2.4, 0.8, -1.2]} intensity={0.42} color="#9fc3d4" />
+      {/* Rim, separating the silhouette from the background */}
+      <directionalLight position={[0, 1.4, -2.6]} intensity={0.55} color="#dbeaf2" />
+      {tier === 'full' && <pointLight position={[0, 0.9, 1.8]} intensity={0.35} />}
 
       <Anatomy
         model={model}
