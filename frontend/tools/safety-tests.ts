@@ -17,7 +17,7 @@ import {
 } from '@/lib/status'
 import { severityScale } from '@/design/theme'
 import { buildBodyViewModel } from '@/features/body/use-body-view-model'
-import { ORGANS, SELECTABLE_IDS, organLabel } from '@/features/body/anatomy'
+import { ORGANS, SELECTABLE_IDS, organAppliesTo, organLabel, selectableIdsFor } from '@/features/body/anatomy'
 import {
   BODY_FORMS,
   ORGAN_SCALE,
@@ -25,6 +25,7 @@ import {
   bodyHalfExtents,
   buildFigureGeometry,
 } from '@/features/body/figure'
+import { organBoundsFor } from '@/features/body/organ-shapes'
 import {
   BODY_MODELS,
   FIGURE_FRAME,
@@ -136,20 +137,26 @@ check('every AI summary carries a confidence value', () => {
 })
 
 /* 4 — The structured renderer exposes every organ the 3D scene does [00 §16.5].
-   Both consume one view-model, so this asserts that contract holds. */
+   Both consume one view-model, so this asserts that contract holds — for every
+   body form, since a male patient's view-model and a female patient's
+   view-model expose different sets of sites [00 §6.5]. */
 check('every renderable organ is reachable in the structured view', () => {
   const snapshots = digitalTwinSnapshots.filter((s) => s.patientId === 'p1')
-  const model = buildModel(snapshots)
 
-  assert(
-    model.organs.length === SELECTABLE_IDS.length,
-    `view-model exposes ${model.organs.length} sites, anatomy defines ${SELECTABLE_IDS.length}`,
-  )
+  for (const form of BODY_FORMS) {
+    const model = buildModel(snapshots, undefined, form)
+    const expected = selectableIdsFor(form)
 
-  for (const id of SELECTABLE_IDS) {
-    const organ = model.organAt(id)
-    assert(organ !== undefined, `site "${id}" is missing from the view-model`)
-    assert(organ.label.length > 0, `site "${id}" has no label for the structured view`)
+    assert(
+      model.organs.length === expected.length,
+      `${form}: view-model exposes ${model.organs.length} sites, anatomy defines ${expected.length}`,
+    )
+
+    for (const id of expected) {
+      const organ = model.organAt(id)
+      assert(organ !== undefined, `${form}: site "${id}" is missing from the view-model`)
+      assert(organ.label.length > 0, `${form}: site "${id}" has no label for the structured view`)
+    }
   }
 })
 
@@ -250,13 +257,28 @@ check('severity scale agrees between theme and status modules', () => {
   }
 })
 
-/* 9 — Anatomy geometry must be valid, or organs render invisibly. */
+/* 9 — Anatomy geometry must be valid, or organs render invisibly.
+   'lofted' organs carry no `args` — their geometry lives in organ-shapes.ts's
+   section tables instead, so those are what get validated for them. */
 check('all organ geometry is finite and positive', () => {
   for (const organ of ORGANS) {
-    assert(
-      organ.args.every((n) => Number.isFinite(n) && n > 0),
-      `organ ${organ.id} has invalid geometry: ${JSON.stringify(organ.args)}`,
-    )
+    if (organ.shape === 'lofted') {
+      const bounds = organBoundsFor(organ.id)
+      assert(bounds !== undefined, `lofted organ ${organ.id} has no section table in organ-shapes.ts`)
+      assert(
+        Number.isFinite(bounds.halfWidth) && bounds.halfWidth > 0,
+        `organ ${organ.id}'s lofted geometry has no width: ${JSON.stringify(bounds)}`,
+      )
+      assert(
+        Number.isFinite(bounds.halfDepth) && bounds.halfDepth > 0,
+        `organ ${organ.id}'s lofted geometry has no depth: ${JSON.stringify(bounds)}`,
+      )
+    } else {
+      assert(
+        organ.args.every((n) => Number.isFinite(n) && n > 0),
+        `organ ${organ.id} has invalid geometry: ${JSON.stringify(organ.args)}`,
+      )
+    }
     assert(
       organ.position.every((n) => Number.isFinite(n)),
       `organ ${organ.id} has an invalid position`,
@@ -270,8 +292,12 @@ if (failures > 0) {
   ;(globalThis as { process?: { exitCode?: number } }).process!.exitCode = 1
 }
 
-function buildModel(snapshots: typeof digitalTwinSnapshots, date?: string) {
-  return buildBodyViewModel(snapshots, date ? { date } : {})
+function buildModel(
+  snapshots: typeof digitalTwinSnapshots,
+  date?: string,
+  form?: (typeof BODY_FORMS)[number],
+) {
+  return buildBodyViewModel(snapshots, { ...(date ? { date } : {}), ...(form ? { form } : {}) })
 }
 
 /* 10 — Anatomical containment.
@@ -289,16 +315,23 @@ check('every organ sits inside every body form', () => {
   // narrower waist and shoulders, so an organ that fits the male trunk can
   // still protrude on hers — and that patient would see a rendering fault on
   // her own record while the same data looked correct on someone else's.
+  //
+  // Only checked for forms the organ actually renders on [00 §6.5] — a
+  // prostate never appears on the female form, so whether it would fit inside
+  // her silhouette is not a real question this visualization ever asks.
   for (const form of BODY_FORMS) {
     for (const organ of ORGANS) {
+      if (!organAppliesTo(organ, form)) continue
+
       const [x, y, z] = organ.position
-      const scale = organ.scale ?? [1, 1, 1]
+      const scale = organ.scaleByForm?.[form] ?? organ.scale ?? [1, 1, 1]
+      // Lofted organs carry their true reach in their own section table
+      // rather than in `args[0]` — reading `args` for them would silently
+      // pass regardless of their actual (larger) lofted extent.
+      const bounds = organ.shape === 'lofted' ? organBoundsFor(organ.id) : undefined
       const radius = organ.args[0] ?? 0
-      // Widest horizontal extent of the organ mesh, after its own scale and the
-      // global organ scale factor. For the torus this is the ring radius; its
-      // tube adds a little more, which the tolerance below absorbs.
-      const extentX = radius * scale[0] * ORGAN_SCALE
-      const extentZ = radius * scale[2] * ORGAN_SCALE
+      const extentX = bounds ? bounds.halfWidth * Math.abs(scale[0]) * ORGAN_SCALE : radius * scale[0] * ORGAN_SCALE
+      const extentZ = bounds ? bounds.halfDepth * Math.abs(scale[2]) * ORGAN_SCALE : radius * scale[2] * ORGAN_SCALE
 
       const limit = bodyHalfExtents(y, form)
       if (!limit) {
@@ -498,6 +531,29 @@ check('the body form follows the sex recorded for the patient', () => {
   assert(
     femaleHip.halfWidth > maleHip.halfWidth,
     `female hips (${femaleHip.halfWidth.toFixed(3)}) are not wider than male (${maleHip.halfWidth.toFixed(3)})`,
+  )
+
+  // The organ SET must differ too, not only the body shell — otherwise "male
+  // and female models have different organs" is decorative rather than real
+  // [00 §6.5]. Each sex-specific site appears for exactly its own form, and
+  // neutral (unspecified/Other) guesses at neither rather than picking one.
+  const maleOrgans = new Set(selectableIdsFor('male'))
+  const femaleOrgans = new Set(selectableIdsFor('female'))
+  const neutralOrgans = new Set(selectableIdsFor('neutral'))
+
+  assert(maleOrgans.has('prostate'), 'the male form has no prostate')
+  assert(
+    !maleOrgans.has('uterus') && !maleOrgans.has('left-ovary'),
+    'the male form has female reproductive organs',
+  )
+  assert(
+    femaleOrgans.has('uterus') && femaleOrgans.has('left-ovary') && femaleOrgans.has('right-ovary'),
+    'the female form is missing reproductive organs',
+  )
+  assert(!femaleOrgans.has('prostate'), 'the female form has a prostate')
+  assert(
+    !neutralOrgans.has('prostate') && !neutralOrgans.has('uterus') && !neutralOrgans.has('left-ovary'),
+    'the neutral form guessed at a sex-specific organ instead of showing neither',
   )
 
   // Every form must produce a real mesh, not just the default one.

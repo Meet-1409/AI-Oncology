@@ -451,7 +451,7 @@ interface Part {
  * the spine — the small landmarks the eye uses to decide whether it is looking
  * at a body or at a smooth shape shaped like one.
  */
-type Relief = (t: number, theta: number, at: number) => number
+export type Relief = (t: number, theta: number, at: number) => number
 
 function loft(
   sections: readonly Section[],
@@ -545,6 +545,79 @@ function loft(
   }
 
   return { positions, indices }
+}
+
+/**
+ * One lofted piece of an organ — the same technique the body shell uses, at
+ * organ scale. Most organs are one part; a few (the thyroid's two lobes) are
+ * several parts merged into a single mesh, the same way `buildFigureGeometry`
+ * merges the trunk and every limb.
+ */
+export interface LoftPart {
+  sections: readonly Section[]
+  axis?: 'y' | 'z'
+  segments?: number
+  rings?: number
+  relief?: Relief
+}
+
+/**
+ * Builds an organ mesh from one or more lofted parts, in the organ's own small
+ * local frame — the caller positions, rotates and scales it into the body with
+ * the same `position`/`rotation`/`scale` mesh props already used for every
+ * primitive organ, so placement is unchanged by this technique.
+ */
+export function buildOrganGeometry(parts: readonly LoftPart[]): THREE.BufferGeometry {
+  const built = parts.map((part) =>
+    loft(part.sections, {
+      axis: part.axis ?? 'y',
+      segments: part.segments,
+      rings: part.rings,
+      relief: part.relief,
+    }),
+  )
+
+  const positions: number[] = []
+  const indices: number[] = []
+  let offset = 0
+  for (const part of built) {
+    for (const value of part.positions) positions.push(value)
+    for (const index of part.indices) indices.push(index + offset)
+    offset += part.positions.length / 3
+  }
+
+  const geometry = new THREE.BufferGeometry()
+  geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3))
+  geometry.setIndex(indices)
+  geometry.computeVertexNormals()
+  geometry.computeBoundingSphere()
+  return geometry
+}
+
+/**
+ * The true local half-extents of a lofted organ — the widest any ring actually
+ * reaches, including its own `centreA`/`centreB` offset.
+ *
+ * Exported so the patient-safety suite can check a lofted organ sits inside the
+ * body the same way it already checks primitive organs, rather than trusting a
+ * hand-maintained number that could silently disagree with the shape actually
+ * drawn — the exact failure `bodyHalfExtents` above was written to prevent for
+ * the body shell.
+ */
+export function organLocalBounds(parts: readonly LoftPart[]): {
+  halfWidth: number
+  halfDepth: number
+} {
+  let halfWidth = 0
+  let halfDepth = 0
+  for (const part of parts) {
+    for (const section of part.sections) {
+      halfWidth = Math.max(halfWidth, Math.abs(section.centreA ?? 0) + section.halfWidth)
+      const depth = Math.max(section.halfDepth, section.backDepth ?? section.halfDepth)
+      halfDepth = Math.max(halfDepth, Math.abs(section.centreB ?? 0) + depth)
+    }
+  }
+  return { halfWidth, halfDepth }
 }
 
 /* ------------------------------------------------------------------ *

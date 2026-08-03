@@ -91,8 +91,8 @@ export function BodyView({
   const [resetSignal, setResetSignal] = useState(0)
   const [fullscreen, setFullscreen] = useState(false)
 
-  const model = useBodyViewModel(snapshots, { date, compareDate })
-  const comparisonModel = useBodyViewModel(snapshots, { date: compareDate })
+  const model = useBodyViewModel(snapshots, { date, compareDate, form })
+  const comparisonModel = useBodyViewModel(snapshots, { date: compareDate, form })
 
   const selected = selectedOrgan ? model.organAt(selectedOrgan) : undefined
   const showScene = tier !== 'none'

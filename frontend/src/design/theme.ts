@@ -11,6 +11,7 @@
  */
 
 import type { SeverityLevel } from '@/lib/status'
+import type { OrganId } from '@/types'
 
 /** Disease severity, light to dark red [00 §6.7]. Consumed by the Body. */
 export const severityScale: Readonly<Record<SeverityLevel, string>> = {
@@ -38,6 +39,7 @@ export const severityScale: Readonly<Record<SeverityLevel, string>> = {
  *      the whole visualization exists to communicate.
  */
 export const anatomyPalette = {
+  /** Fallback for any organ not listed in organPalette below. */
   organ: '#7fb3cc',
   bone: '#a9c7d8',
   lymph: '#8fbdd4',
@@ -49,6 +51,43 @@ export const anatomyPalette = {
   spark: '#cdf0ff',
   /** The volume the figure stands in. */
   volume: '#07131f',
+} as const
+
+/**
+ * One healthy colour per organ, so organ identity is legible even before any
+ * disease is recorded — previously every organ shared the single flat
+ * `anatomyPalette.organ`, so nothing distinguished a liver from a kidney but
+ * position.
+ *
+ * Deliberately never red, in any hue: `severityScale` (below) is the ONLY red
+ * in the Body, so severity is unambiguous the moment it appears. Severity
+ * still overrides this palette entirely once an organ has any recorded
+ * involvement — `colorFor()` in BodyScene.tsx reaches for `severityScale` first
+ * and this palette only as the healthy-state fallback — so there is no risk of
+ * the two ever mixing on one organ.
+ */
+export const organPalette: Record<OrganId, string> = {
+  brain: '#9b8fd4',
+  thyroid: '#6fc2c9',
+  'left-lung': '#6fa2d9',
+  'right-lung': '#6fa2d9',
+  heart: '#d1a34a',
+  'left-breast': '#b07fb0',
+  'right-breast': '#b07fb0',
+  liver: '#9c8a4f',
+  stomach: '#74bf7a',
+  pancreas: '#a8c15a',
+  spleen: '#8a6fc4',
+  'left-kidney': '#5fb3a8',
+  'right-kidney': '#5fb3a8',
+  colon: '#c9b06a',
+  bladder: '#6f8fc9',
+  prostate: '#7a6fc9',
+  uterus: '#af6fbf',
+  'left-ovary': '#c9955f',
+  'right-ovary': '#c9955f',
+  'lymph-nodes': '#8fbdd4',
+  bones: '#a9c7d8',
 } as const
 
 /**

@@ -1,7 +1,8 @@
 import { useMemo } from 'react'
 import type { BodySnapshot } from '@/data/contract/domain'
 import type { EvidenceRef } from '@/types'
-import { organLabel, SELECTABLE_IDS } from './anatomy'
+import { organLabel, selectableIdsFor } from './anatomy'
+import type { BodyForm } from './figure'
 import type { SeverityLevel } from '@/lib/status'
 
 /**
@@ -84,15 +85,26 @@ function resolveSnapshot(
  */
 export function buildBodyViewModel(
   snapshots: readonly BodySnapshot[],
-  options: { date?: string | undefined; compareDate?: string | undefined } = {},
+  options: {
+    date?: string | undefined
+    compareDate?: string | undefined
+    /**
+     * Which sites are anatomically possible for this patient's form
+     * [00 §6.5]. Defaults to 'neutral' — the exact same "don't guess" answer
+     * `bodyFormFor()` gives when a form is not yet known — rather than
+     * silently exposing every sex-specific organ when a caller forgets to
+     * pass one.
+     */
+    form?: BodyForm
+  } = {},
 ): BodyViewModel {
-  const { date, compareDate } = options
+  const { date, compareDate, form = 'neutral' } = options
   {
     const ordered = [...snapshots].sort((a, b) => a.date.localeCompare(b.date))
     const current = resolveSnapshot(ordered, date)
     const comparison = compareDate ? resolveSnapshot(ordered, compareDate) : undefined
 
-    const organs: OrganState[] = SELECTABLE_IDS.map((organId) => {
+    const organs: OrganState[] = selectableIdsFor(form).map((organId) => {
       const status = current?.organStatuses.find((s) => s.organId === organId)
       return {
         organId,
@@ -124,11 +136,11 @@ export function buildBodyViewModel(
 
 export function useBodyViewModel(
   snapshots: readonly BodySnapshot[],
-  options: { date?: string | undefined; compareDate?: string | undefined },
+  options: { date?: string | undefined; compareDate?: string | undefined; form?: BodyForm },
 ): BodyViewModel {
-  const { date, compareDate } = options
+  const { date, compareDate, form } = options
   return useMemo(
-    () => buildBodyViewModel(snapshots, { date, compareDate }),
-    [snapshots, date, compareDate],
+    () => buildBodyViewModel(snapshots, { date, compareDate, form }),
+    [snapshots, date, compareDate, form],
   )
 }

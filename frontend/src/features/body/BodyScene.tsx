@@ -3,12 +3,13 @@ import { Canvas, useFrame } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
 import * as THREE from 'three'
 import type { ReactNode } from 'react'
-import { anatomyPalette, cameraDamping, severityScale } from '@/design/theme'
+import { anatomyPalette, cameraDamping, organPalette, severityScale } from '@/design/theme'
 import { maxPixelRatio } from '@/lib/capability'
 import type { RenderTier } from '@/lib/capability'
 import { useReducedMotion } from '@/components/motion'
-import { BONES, LYMPH_NODES, ORGANS } from './anatomy'
+import { BONES, LYMPH_NODES, ORGANS, organAppliesTo } from './anatomy'
 import { armPoseAngle, ORGAN_SCALE, poseArmPoint } from './figure'
+import { organGeometryFor } from './organ-shapes'
 import { useBodyMeshes } from './use-figure-geometry'
 import type { BodyForm } from './figure'
 import type { OrganDefinition } from './anatomy'
@@ -123,6 +124,13 @@ function organGeometry(organ: OrganDefinition): ReactNode {
       return <boxGeometry args={args as [number, number, number]} />
     case 'torus':
       return <torusGeometry args={args as [number, number, number, number]} />
+    case 'lofted': {
+      // A real organ silhouette, lofted the same way the body shell is
+      // [features/body/organ-shapes.ts]. Built once and cached there, never
+      // rebuilt per frame.
+      const geometry = organGeometryFor(organ.id)
+      return geometry ? <primitive object={geometry} attach="geometry" /> : null
+    }
   }
 }
 
@@ -296,13 +304,14 @@ function Anatomy({
         />
       ))}
 
-      {ORGANS.map((organ) => {
+      {ORGANS.filter((organ) => organAppliesTo(organ, form)).map((organ) => {
         const state = model.organAt(organ.id)
         // A sculpted mesh already carries its own position, orientation and
         // true size, registered to this body by the atlas fit. The primitive
         // needs all three supplied. Falling back per organ rather than
         // all-or-nothing means a partial atlas still shows a complete body.
         const sculpted = meshes.organs.get(organ.id)
+        const baseScale = organ.scaleByForm?.[form] ?? organ.scale ?? [1, 1, 1]
         return (
           <AnimatedPart
             key={organ.id}
@@ -312,15 +321,13 @@ function Anatomy({
             scale={
               sculpted
                 ? undefined
-                : ((organ.scale
-                    ? [
-                        organ.scale[0] * ORGAN_SCALE,
-                        organ.scale[1] * ORGAN_SCALE,
-                        organ.scale[2] * ORGAN_SCALE,
-                      ]
-                    : [ORGAN_SCALE, ORGAN_SCALE, ORGAN_SCALE]) as [number, number, number])
+                : ([
+                    baseScale[0] * ORGAN_SCALE,
+                    baseScale[1] * ORGAN_SCALE,
+                    baseScale[2] * ORGAN_SCALE,
+                  ] as [number, number, number])
             }
-            color={colorFor(state?.severity ?? 0, anatomyPalette.organ)}
+            color={colorFor(state?.severity ?? 0, organPalette[organ.id] ?? anatomyPalette.organ)}
             selected={selectedOrgan === organ.id}
             onSelect={() => onSelectOrgan(organ.id)}
             label={organ.label}
