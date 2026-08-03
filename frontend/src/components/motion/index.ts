@@ -6,6 +6,7 @@
  */
 
 export { useReducedMotion } from './use-reduced-motion'
+export { useOnApproach } from './use-on-approach'
 export { Reveal } from './reveal'
 export type { RevealProps } from './reveal'
 export { SpaceTransition } from './space-transition'

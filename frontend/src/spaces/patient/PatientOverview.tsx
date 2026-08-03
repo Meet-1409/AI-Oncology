@@ -1,5 +1,6 @@
 import { Surface, Text } from '@/components/primitives'
 import { StatusIndicator } from '@/components/primitives'
+import { Reveal } from '@/components/motion'
 import { calculateAge, formatDate } from '@/lib/format'
 import type { PatientRecord } from '@/types'
 
@@ -47,57 +48,61 @@ export function PatientOverview({ patient }: { patient: PatientRecord }) {
 
   return (
     <div className="grid gap-6 lg:grid-cols-2">
-      <Surface elevation="raised" radius="lg" border="subtle" inset="md" className="space-y-6">
-        <Group title="Patient">
-          <Row label="Patient ID" value={patient.patientCode} />
-          <Row label="Age" value={`${calculateAge(patient.dob)} years`} />
-          <Row label="Gender" value={patient.gender} />
-          <Row label="Date of birth" value={formatDate(patient.dob)} />
-          <Row label="Blood group" value={patient.bloodGroup} />
-          <Row label="Height" value={`${patient.heightCm} cm`} />
-          <Row label="Weight" value={`${patient.weightKg} kg`} />
-          <Row label="BMI" value={bmi} />
-        </Group>
+      <Reveal index={0}>
+        <Surface elevation="raised" radius="lg" border="subtle" inset="md" className="space-y-6">
+          <Group title="Patient">
+            <Row label="Patient ID" value={patient.patientCode} />
+            <Row label="Age" value={`${calculateAge(patient.dob)} years`} />
+            <Row label="Gender" value={patient.gender} />
+            <Row label="Date of birth" value={formatDate(patient.dob)} />
+            <Row label="Blood group" value={patient.bloodGroup} />
+            <Row label="Height" value={`${patient.heightCm} cm`} />
+            <Row label="Weight" value={`${patient.weightKg} kg`} />
+            <Row label="BMI" value={bmi} />
+          </Group>
 
-        <Group title="Diagnosis">
-          <Row label="Primary cancer" value={patient.primaryCancer} />
-          <Row label="Primary site" value={patient.primarySite} />
-          <Row label="Stage" value={patient.stage} />
-          <Row label="Diagnosed" value={formatDate(patient.diagnosisDate)} />
-          <Row label="Current treatment" value={patient.currentTreatment} />
-        </Group>
-      </Surface>
+          <Group title="Diagnosis">
+            <Row label="Primary cancer" value={patient.primaryCancer} />
+            <Row label="Primary site" value={patient.primarySite} />
+            <Row label="Stage" value={patient.stage} />
+            <Row label="Diagnosed" value={formatDate(patient.diagnosisDate)} />
+            <Row label="Current treatment" value={patient.currentTreatment} />
+          </Group>
+        </Surface>
+      </Reveal>
 
-      <Surface elevation="raised" radius="lg" border="subtle" inset="md" className="space-y-6">
-        <Group title="Medical information">
-          <Row label="Known allergies" value={listOrNone(patient.allergies)} />
-          <Row label="Current medications" value={listOrNone(patient.currentMedications)} />
-          <Row label="Previous treatments" value={listOrNone(patient.previousTreatments)} />
-          <Row label="Past surgeries" value={listOrNone(patient.pastSurgeries)} />
-          <Row label="Family history" value={patient.familyHistory} />
-          <Row label="Smoking history" value={patient.smokingHistory} />
-          <Row label="Alcohol history" value={patient.alcoholHistory} />
-        </Group>
+      <Reveal index={1}>
+        <Surface elevation="raised" radius="lg" border="subtle" inset="md" className="space-y-6">
+          <Group title="Medical information">
+            <Row label="Known allergies" value={listOrNone(patient.allergies)} />
+            <Row label="Current medications" value={listOrNone(patient.currentMedications)} />
+            <Row label="Previous treatments" value={listOrNone(patient.previousTreatments)} />
+            <Row label="Past surgeries" value={listOrNone(patient.pastSurgeries)} />
+            <Row label="Family history" value={patient.familyHistory} />
+            <Row label="Smoking history" value={patient.smokingHistory} />
+            <Row label="Alcohol history" value={patient.alcoholHistory} />
+          </Group>
 
-        <section>
-          <Text as="h3" level="subheading" tone="primary">
-            Comorbidities
-          </Text>
-          {patient.comorbidities.length === 0 ? (
-            <Text level="secondary" tone="muted" className="mt-3">
-              No other medical conditions recorded.
+          <section>
+            <Text as="h3" level="subheading" tone="primary">
+              Comorbidities
             </Text>
-          ) : (
-            <ul className="mt-3 flex flex-wrap gap-1.5">
-              {patient.comorbidities.map((condition) => (
-                <li key={condition}>
-                  <StatusIndicator tone="warning">{condition}</StatusIndicator>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
-      </Surface>
+            {patient.comorbidities.length === 0 ? (
+              <Text level="secondary" tone="muted" className="mt-3">
+                No other medical conditions recorded.
+              </Text>
+            ) : (
+              <ul className="mt-3 flex flex-wrap gap-1.5">
+                {patient.comorbidities.map((condition) => (
+                  <li key={condition}>
+                    <StatusIndicator tone="warning">{condition}</StatusIndicator>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+        </Surface>
+      </Reveal>
     </div>
   )
 }

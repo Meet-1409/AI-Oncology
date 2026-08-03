@@ -27,3 +27,6 @@ export type { OrientationProps } from './orientation'
 
 export { DocumentPreview } from './document-preview'
 export type { DocumentPreviewProps } from './document-preview'
+
+export { TabRail } from './tab-rail'
+export type { TabRailItem, TabRailProps } from './tab-rail'

@@ -135,6 +135,16 @@
     will-change: transform, opacity, filter;
   }
 
+  /* A new Signal draws attention to its own arrival rather than simply being
+     present on the next render [00 §11.5]. One-shot — it does not repeat. */
+  @keyframes signal-arrive {
+    from { transform: scale(0); opacity: 0; }
+    to   { transform: scale(1); opacity: 1; }
+  }
+  .signal-dot {
+    animation: signal-arrive var(--motion-reveal) var(--motion-ease-enter);
+  }
+
   /* The leaving space is lifted out of flow so the arriving one can take its
      place without the page height jumping between them. */
   .space-leaving {
@@ -158,6 +168,11 @@
     }
     .space-leaving {
       display: none;
+    }
+    .signal-dot {
+      animation-name: none !important;
+      transform: none;
+      opacity: 1;
     }
   }
 }

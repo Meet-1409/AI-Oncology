@@ -63,7 +63,7 @@ export function EnvironmentShell() {
             {unread > 0 && (
               <span
                 aria-hidden
-                className="absolute right-2 top-2 size-2 rounded-full bg-[var(--accent)] ring-2 ring-[var(--surface-base)]"
+                className="signal-dot absolute right-2 top-2 size-2 rounded-full bg-[var(--accent)] ring-2 ring-[var(--surface-base)]"
               />
             )}
           </Control>

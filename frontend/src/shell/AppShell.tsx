@@ -3,7 +3,7 @@ import { Outlet, useLocation } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Control, Icon } from '@/components/primitives'
-import { SpaceTransition } from '@/components/motion'
+import { Reveal, SpaceTransition } from '@/components/motion'
 import { useEnvironmentStore } from '@/state/environment-store'
 import { useDepthSync } from './use-depth'
 import { useContinuousReturn } from './use-continuous-return'
@@ -82,15 +82,17 @@ export function AppShell({ identity, signals, intent, context }: AppShellProps) 
             single action, in the place the eye already looks for it, appearing
             only where there is somewhere to ascend to. */}
         {depth > 1 && (
-          <Control
-            size="icon"
-            intent="quiet"
-            onClick={ascend}
-            aria-label="Back"
-            title="Back (Esc)"
-          >
-            <Icon icon={ArrowLeft} size="sm" />
-          </Control>
+          <Reveal className="inline-flex">
+            <Control
+              size="icon"
+              intent="quiet"
+              onClick={ascend}
+              aria-label="Back"
+              title="Back (Esc)"
+            >
+              <Icon icon={ArrowLeft} size="sm" />
+            </Control>
+          </Reveal>
         )}
         {context}
         <div className="flex-1" />

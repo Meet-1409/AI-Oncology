@@ -3,6 +3,7 @@ import { AlertTriangle, Bell, CheckCheck, ListChecks, Sparkles, StickyNote, Uplo
 import type { IconComponent } from '@/components/primitives'
 import { Control, Icon, Text } from '@/components/primitives'
 import { EmptyState, LoadingSurface } from '@/components/patterns'
+import { Reveal } from '@/components/motion'
 import { useMarkAllSignalsRead, useMarkSignalRead, useSignals } from '@/data/queries'
 import { formatRelativeTime } from '@/lib/format'
 import { cn } from '@/lib/utils'
@@ -67,8 +68,9 @@ export function SignalsView({ className }: { className?: string }) {
       )}
 
       <ul className="divide-y divide-[var(--border-subtle)]" aria-live="polite">
-        {signals.map((signal) => (
+        {signals.map((signal, index) => (
           <li key={signal.id}>
+            <Reveal index={index}>
             <button
               type="button"
               onClick={() => {
@@ -119,6 +121,7 @@ export function SignalsView({ className }: { className?: string }) {
                 </Text>
               </span>
             </button>
+            </Reveal>
           </li>
         ))}
       </ul>

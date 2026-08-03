@@ -11,6 +11,7 @@ import {
 } from '@/components/patterns'
 import { detectRenderTier } from '@/lib/capability'
 import type { RenderTier } from '@/lib/capability'
+import { Reveal } from '@/components/motion'
 import { formatDate } from '@/lib/format'
 import { severityMeaning } from '@/lib/status'
 import { bodyFormFor } from './figure'
@@ -196,19 +197,21 @@ export function BodyView({
               <Surface
                 elevation="sunken"
                 radius="xl"
-                className="relative overflow-hidden bg-[var(--body-volume)]"
+                className="relative overflow-hidden bg-[var(--body-volume)] transition-[height] duration-[var(--motion-spatial)] ease-[var(--motion-ease-standard)] motion-reduce:transition-none"
                 style={{ height: fullscreen ? '70vh' : 380 }}
               >
                 <SceneBoundary onError={handleSceneError}>
                   <Suspense fallback={null}>
-                    <BodyScene
-                      model={comparisonModel}
-                      selectedOrgan={selectedOrgan}
-                      onSelectOrgan={handleSelect}
-                      tier={tier}
-                      form={form}
-                      resetSignal={resetSignal}
-                    />
+                    <Reveal className="h-full w-full">
+                      <BodyScene
+                        model={comparisonModel}
+                        selectedOrgan={selectedOrgan}
+                        onSelectOrgan={handleSelect}
+                        tier={tier}
+                        form={form}
+                        resetSignal={resetSignal}
+                      />
+                    </Reveal>
                   </Suspense>
                 </SceneBoundary>
               </Surface>
@@ -226,19 +229,21 @@ export function BodyView({
             <Surface
               elevation="sunken"
               radius="xl"
-              className="relative overflow-hidden bg-[var(--body-volume)]"
+              className="relative overflow-hidden bg-[var(--body-volume)] transition-[height] duration-[var(--motion-spatial)] ease-[var(--motion-ease-standard)] motion-reduce:transition-none"
               style={{ height: fullscreen ? '70vh' : compareDate ? 380 : 460 }}
             >
               <SceneBoundary onError={handleSceneError}>
                 <Suspense fallback={null}>
-                  <BodyScene
-                    model={model}
-                    selectedOrgan={selectedOrgan}
-                    onSelectOrgan={handleSelect}
-                    tier={tier}
-                    form={form}
-                    resetSignal={resetSignal}
-                  />
+                  <Reveal className="h-full w-full">
+                    <BodyScene
+                      model={model}
+                      selectedOrgan={selectedOrgan}
+                      onSelectOrgan={handleSelect}
+                      tier={tier}
+                      form={form}
+                      resetSignal={resetSignal}
+                    />
+                  </Reveal>
                 </Suspense>
               </SceneBoundary>
             </Surface>

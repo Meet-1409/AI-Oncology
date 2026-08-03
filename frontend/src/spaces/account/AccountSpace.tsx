@@ -2,11 +2,11 @@ import { useState } from 'react'
 import { Laptop, Monitor, Smartphone } from 'lucide-react'
 import type { IconComponent } from '@/components/primitives'
 import { Control, Field, Icon, Input, Select, StatusIndicator, Surface, Text } from '@/components/primitives'
-import { LoadingSurface } from '@/components/patterns'
+import { LoadingSurface, TabRail } from '@/components/patterns'
+import { Reveal } from '@/components/motion'
 import { useSession } from '@/data/queries'
 import { usePreferencesStore } from '@/state/preferences-store'
 import type { DateFormat, ThemePreference, TimeFormat } from '@/state/preferences-store'
-import { cn } from '@/lib/utils'
 
 /**
  * Account — Depth 1, beside Home Space rather than beneath it, because it belongs
@@ -126,31 +126,15 @@ export default function AccountSpace() {
         </Text>
       </header>
 
-      <nav className="mt-8 border-b border-[var(--border-subtle)]" aria-label="Account sections">
-        <ul className="-mb-px flex flex-wrap gap-1 overflow-x-auto">
-          {SECTIONS.map((entry) => (
-            <li key={entry.id}>
-              <button
-                type="button"
-                onClick={() => setSection(entry.id)}
-                aria-current={section === entry.id ? 'page' : undefined}
-                className={cn(
-                  'whitespace-nowrap border-b-2 px-3.5 py-2.5 text-secondary font-medium',
-                  'transition-colors duration-[var(--motion-quick)]',
-                  'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--focus-ring)]',
-                  section === entry.id
-                    ? 'border-[var(--accent)] text-[var(--accent)]'
-                    : 'border-transparent text-[var(--text-muted)] hover:text-[var(--text-primary)]',
-                )}
-              >
-                {entry.label}
-              </button>
-            </li>
-          ))}
-        </ul>
-      </nav>
+      <TabRail
+        className="mt-8"
+        items={SECTIONS.map((entry) => ({ id: entry.id, label: entry.label }))}
+        active={section}
+        onSelect={setSection}
+        aria-label="Account sections"
+      />
 
-      <div className="mt-6 space-y-5">
+      <Reveal key={section} className="mt-6 space-y-5">
         {section === 'profile' && (
           <Section title="Your details">
             <div className="space-y-4">
@@ -167,7 +151,9 @@ export default function AccountSpace() {
                 <Control intent="primary" onClick={confirmSaved}>
                   Save changes
                 </Control>
-                {saved && <StatusIndicator tone="success" dot>Saved</StatusIndicator>}
+                <Reveal show={saved} aria-hidden={!saved}>
+                  <StatusIndicator tone="success" dot>Saved</StatusIndicator>
+                </Reveal>
               </div>
             </div>
           </Section>
@@ -340,7 +326,7 @@ export default function AccountSpace() {
             </ul>
           </Section>
         )}
-      </div>
+      </Reveal>
     </div>
   )
 }

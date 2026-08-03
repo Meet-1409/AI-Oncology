@@ -4,6 +4,8 @@
 **Scope of this document:** the frontend, end to end. Backend, AI and infrastructure are out of scope and have not been started.
 **Originally written as of:** commit `3a05b81`, 3 August 2026. **Updated 4 August 2026** — see §2.1 and the commit list in §14 for what changed since.
 
+**Updated again 4 August 2026, evening** — realistic organ anatomy, sex-specific organs and a first pass of motion/depth throughout the application. See §2.2, §7 and §9.
+
 ---
 
 ## 1. Read this first
@@ -49,6 +51,25 @@ Three things will save you the most time.
 - **Responsive/accessibility audit (feasible subset)** — done. No horizontal overflow at 768px or 375px for Evidence, compare-selection mode, `ComparisonFocus`, or `DocumentPreview`; Escape closes Focus layers; touch targets confirmed sized via the existing `pointer-coarse:` responsive classes (structurally verified — this environment doesn't emulate a coarse pointer, so the 44px path itself wasn't visually observed). axe-core covers structural accessibility only — contrast checks are disabled under jsdom (no real layout engine) and remain a manual/real-browser check.
   - **Flagged, not fixed (out of scope for this pass):** the Body's WebGL canvas appeared stuck at its default 300×150 buffer regardless of container size when the browser window was resized in this session — WebGL context creation succeeded and `BodyStructured` (the accessible fallback) rendered and worked correctly at every tested size, so nothing was blocked, but a screenshot to confirm whether this is a real R3F/ResizeObserver issue or an artifact of this specific remote browser wasn't obtainable here. Worth a look with real screenshot tooling or a device before the next release.
 - **Unused `motion` dependency** — removed, along with its now-dead `vendor-motion` manual chunk in `vite.config.ts`.
+
+### 2.2 Completed since 2.1 — realistic anatomy, and motion/depth throughout
+
+The product owner asked directly for two more things: organs that read as real organ shapes rather than "blobs flying over" the body, and a level of restrained, real-time motion throughout the application comparable to Vercel/Apple — while explicitly warning against it becoming a marketing-site full of decorative effects that would confuse a non-technical clinical audience. Both are done. See §7 and §9 for the durable technical description; this is the changelog entry.
+
+**Realistic, sex-specific organ anatomy** `[00 §6.15]`:
+- Liver, both lungs (with a cardiac notch on the left), heart, both kidneys (with the medial hilum concavity), stomach, spleen, pancreas, bladder, thyroid and brain are now bespoke lofted meshes — the same `Section`/spline/superellipse/loft technique the body shell already used, extended with new per-organ section tables in the new `features/body/organ-shapes.ts`, not a new geometry engine. The colon keeps a primitive (an oval torus) since a donut shape already reads correctly; lymph nodes and bones stay clusters of primitives since they were never the complaint.
+- Every organ now has its own colour (`design/theme.ts`'s new `organPalette`), drawn only from hue families outside the red band so it can never be confused with the severity scale, which continues to override it exactly as before whenever severity > 0.
+- **The organ set is now sex-conditional, not just the body shell.** `uterus`, `left-ovary` and `right-ovary` are new organs, present only for the female form; `prostate` is present only for the male form; both breasts stay present for every form (male breast cancer is rare but clinically real) with a reduced scale on the male form as a stylization. `selectableIdsFor(form)` in `anatomy.ts` is the single filter both `BodyScene` (3D) and `BodyStructured` (accessible) draw from, so the two views cannot drift apart on which organs exist for which patient — the same guarantee §6.3 already gave for organ *content*, now extended to organ *presence*.
+- `tools/safety-tests.ts` was extended, not weakened, to match: it now asserts containment and reachability per body form, and that the female/male-only organs never appear on the wrong form. 17 checks, up from 16.
+- **The tumor itself is deliberately not built.** The plan is documented in `features/body/README.md`: many overlapping spherical blobs merged closely enough to read as one irregular mass (a metaball approach), driven by data the backend will supply once it exists. Building it now would mean inventing the shape a real finding should have.
+
+**Motion and depth, applied throughout the authenticated application** `[04 §6]`, within the existing 180–420ms envelope — nothing here touches the cinematic layer or its boundary (§8):
+- `components/motion/reveal.tsx` — the one component that mediates almost all of this — had a real defect fixed: it previously rendered content already in its final state, so there was nothing for the CSS transition to animate *from*. It now mounts in the from-state and flips to the to-state one frame later, the same pattern already used by `SpaceTransition`/Entry. `Confidence`'s bar (`components/patterns/clinical.tsx`) got the identical fix locally for its width fill.
+- `components/primitives/surface.tsx` gained an opt-in `interactive` variant and a cursor-reactive `tilt` prop, gated off entirely under reduced motion and on touch pointers.
+- `components/patterns/tab-rail.tsx` is a new, reusable sliding-underline tab control; it replaced the hand-rolled tab markup in `AccountSpace` and `PatientSpace`'s Contextual Orbit.
+- `components/motion/use-on-approach.ts` is a new, app-safe (not cinematic) on-approach reveal hook.
+- Applied mechanically: staggered reveals on `PatientOverview`'s info cards, `SignalsView` rows and Intent Bar search results; a hover lift on Practice Space's patient rows; a one-shot arrival animation on the unread Signals dot (`.signal-dot` in `index.css`); height transitions already present on the Body's fullscreen/compare toggle got a matching cross-fade on the canvas itself.
+- **Intent Bar** (⌘K) — the single highest-leverage surface, per the product owner's own comparison to Vercel/Apple — now has a real entrance (scale + translate + blur-free fade, scrim fading in) and a real exit (same, reversed, with the dialog staying mounted for the closing transition rather than vanishing instantly), instead of one-shot CSS keyframes that only ever played on open. Its result rows stagger in. **Note on verification:** this remote browser tool's tab reports `document.visibilityState: "hidden"`, which suspends `requestAnimationFrame` — the same root cause already flagged in 2.1 for the Body's canvas-sizing anomaly. This made the *entrance* transition unobservable here (rAF-gated), while the *exit* path was confirmed working functionally (Escape correctly closed the dialog via the `setTimeout`-gated unmount, which is not rAF-suspended). The code follows the exact mount-then-flip pattern already proven live elsewhere in this codebase; treat as functionally verified, visually unconfirmed in this specific tool.
 
 ### Never started, by instruction
 
@@ -205,7 +226,7 @@ A token defined for light but forgotten in dark inherits the light value silentl
 ### Running them
 
 ```bash
-npm run test:safety     # 16 checks
+npm run test:safety     # 17 checks
 ```
 
 ---
@@ -227,6 +248,16 @@ A standing figure, **feet at y = -0.51, crown at y = 1.31**, facing +Z. 1.82 uni
 - **The trunk does not carry shoulder width.** The deltoid belongs to the arm loft. A torso widened to the acromion reads as armour.
 
 Three forms — `male`, `female`, `neutral` — selected by `bodyFormFor()` from the sex on the patient's record. `Other` and missing both resolve to `neutral`; guessing is worse than being non-committal. All three share one vertical frame so a single organ coordinate set stays correct in each.
+
+### Organs are lofted too, not primitives dressed up
+
+The same rule that built the shell — never join primitives — applies to individual organs as of 4 August 2026. `features/body/organ-shapes.ts` holds a `Section[]` table per organ (liver, both lungs with a cardiac notch on the left, heart, both kidneys with the medial hilum concavity, stomach, spleen, pancreas, bladder, thyroid, brain) fed through `figure.ts`'s existing `spline()`/`superellipse()`/`loft()` — no new geometry engine, just new `buildOrganGeometry()`/`organLocalBounds()` exports on it. The colon stays a primitive (a squashed torus reads correctly as-is); lymph nodes and bones stay clusters of primitives.
+
+Each organ has its own colour, from the new `organPalette` in `design/theme.ts` — every hue chosen outside the red band on purpose, so it can never be mistaken for the severity scale, which still overrides it whenever severity > 0 exactly as before.
+
+**The organ set is sex-conditional, not just the body shell.** `uterus`, `left-ovary`, `right-ovary` exist only for the female form; `prostate` only for the male form; both breasts render for every form (scaled down, not removed, for male). `anatomy.ts`'s `selectableIdsFor(form)` is the one filter both `BodyScene` and `BodyStructured` read from — see §6.3 — so which organs exist for a given patient can't drift between the two views. `tools/safety-tests.ts` asserts this directly: the wrong-sex organ must never appear, for any form.
+
+**The tumor is not built.** It is intentionally out of scope for the frontend: a real finding's shape will come from the backend, and the intended technique — many overlapping spherical blobs merged closely enough to read as one uneven mass — is documented, not implemented, in `features/body/README.md`.
 
 **2. A sculpted atlas (`model.ts`)** — used automatically when installed. **Not yet installed.**
 
@@ -312,6 +343,16 @@ Applied at **two levels**. The outermost carries Entry ↔ authentication ↔ en
 
 One gesture always moves exactly one depth level out `[04 §5]`. Bound to Escape, and now also a visible control in the shell whenever there is somewhere to ascend to — a keyboard shortcut nobody can see is not a way back for a patient on a tablet. It ignores Escape while the user is typing, so it can never discard unsaved work.
 
+### Restrained motion, applied throughout — not just travel
+
+As of 4 August 2026 the same envelope above is also used for smaller, real-time motion across the application, at the product owner's request — a level comparable to Vercel or Apple, deliberately short of a decorative marketing site, since the primary audience is non-technical. This is a second, smaller layer than spatial travel, built from the same tokens:
+
+- `components/motion/reveal.tsx` mounts content in its from-state and flips to its to-state one frame later — a CSS transition has nothing to animate if content is already at its destination on mount. Used for staggered list/card reveals (`PatientOverview`, `SignalsView`, Intent Bar results) and for the Body's canvas fade-in.
+- `components/primitives/surface.tsx`'s opt-in `interactive`/`tilt` variant gives a cursor-reactive tilt, off entirely under reduced motion or a touch pointer.
+- `components/patterns/tab-rail.tsx` is a reusable sliding-underline tab control (`AccountSpace`, `PatientSpace`'s Contextual Orbit).
+- The Intent Bar (⌘K) has a real entrance/exit — scale, translate and scrim fade — rather than a one-shot keyframe that only ever played once. See §2.2 for the verification note: this specific remote-browser tool reports its tab as `hidden`, which suspends `requestAnimationFrame` and made the entrance transition unobservable here, though the exit path (which unmounts on a `setTimeout`, not rAF) was confirmed working.
+- All of it collapses under `prefers-reduced-motion` at the same token level as spatial travel — nothing here has its own opt-out to forget.
+
 ---
 
 ## 10. Backend integration — what the backend team needs to provide
@@ -361,6 +402,9 @@ Things that have already cost time, or will.
 | D6 | Two visual vocabularies, hard boundary | The frozen docs require both a cinematic Entry and a restrained application |
 | D7 | Dark as the default theme | The Entry and the Body are both lit volumes in darkness; a bright application between them reads as a different product. Light and System remain available `[09.10 §8]` |
 | D8 | Male / female / neutral body forms | The sites that matter clinically sit differently, and a figure that does not match the person is a constant small signal the record is not theirs |
+| D9 | Organs reuse the body-shell's lofting engine rather than a second geometry system | Realistic organ silhouettes and a watertight body shell are the same problem — a stack of splined cross-sections — solved once |
+| D10 | Reproductive organs are sex-conditional; breast tissue is not | Prostate/uterus/ovaries only exist for the sex that has them; breast tissue stays present for every form, scaled down rather than removed for male, since male breast cancer is rare but clinically real |
+| D11 | READ THIS/ frozen-doc set cut from nineteen files to two | Feature/flow detail changes; only the Ground Rules and the overall architecture reference are meant to be permanent — see §1 |
 
 ---
 
@@ -379,6 +423,11 @@ In rough order of value:
 ## 14. Commit history
 
 ```
+xxxxxxx  feat(motion): real-time depth and motion throughout the application
+160b6a0  feat(body): real organ silhouettes, per-organ color, sex-specific organs
+06c42e3  docs: cut READ THIS down to Ground Rules and the TRD
+27f4e14  chore: add dev server launch config for browser preview
+7cdff66  docs: update handover for completed work
 65ec0c4  test(frontend): add Vitest, Testing Library and jest-axe; remove unused motion
 a81d873  feat(evidence): finish report comparison and document preview
 20145c8  docs: add frontend handover

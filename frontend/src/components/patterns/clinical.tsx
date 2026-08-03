@@ -1,7 +1,9 @@
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { FileText, TrendingDown, TrendingUp, Minus } from 'lucide-react'
 import { Icon, StatusIndicator, Surface, Text } from '@/components/primitives'
 import type { StatusTone } from '@/components/primitives'
+import { useReducedMotion } from '@/components/motion'
 import { severityColor, severityLabel } from '@/lib/status'
 import { formatDate } from '@/lib/format'
 import { cn } from '@/lib/utils'
@@ -107,6 +109,17 @@ export function Confidence({ value, className }: { value: number; className?: st
   const percent = Math.round(value * 100)
   const tone = percent >= 85 ? 'success' : percent >= 65 ? 'warning' : 'danger'
   const toneVar = `var(--status-${tone}-text)`
+  const reduced = useReducedMotion()
+  // A confidence figure fills in rather than appearing pre-filled — a CSS
+  // transition only animates a style CHANGE, so the bar mounts empty and
+  // catches up to its real value one frame later [00 §11.5].
+  const [filled, setFilled] = useState(reduced)
+
+  useEffect(() => {
+    if (reduced) return
+    const frame = requestAnimationFrame(() => setFilled(true))
+    return () => cancelAnimationFrame(frame)
+  }, [reduced])
 
   return (
     <span className={cn('inline-flex items-center gap-2', className)}>
@@ -115,8 +128,8 @@ export function Confidence({ value, className }: { value: number; className?: st
         className="h-1.5 w-16 overflow-hidden rounded-full bg-[var(--surface-sunken)]"
       >
         <span
-          className="block h-full rounded-full"
-          style={{ width: `${percent}%`, background: toneVar }}
+          className="block h-full rounded-full transition-[width] duration-[var(--motion-reveal)] ease-[var(--motion-ease-enter)] motion-reduce:transition-none"
+          style={{ width: filled ? `${percent}%` : '0%', background: toneVar }}
         />
       </span>
       <Text as="span" level="caption" tone="muted">

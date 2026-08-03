@@ -38,7 +38,13 @@ function PatientPresence({ patient, index }: { patient: PatientRecord; index: nu
         style={{ viewTransitionName: sharedNames.patient(patient.id) }}
         className={cn(
           'group flex items-center gap-4 rounded-lg px-3 py-3.5',
-          'transition-colors duration-[var(--motion-quick)] hover:bg-[var(--surface-sunken)]',
+          // A presence that can be opened lifts to meet the pointer rather than
+          // only tinting — real depth feedback for the row this whole space
+          // exists to make easy to reach [09.2 §1].
+          'transition-[transform,background-color,box-shadow] duration-[var(--motion-quick)]',
+          'ease-[var(--motion-ease-standard)]',
+          'hover:-translate-y-0.5 hover:bg-[var(--surface-raised)] hover:shadow-lifted',
+          'motion-reduce:transition-none motion-reduce:hover:translate-y-0',
           'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--focus-ring)]',
         )}
       >

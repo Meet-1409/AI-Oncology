@@ -3,10 +3,12 @@ import { useNavigate } from 'react-router-dom'
 import { Command, CornerDownLeft, Search, UserRound, Settings2, Home } from 'lucide-react'
 import type { IconComponent } from '@/components/primitives'
 import { Control, Icon, Text } from '@/components/primitives'
+import { Reveal, useReducedMotion } from '@/components/motion'
 import { usePatients } from '@/data/queries'
 import { useEnvironmentStore } from '@/state/environment-store'
 import { useSessionStore } from '@/state/session-store'
 import { paths } from '@/routes/paths'
+import { duration } from '@/design/theme'
 import { cn } from '@/lib/utils'
 
 /**
@@ -39,6 +41,32 @@ export function IntentBar() {
   const [query, setQuery] = useState('')
   const [active, setActive] = useState(0)
   const inputRef = useRef<HTMLInputElement>(null)
+  const reduced = useReducedMotion()
+
+  // Mounted for exactly as long as it takes to close, not an instant unmount —
+  // this is the command surface the whole environment is judged by, and an
+  // abrupt disappearance reads as a page change rather than a dismissal
+  // [00 §11.6]. `shown` is the visual state; `rendered` is whether it exists
+  // in the DOM at all, lagging one closing transition behind `isOpen`.
+  const [rendered, setRendered] = useState(false)
+  const [shown, setShown] = useState(false)
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+
+  useEffect(() => {
+    if (isOpen) {
+      window.clearTimeout(closeTimer.current)
+      setRendered(true)
+      // Mount in the closed visual state and flip open next frame — a CSS
+      // transition never animates a property that starts already at its
+      // destination value.
+      const frame = requestAnimationFrame(() => setShown(true))
+      return () => cancelAnimationFrame(frame)
+    }
+    setShown(false)
+    const ms = reduced ? 0 : duration.reveal + 40
+    closeTimer.current = setTimeout(() => setRendered(false), ms)
+    return () => window.clearTimeout(closeTimer.current)
+  }, [isOpen, reduced])
 
   // Patients are only fetched for oncologists; a patient searches their own
   // records only [09.1 §13].
@@ -139,9 +167,14 @@ export function IntentBar() {
         </span>
       </Control>
 
-      {isOpen && (
+      {rendered && (
         <div
-          className="fixed inset-0 z-[70] flex items-start justify-center bg-[var(--surface-scrim)] px-4 pt-[12vh]"
+          className={cn(
+            'fixed inset-0 z-[70] flex items-start justify-center px-4 pt-[12vh]',
+            'bg-[var(--surface-scrim)] transition-opacity duration-[var(--motion-reveal)]',
+            'ease-[var(--motion-ease-standard)] motion-reduce:transition-none',
+            shown ? 'opacity-100' : 'opacity-0',
+          )}
           onClick={close}
           role="presentation"
         >
@@ -153,7 +186,9 @@ export function IntentBar() {
             onKeyDown={onKeyDown}
             className={cn(
               'w-full max-w-lg overflow-hidden rounded-xl bg-[var(--surface-raised)] shadow-overlay',
-              'animate-[fade-in_var(--motion-reveal)_var(--motion-ease-enter)]',
+              'transition-[opacity,transform] duration-[var(--motion-reveal)]',
+              'ease-[var(--motion-ease-enter)] motion-reduce:transition-none',
+              shown ? 'translate-y-0 scale-100 opacity-100' : '-translate-y-1 scale-[0.98] opacity-0',
             )}
           >
             <div className="flex items-center gap-3 border-b border-[var(--border-subtle)] px-4">
@@ -186,36 +221,38 @@ export function IntentBar() {
               <ul role="listbox" aria-label="Results" className="max-h-80 overflow-y-auto p-1.5">
                 {destinations.map((destination, index) => (
                   <li key={destination.id}>
-                    <button
-                      type="button"
-                      role="option"
-                      aria-selected={index === active}
-                      onMouseEnter={() => setActive(index)}
-                      onClick={() => go(destination)}
-                      className={cn(
-                        'flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-left',
-                        index === active ? 'bg-[var(--accent-subtle)]' : 'hover:bg-[var(--surface-sunken)]',
-                      )}
-                    >
-                      <Icon
-                        icon={destination.icon}
-                        size="sm"
-                        className={index === active ? 'text-[var(--accent)]' : 'text-[var(--text-subtle)]'}
-                      />
-                      <span className="min-w-0 flex-1">
-                        <Text as="span" level="secondary" tone="primary" weight="medium" truncate>
-                          {destination.label}
-                        </Text>
-                        {destination.detail && (
-                          <Text level="caption" tone="muted" truncate>
-                            {destination.detail}
-                          </Text>
+                    <Reveal index={index}>
+                      <button
+                        type="button"
+                        role="option"
+                        aria-selected={index === active}
+                        onMouseEnter={() => setActive(index)}
+                        onClick={() => go(destination)}
+                        className={cn(
+                          'flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-left',
+                          index === active ? 'bg-[var(--accent-subtle)]' : 'hover:bg-[var(--surface-sunken)]',
                         )}
-                      </span>
-                      {index === active && (
-                        <Icon icon={CornerDownLeft} size="xs" className="text-[var(--text-subtle)]" />
-                      )}
-                    </button>
+                      >
+                        <Icon
+                          icon={destination.icon}
+                          size="sm"
+                          className={index === active ? 'text-[var(--accent)]' : 'text-[var(--text-subtle)]'}
+                        />
+                        <span className="min-w-0 flex-1">
+                          <Text as="span" level="secondary" tone="primary" weight="medium" truncate>
+                            {destination.label}
+                          </Text>
+                          {destination.detail && (
+                            <Text level="caption" tone="muted" truncate>
+                              {destination.detail}
+                            </Text>
+                          )}
+                        </span>
+                        {index === active && (
+                          <Icon icon={CornerDownLeft} size="xs" className="text-[var(--text-subtle)]" />
+                        )}
+                      </button>
+                    </Reveal>
                   </li>
                 ))}
               </ul>

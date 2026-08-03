@@ -10,7 +10,8 @@ import {
 } from 'lucide-react'
 import type { IconComponent } from '@/components/primitives'
 import { Control, Icon, StatusIndicator, Text } from '@/components/primitives'
-import { ErrorState, LoadingSurface } from '@/components/patterns'
+import { ErrorState, LoadingSurface, TabRail } from '@/components/patterns'
+import { Reveal } from '@/components/motion'
 import { BodyView } from '@/features/body'
 import { JourneyView } from '@/features/journey'
 import { EvidenceView, UploadComposer } from '@/features/evidence'
@@ -21,7 +22,6 @@ import { usePatientSpace } from '@/data/queries'
 import { useSessionStore } from '@/state/session-store'
 import { SPACE_PARAM } from '@/routes/paths'
 import { calculateAge } from '@/lib/format'
-import { cn } from '@/lib/utils'
 import { ReportFocus, EventFocus, TaskFocus, ComparisonFocus } from '@/spaces/focus'
 import { PatientOverview } from './PatientOverview'
 import type { Report, PatientTask, TimelineEvent } from '@/types'
@@ -240,34 +240,18 @@ export default function PatientSpace() {
       </section>
 
       {/* The Contextual Orbit — 4-6 destinations, revealed on demand [04 §5]. */}
-      <nav className="mt-8 border-b border-[var(--border-subtle)]" aria-label="Patient destinations">
-        <ul className="-mb-px flex flex-wrap gap-1 overflow-x-auto">
-          {visibleOrbit.map((entry) => {
-            const active = orbit === entry.id
-            return (
-              <li key={entry.id}>
-                <button
-                  type="button"
-                  onClick={() => setOrbit(entry.id)}
-                  aria-current={active ? 'page' : undefined}
-                  className={cn(
-                    'flex items-center gap-2 whitespace-nowrap border-b-2 px-3.5 py-2.5',
-                    'transition-colors duration-[var(--motion-quick)]',
-                    'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--focus-ring)]',
-                    active
-                      ? 'border-[var(--accent)] text-[var(--accent)]'
-                      : 'border-transparent text-[var(--text-muted)] hover:text-[var(--text-primary)]',
-                  )}
-                >
-                  <Icon icon={entry.icon} size="sm" />
-                  <span className="text-secondary font-medium">{entry.label}</span>
-                  <span className="text-caption text-[var(--text-subtle)]">({entry.clinical})</span>
-                </button>
-              </li>
-            )
-          })}
-        </ul>
-      </nav>
+      <TabRail
+        className="mt-8"
+        items={visibleOrbit.map((entry) => ({
+          id: entry.id,
+          label: entry.label,
+          icon: entry.icon,
+          secondary: entry.clinical,
+        }))}
+        active={orbit}
+        onSelect={setOrbit}
+        aria-label="Patient destinations"
+      />
 
       <section className="mt-6" aria-live="polite">
         {/* What the open destination contains, before its contents [04 §28]. */}
@@ -275,6 +259,7 @@ export default function PatientSpace() {
           {visibleOrbit.find((entry) => entry.id === orbit)?.plain}
         </Text>
 
+        <Reveal key={orbit}>
         {orbit === 'information' && <PatientOverview patient={patient} />}
 
         {orbit === 'journey' && (
@@ -324,6 +309,7 @@ export default function PatientSpace() {
             onCreateNote={isOncologist ? () => setNoteOpen(true) : undefined}
           />
         )}
+        </Reveal>
       </section>
 
       {/* Focus layers — Depth 3, above this space, never replacing it [04 §4]. */}
