@@ -25,6 +25,13 @@ import {
   bodyHalfExtents,
   buildFigureGeometry,
 } from '@/features/body/figure'
+import {
+  BODY_MODELS,
+  FIGURE_FRAME,
+  ORGAN_ATLAS_URL,
+  normalizeFigure,
+  organIdFromNodeName,
+} from '@/features/body/model'
 import { mockStore } from '@/data/adapters/mock-store'
 import { patientSpaceSchema } from '@/data/contract/domain'
 import { digitalTwinSnapshots } from '@/data/mock-data'
@@ -320,6 +327,148 @@ check('every organ sits inside every body form', () => {
   }
 
   assert(offenders.length === 0, `organs outside the body:\n        ${offenders.join('\n        ')}`)
+})
+
+/* 11b — Fitting an installed model into the figure frame.
+
+   A sculpted body can be dropped into public/models and is used in place of the
+   generated one. The organ coordinates in anatomy.ts are ABSOLUTE, so the only
+   thing keeping them anatomically correct against an arbitrary model is this
+   normalisation. Get it wrong and every organ lands in the wrong part of the
+   body — while the screen still shows a plausible figure with plausible
+   coloured shapes inside it, which is the worst possible failure mode for this
+   feature: wrong, and confident. */
+check('an installed body model is fitted to the figure frame without distortion', () => {
+  /**
+   * A body-like mesh at an arbitrary scale and origin, as a real export would
+   * be. Segmented, because the loader rejects meshes too small to be a body —
+   * a bare 12-triangle box is a placeholder or a bounding volume, and accepting
+   * one would put a cuboid on screen in place of a patient's anatomy.
+   */
+  function sampleBody(width: number, height: number, depth: number, offset: number) {
+    const mesh = new THREE.Mesh(new THREE.BoxGeometry(width, height, depth, 8, 24, 8))
+    mesh.position.set(offset, offset + height / 2, offset)
+    const root = new THREE.Group()
+    // Nested under a scaled parent, because anatomical models routinely arrive
+    // as parts under nested transforms. Ignoring those scatters the body.
+    root.scale.setScalar(2.5)
+    root.add(mesh)
+    return root
+  }
+
+  // A model authored in centimetres, far from the origin.
+  const normalized = normalizeFigure(sampleBody(40, 170, 24, 500))
+  assert(normalized !== null, 'a valid model failed to normalise')
+  const geometry = normalized.geometry
+
+  geometry.computeBoundingBox()
+  const box = geometry.boundingBox
+  assert(box !== null, 'the normalised figure has no bounding box')
+
+  assert(
+    Math.abs(box.min.y - FIGURE_FRAME.floor) < 0.001,
+    `feet landed at y=${box.min.y.toFixed(4)}, not ${FIGURE_FRAME.floor}`,
+  )
+  assert(
+    Math.abs(box.max.y - FIGURE_FRAME.crown) < 0.001,
+    `crown landed at y=${box.max.y.toFixed(4)}, not ${FIGURE_FRAME.crown}`,
+  )
+  assert(
+    Math.abs((box.max.x + box.min.x) / 2) < 0.001,
+    'the figure is not centred on x — every organ would sit off to one side',
+  )
+  assert(
+    Math.abs((box.max.z + box.min.z) / 2) < 0.001,
+    'the figure is not centred on z',
+  )
+
+  // Scaling must be UNIFORM. Fitting each axis independently would stretch the
+  // body to the frame and put every organ in the wrong place relative to it.
+  const sourceRatio = 40 / 170
+  const fittedRatio = (box.max.x - box.min.x) / (box.max.y - box.min.y)
+  assert(
+    Math.abs(fittedRatio - sourceRatio) < 0.002,
+    `the model was stretched: width/height went from ${sourceRatio.toFixed(4)} to ${fittedRatio.toFixed(4)}`,
+  )
+
+  geometry.dispose()
+})
+
+/* 11c — A bad model must fall back, never render as a broken body. */
+check('an unusable model is rejected rather than rendered', () => {
+  assert(normalizeFigure(new THREE.Group()) === null, 'an empty scene was accepted as a body')
+
+  // Degenerate: zero height. Fitting it would divide by zero and scatter every
+  // vertex to infinity.
+  const flat = new THREE.Mesh(new THREE.PlaneGeometry(1, 1))
+  flat.rotation.x = -Math.PI / 2
+  const root = new THREE.Group()
+  root.add(flat)
+  assert(normalizeFigure(root) === null, 'a zero-height model was accepted as a body')
+
+  assert(
+    /^\/models\/[\w-]+\.(glb|gltf)$/.test(ORGAN_ATLAS_URL),
+    `the organ atlas url "${ORGAN_ATLAS_URL}" is not a local .glb or .gltf under /models`,
+  )
+
+  // Every form must have a fallback, so no form can ever render nothing.
+  for (const form of BODY_FORMS) {
+    const source = BODY_MODELS[form]
+    assert(source !== undefined, `${form} has no model entry`)
+    assert(
+      /^\/models\/[\w-]+\.(glb|gltf)$/.test(source.url),
+      `${form} model url "${source.url}" is not a local .glb or .gltf under /models`,
+    )
+    const fallback = buildFigureGeometry(form)
+    const position = fallback.getAttribute('position')
+    assert(
+      position !== undefined && position.count > 2000,
+      `${form} has no usable fallback figure if its model is missing`,
+    )
+    fallback.dispose()
+  }
+})
+
+/* 11d — Matching atlas mesh names to organs.
+
+   Exporters mangle names freely. If the match is too strict, organs silently
+   fall back to primitives and sit next to correctly-modelled neighbours looking
+   obviously wrong; if it is too loose, one organ's mesh gets used for another,
+   which is a clinical error wearing a plausible face. Both directions are
+   checked here because both have to hold. */
+check('organ atlas mesh names resolve to the right organs', () => {
+  const cases: readonly [string, string][] = [
+    ['liver', 'liver'],
+    ['Liver', 'liver'],
+    ['Liver.001', 'liver'],
+    ['liver_002', 'liver'],
+    ['Left Lung', 'left-lung'],
+    ['left_lung', 'left-lung'],
+    ['LeftLung', 'left-lung'],
+    ['  Right Kidney  ', 'right-kidney'],
+    ['lymph-nodes', 'lymph-nodes'],
+  ]
+
+  for (const [name, expected] of cases) {
+    const actual = organIdFromNodeName(name)
+    assert(actual === expected, `"${name}" resolved to "${actual}", expected "${expected}"`)
+  }
+
+  // Every id in the anatomy must be expressible as a node name, or that organ
+  // can never be supplied by an atlas at all.
+  for (const id of SELECTABLE_IDS) {
+    assert(
+      organIdFromNodeName(id) === id,
+      `organ id "${id}" does not survive name normalisation — it became "${organIdFromNodeName(id)}"`,
+    )
+  }
+
+  // And distinct organs must not collapse onto each other.
+  const resolved = SELECTABLE_IDS.map((id) => organIdFromNodeName(id))
+  assert(
+    new Set(resolved).size === resolved.length,
+    'two different organs normalise to the same atlas name',
+  )
 })
 
 /* 12 — The figure must match the patient it represents.

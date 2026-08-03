@@ -8,7 +8,8 @@ import { maxPixelRatio } from '@/lib/capability'
 import type { RenderTier } from '@/lib/capability'
 import { useReducedMotion } from '@/components/motion'
 import { BONES, LYMPH_NODES, ORGANS } from './anatomy'
-import { armPoseAngle, buildFigureGeometry, ORGAN_SCALE, poseArmPoint } from './figure'
+import { armPoseAngle, ORGAN_SCALE, poseArmPoint } from './figure'
+import { useBodyMeshes } from './use-figure-geometry'
 import type { BodyForm } from './figure'
 import type { OrganDefinition } from './anatomy'
 import type { BodyViewModel } from './use-body-view-model'
@@ -108,6 +109,9 @@ function AnimatedPart({
   )
 }
 
+/** Sculpted organ meshes are already positioned by the atlas fit. */
+const ORIGIN: readonly [number, number, number] = [0, 0, 0]
+
 function organGeometry(organ: OrganDefinition): ReactNode {
   const args = organ.args as number[]
   switch (organ.shape) {
@@ -175,10 +179,9 @@ function createRimMaterial(color: string, intensity: number): THREE.ShaderMateri
 /**
  * The body silhouette.
  *
- * ONE continuous lofted surface, generated in figure.ts — not a collection of
- * primitives. Built once per mount and disposed on unmount; a few thousand
- * triangles, so generating it is cheaper than shipping and parsing a model file
- * and it carries no external asset.
+ * ONE continuous surface. A sculpted model from public/models when one is
+ * installed, otherwise the figure generated in figure.ts — never a collection of
+ * primitives, and never nothing.
  *
  * Three passes, cheapest first:
  *   1. A dark BackSide shell, giving the form interior volume without ever
@@ -187,19 +190,19 @@ function createRimMaterial(color: string, intensity: number): THREE.ShaderMateri
  *   3. Surface points, at full tier only — the scatter that reads as a scanned
  *      body rather than a modelled one.
  */
-function BodyShell({ tier, form }: { tier: RenderTier; form: BodyForm }) {
-  const geometry = useMemo(() => buildFigureGeometry(form), [form])
+function BodyShell({
+  tier,
+  geometry,
+}: {
+  tier: RenderTier
+  geometry: THREE.BufferGeometry
+}) {
   const rim = useMemo(
     () => createRimMaterial(anatomyPalette.rim, tier === 'reduced' ? 0.85 : 1.15),
     [tier],
   )
 
-  useEffect(() => {
-    return () => {
-      geometry.dispose()
-      rim.dispose()
-    }
-  }, [geometry, rim])
+  useEffect(() => () => rim.dispose(), [rim])
 
   return (
     <group>
@@ -257,12 +260,15 @@ function Anatomy({
   const colorFor = (severity: SeverityLevel, fallback: string) =>
     severity > 0 ? severityScale[severity] : fallback
 
+  // Generated geometry immediately; a sculpted atlas replaces it if installed.
+  const meshes = useBodyMeshes(form)
+
   const bones = model.organAt('bones')
   const lymph = model.organAt('lymph-nodes')
 
   return (
     <group position={[0, -0.1, 0]}>
-      <BodyShell tier={tier} form={form} />
+      <BodyShell tier={tier} geometry={meshes.figure} />
 
       {BONES.map((bone) => (
         <AnimatedPart
@@ -292,20 +298,27 @@ function Anatomy({
 
       {ORGANS.map((organ) => {
         const state = model.organAt(organ.id)
+        // A sculpted mesh already carries its own position, orientation and
+        // true size, registered to this body by the atlas fit. The primitive
+        // needs all three supplied. Falling back per organ rather than
+        // all-or-nothing means a partial atlas still shows a complete body.
+        const sculpted = meshes.organs.get(organ.id)
         return (
           <AnimatedPart
             key={organ.id}
-            geometry={organGeometry(organ)}
-            position={organ.position}
-            rotation={organ.rotation}
+            geometry={sculpted ? <primitive object={sculpted} attach="geometry" /> : organGeometry(organ)}
+            position={sculpted ? ORIGIN : organ.position}
+            rotation={sculpted ? undefined : organ.rotation}
             scale={
-              (organ.scale
-                ? [
-                    organ.scale[0] * ORGAN_SCALE,
-                    organ.scale[1] * ORGAN_SCALE,
-                    organ.scale[2] * ORGAN_SCALE,
-                  ]
-                : [ORGAN_SCALE, ORGAN_SCALE, ORGAN_SCALE]) as [number, number, number]
+              sculpted
+                ? undefined
+                : ((organ.scale
+                    ? [
+                        organ.scale[0] * ORGAN_SCALE,
+                        organ.scale[1] * ORGAN_SCALE,
+                        organ.scale[2] * ORGAN_SCALE,
+                      ]
+                    : [ORGAN_SCALE, ORGAN_SCALE, ORGAN_SCALE]) as [number, number, number])
             }
             color={colorFor(state?.severity ?? 0, anatomyPalette.organ)}
             selected={selectedOrgan === organ.id}
