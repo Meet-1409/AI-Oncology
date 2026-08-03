@@ -137,7 +137,7 @@ export function SeverityLegend({ className }: { className?: string }) {
           <div key={level} className="flex items-start gap-2.5">
             <span
               aria-hidden
-              className="mt-1 size-3 shrink-0 rounded-full ring-1 ring-inset ring-black/10"
+              className="severity-swatch mt-1 size-3 shrink-0 rounded-full ring-1 ring-inset ring-[var(--severity-ring)]"
               style={{ background: severityColor(level) }}
             />
             <div className="min-w-0">

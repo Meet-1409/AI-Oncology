@@ -26,7 +26,10 @@ export function SeverityIndicator({ severity, className }: { severity: number; c
     <span className={cn('inline-flex items-center gap-2', className)}>
       <span
         aria-hidden
-        className="size-3 shrink-0 rounded-full ring-1 ring-inset ring-black/10"
+        // The ring is themed: the top of the severity scale is a very dark red
+        // that loses its edge against a dark surface. It delineates the swatch
+        // without altering a single severity value.
+        className="severity-swatch size-3 shrink-0 rounded-full ring-1 ring-inset ring-[var(--severity-ring)]"
         style={{ background: severityColor(severity) }}
       />
       <Text as="span" level="caption" tone="body">

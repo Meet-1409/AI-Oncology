@@ -37,7 +37,10 @@ function detectTimeZone(): string {
 export const usePreferencesStore = create<PreferencesState>()(
   persist(
     (set) => ({
-      theme: 'light',
+      // Dark by default. The Entry is a lit volume in darkness and the Body is
+      // a lit volume in darkness; a light application between them reads as a
+      // different product [04 §27]. Light and system remain available [09.10 §8].
+      theme: 'dark',
       language: 'en',
       dateFormat: 'dd-mmm-yyyy',
       timeFormat: '24h',

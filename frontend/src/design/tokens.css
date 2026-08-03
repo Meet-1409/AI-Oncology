@@ -276,6 +276,105 @@
   --cinema-grain-opacity: 0.055;
 }
 
+/* ==================================================================
+   DARK — the same environment, lit differently.
+
+   A documented user preference [09.10 §8], and the theme that makes the
+   platform continuous: the Entry is a lit volume in darkness and the Body is a
+   lit volume in darkness, so a bright clinical surface between them reads as a
+   different product bolted on.
+
+   ONLY the semantic layer is redefined. Every component consumes semantic
+   tokens, so nothing else in the codebase changes — which is the entire reason
+   the two-layer token system exists.
+
+   THE SEVERITY SCALE IS NOT REDEFINED. It is fixed by documentation — lighter
+   is lower severity, darker is higher [00 §6.7] — it is shared with three.js,
+   and it is checked for equality across three files on every build. A theme
+   that quietly restyled it would mean the same finding rendering as two
+   different colours depending on a display preference, which is precisely the
+   class of defect the invariant exists to prevent. Severity is legible here
+   because it always carries its label as well [00 §16.2], and because the
+   swatch is delineated against dark by the ring below.
+   ================================================================== */
+:root[data-theme='dark'] {
+  /* Surfaces: a dark blue-grey, never pure black. Pure black against white
+     text is the highest-contrast pairing there is and the harshest to read for
+     any length of time — and clinical text is read at length. */
+  --surface-base: #0b1219;
+  --surface-raised: #121b24;
+  --surface-sunken: #080e14;
+  --surface-inverse: var(--color-neutral-50);
+  --surface-scrim: rgba(3, 6, 10, 0.62);
+
+  /* Text: off-white rather than white, for the same reason. */
+  --text-primary: #e8eef4;
+  --text-body-color: #d3dde6;
+  --text-muted: #93a4b3;
+  --text-subtle: #6f8090;
+  --text-on-inverse: var(--color-neutral-900);
+  --text-on-accent: #040d14;
+
+  --border-subtle: #1c2833;
+  --border-default: #26343f;
+  --border-strong: #3a4a57;
+
+  /* Accent lightens. The brand blue used on light surfaces falls below
+     readable contrast on a dark one. */
+  --accent: #6fbcdc;
+  --accent-hover: #8bcbe6;
+  --accent-active: #a5d8ee;
+  --accent-subtle: #10222c;
+  --accent-border: #214354;
+
+  --focus-ring: #7fd0ee;
+
+  /* Status: dark surfaces, light text. Each pairing is chosen so the text
+     clears 4.5:1 against its own surface, not against the page. */
+  --status-success-surface: #0d2118;
+  --status-success-border: #1b3a2a;
+  --status-success-text: #6ddaa0;
+
+  --status-warning-surface: #241a08;
+  --status-warning-border: #40300f;
+  --status-warning-text: #f0bc63;
+
+  --status-danger-surface: #260f0f;
+  --status-danger-border: #421c1a;
+  --status-danger-text: #f79088;
+
+  --status-info-surface: #0d1b2c;
+  --status-info-border: #1a3049;
+  --status-info-text: #7ab5f0;
+
+  --status-neutral-surface: #16202a;
+  --status-neutral-border: #263341;
+  --status-neutral-text: #b6c4d0;
+
+  /* Elevation cannot be carried by shadow on a dark surface — a darker shadow
+     against a dark background is invisible. Depth is carried by surface
+     lightness instead, plus a hairline top edge catching the light. */
+  --shadow-raised: 0 1px 0 rgba(255, 255, 255, 0.035) inset, 0 1px 3px rgba(0, 0, 0, 0.5);
+  --shadow-lifted: 0 1px 0 rgba(255, 255, 255, 0.045) inset, 0 6px 18px rgba(0, 0, 0, 0.55);
+  --shadow-focus: 0 1px 0 rgba(255, 255, 255, 0.05) inset, 0 12px 36px rgba(0, 0, 0, 0.62);
+  --shadow-overlay: 0 1px 0 rgba(255, 255, 255, 0.06) inset, 0 20px 56px rgba(0, 0, 0, 0.7);
+}
+
+/*
+ * Severity swatches on dark.
+ *
+ * The scale runs to a very dark red at the top of the range, which loses its
+ * edge against a dark surface. A light ring restores the boundary without
+ * altering a single severity value.
+ */
+:root[data-theme='dark'] .severity-swatch {
+  --severity-ring: rgba(255, 255, 255, 0.28);
+}
+
+:root {
+  --severity-ring: rgba(0, 0, 0, 0.12);
+}
+
 /*
  * Reduced motion is honored at the token level, so every consumer inherits it
  * without opting in. Presentation changes; information and functionality do not
