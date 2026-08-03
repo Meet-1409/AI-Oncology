@@ -21,3 +21,6 @@ export {
   ChangeIndicator,
 } from './clinical'
 export type { ChangeDirection } from './clinical'
+
+export { Orientation, PlainExplanation, SeverityLegend } from './orientation'
+export type { OrientationProps } from './orientation'

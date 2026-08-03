@@ -74,6 +74,13 @@ export default function PatientHomeSpace() {
         <Text level="secondary" tone="muted" className="mt-1">
           {today}
         </Text>
+        {/* One plain sentence explaining the space, before any of it [04 §28].
+            A patient may be opening their own cancer record for the first time;
+            being told what they are looking at costs one line. */}
+        <Text level="secondary" tone="body" className="mt-3 max-w-xl">
+          Everything your care team has about you, in one place. Anything that
+          needs you is at the top.
+        </Text>
       </header>
 
       {/* Actions first, closest to the viewer [09.8 §5]. */}

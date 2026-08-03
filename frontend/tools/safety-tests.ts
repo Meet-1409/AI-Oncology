@@ -8,7 +8,13 @@
  * Run with: npm run test:safety
  */
 import * as THREE from 'three'
-import { severityColor, severityLabel, isSeverityLevel, SEVERITY_LEVELS } from '@/lib/status'
+import {
+  severityColor,
+  severityLabel,
+  severityMeaning,
+  isSeverityLevel,
+  SEVERITY_LEVELS,
+} from '@/lib/status'
 import { severityScale } from '@/design/theme'
 import { buildBodyViewModel } from '@/features/body/use-body-view-model'
 import { ORGANS, SELECTABLE_IDS, organLabel } from '@/features/body/anatomy'
@@ -182,6 +188,43 @@ check('every severity level has a distinct text label', () => {
   for (const label of labels) {
     assert(label.length > 0 && label !== 'Unknown', `a severity level has no usable label`)
   }
+})
+
+/* 7b — Severity must also be readable by someone with no clinical training.
+   "Minimal" and "Significant" are unambiguous to an oncologist and genuinely
+   ambiguous to a patient reading their own record, and both see this scale. The
+   product must be understandable without training [04 §28], [01], so every level
+   carries a plain sentence as well as a clinical label. A level that acquired a
+   colour and a label but no plain meaning would fail silently — the patient
+   would simply see less than the oncologist and never know it. */
+check('every severity level is also explained in plain words', () => {
+  const meanings = SEVERITY_LEVELS.map((level) => severityMeaning(level))
+
+  assert(
+    new Set(meanings).size === meanings.length,
+    `plain meanings are not distinct: ${meanings.join(' | ')}`,
+  )
+
+  for (const level of SEVERITY_LEVELS) {
+    const meaning = severityMeaning(level)
+    const label = severityLabel(level)
+
+    assert(meaning.length > 0, `severity ${level} has no plain meaning`)
+    assert(
+      meaning !== label,
+      `severity ${level}: the plain meaning just repeats the clinical label "${label}"`,
+    )
+    // A sentence, not another one-word label — the whole point is that it
+    // explains rather than names.
+    assert(
+      meaning.trim().split(/\s+/).length >= 4,
+      `severity ${level}: "${meaning}" is too short to explain anything`,
+    )
+  }
+
+  // An out-of-range value must still say something a person can act on, rather
+  // than rendering an empty space where an explanation belongs.
+  assert(severityMeaning(99).length > 0, 'an unrecognised severity produces no plain text')
 })
 
 /* 8 — The CSS, three.js and status severity scales must agree. */

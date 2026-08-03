@@ -83,6 +83,37 @@ for (const file of walk(join(SRC, 'features'))) {
   }
 }
 
+/*
+ * The cinematic layer is confined to the Entry.
+ *
+ * [04 §14] permits the Entry a presentation vocabulary the clinical Design System
+ * does not have, because the Entry carries no clinical information. [04 §28] then
+ * governs everywhere else: usability is never sacrificed for visual effect. That
+ * boundary is only real if it is enforced — a cinematic control that drifts into
+ * a patient space would trade legibility for spectacle in exactly the place the
+ * documentation forbids it.
+ */
+for (const file of walk(SRC)) {
+  const relativePath = relative(SRC, file)
+  const inEntry = relativePath.startsWith(join('spaces', 'entry'))
+  const isCinematicItself = relativePath.startsWith(join('components', 'cinematic'))
+  // The Showcase documents the design system and is stripped from production
+  // builds, so demonstrating the layer there cannot reach a clinical space.
+  const isShowcase = relativePath.startsWith(join('dev', 'showcase'))
+  if (inEntry || isCinematicItself || isShowcase) continue
+
+  const source = readFileSync(file, 'utf8')
+  for (const match of source.matchAll(IMPORT_PATTERN)) {
+    if (!match[1].startsWith('@/components/cinematic')) continue
+    violations.push({
+      file: relativePath,
+      layer: 'this file',
+      target: 'the cinematic layer, which is Entry-only [04 §14]',
+      specifier: match[1],
+    })
+  }
+}
+
 if (violations.length > 0) {
   console.error(`\nArchitecture violations (${violations.length}):\n`)
   for (const v of violations) {

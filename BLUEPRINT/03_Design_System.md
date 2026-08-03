@@ -137,3 +137,60 @@ One density. No compact mode — a second density doubles the visual QA surface 
 ### 4.5 Touch targets
 
 Minimum 44×44 CSS px for any interactive element, including organ selection affordances in the structured renderer. Tablet must remain fully functional `[04 §24]`.
+
+---
+
+## 5. The cinematic layer (Entry only)
+
+### 5.1 Why a second vocabulary exists
+
+The documentation asks for two things that cannot be satisfied by one visual system.
+
+`[04 §14]` requires the Entry to be "a cinematic introduction to the system, not a traditional landing page" — memorable, premium, and creating curiosity. `[04 §28]` requires that inside the application "usability is never sacrificed for visual effect" and that "every space should be understandable without training".
+
+A single system tuned to satisfy both would be a compromise at each end: an Entry too restrained to be memorable, and clinical spaces carrying decoration a working oncologist has to look past. So there are two, and the boundary between them is explicit.
+
+### 5.2 What the cinematic layer contains
+
+Living in `src/components/cinematic/`, used only at Depth 0:
+
+| Component | Purpose |
+|---|---|
+| `Grain` | Fine SVG turbulence over the frame. Breaks flat gradients so a surface reads as lit rather than as CSS. |
+| `LightField` | One soft pool of light plus a vignette — a single source in darkness. |
+| `Rise` / `Settle` | Layered reveals. Content arrives in beats, in the order the composition should be read, rather than fading in as a block. |
+| `Marquee` | A slow horizontal strip establishing an axis beneath the vertical stack. |
+| `CinematicAction` / `CinematicJump` | Fully-rounded actions ending in a disc the arrow travels across. |
+| `EdgeLabel` / `Ordinal` / `Hairline` | The quiet half of the type contrast, and grouping by one line instead of a box. |
+
+Its own tokens: `--cinema-void`, `--cinema-ink`, `--cinema-veil`, `--cinema-glow`, `--cinema-line`, `--cinema-grain-opacity`, the `--cinema-settle / draw / withdraw` durations, and the `--text-edge` step.
+
+### 5.3 The composition rule
+
+The Entry is built on **depth, not stacking**. The point field renders *above* the wordmark in `mix-blend-mode: screen`, so the word sits inside the figure rather than in front of a backdrop. Screen blending can only add light, so it is arithmetically incapable of reducing the text's contrast: the depth is real and costs nothing in legibility.
+
+This one decision does more for perceived quality than any quantity of additional animation, which is why it is recorded here rather than left as an implementation detail.
+
+### 5.4 Boundaries
+
+- **Motion.** The application envelope stops at 380ms because a clinician waiting on information must never wait on an animation. The cinematic envelope runs to 1700ms, permitted only where no clinical information exists.
+- **Reduced motion.** Both envelopes collapse to 0ms. The Entry's composition — statement, figure, layering — survives intact; only the time spent arriving at it is removed `[00 §11.9]`.
+- **Enforcement.** `tools/check-architecture.mjs` fails the build if anything outside `src/spaces/entry` imports from the cinematic layer. The exception is `src/dev/showcase`, which documents the design system and is stripped from production builds.
+
+---
+
+## 6. Plain language (everywhere)
+
+`[04 §28]` requires every space to be understandable without training, and `[01]` requires the product to be "immediately understandable without training". The users are patients and oncologists; a patient may be reading their own cancer record for the first time.
+
+Three components in `components/patterns/orientation.tsx` carry this:
+
+- **`Orientation`** — one plain sentence at the top of a space saying what it shows and what to do with it. The cheapest intervention available with the largest effect on comprehension.
+- **`PlainExplanation`** — a collapsed disclosure for concepts that need more than a sentence. Always available, never competing with clinical content.
+- **`SeverityLegend`** — the whole severity scale as swatch, clinical label and plain sentence, marked up as a definition list.
+
+### 6.1 What plain language may and may not say
+
+`severityMeaning()` in `lib/status.ts` describes **position on a documented scale and nothing more**. It does not estimate size, spread or outlook. Doing so would be the interface inventing a clinical claim the underlying data never made, which `[00 §5]` forbids — and it would be most dangerous precisely where it would be most reassuring.
+
+Guarded by a patient-safety test: every level must carry a distinct plain sentence, of at least four words, that is not merely a repeat of the clinical label.

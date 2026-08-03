@@ -77,8 +77,36 @@ const SEVERITY_LABEL: Readonly<Record<SeverityLevel, string>> = {
   5: 'Severe',
 }
 
+/**
+ * The same scale, in plain words.
+ *
+ * "Minimal" and "Significant" are clear to an oncologist and ambiguous to a
+ * patient reading their own record, yet both see this scale [09.6]. Every space
+ * must be understandable without training [04 §28], so each level also carries a
+ * sentence anyone can read.
+ *
+ * These sentences deliberately describe POSITION ON THE SCALE and nothing more.
+ * They do not estimate size, spread or outlook: that would be the interface
+ * inventing a clinical claim the underlying data never made, which [00 §5]
+ * forbids. What is safe to say is where a finding sits on a documented scale.
+ */
+const SEVERITY_MEANING: Readonly<Record<SeverityLevel, string>> = {
+  0: 'Not currently marked as affected.',
+  1: 'Marked as affected, at the lowest level on the scale.',
+  2: 'Marked as affected, low on the scale.',
+  3: 'Marked as affected, in the middle of the scale.',
+  4: 'Marked as affected, high on the scale.',
+  5: 'Marked as affected, at the highest level on the scale.',
+}
+
 export function isSeverityLevel(value: number): value is SeverityLevel {
   return Number.isInteger(value) && value >= 0 && value <= 5
+}
+
+export function severityMeaning(severity: number): string {
+  return isSeverityLevel(severity)
+    ? SEVERITY_MEANING[severity]
+    : 'This level is not recognised. Ask your care team.'
 }
 
 export function severityColor(severity: number): string {

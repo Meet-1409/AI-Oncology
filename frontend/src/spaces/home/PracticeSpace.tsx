@@ -130,6 +130,11 @@ export default function PracticeSpace() {
         <Text level="secondary" tone="muted" className="mt-1">
           {today} · {patients.length} patient{patients.length === 1 ? '' : 's'} under your care
         </Text>
+        {/* What this space is for, stated rather than inferred [04 §28]. */}
+        <Text level="secondary" tone="body" className="mt-3 max-w-xl">
+          Everyone under your care, with whatever needs attention shown first.
+          Open a patient to see their full record.
+        </Text>
       </header>
 
       <div className="mt-8">

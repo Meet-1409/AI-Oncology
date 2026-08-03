@@ -46,24 +46,66 @@ interface OrbitEntry {
   id: OrbitId
   label: string
   clinical: string
+  /**
+   * What the destination actually contains, in words that need no explaining.
+   *
+   * The spatial name and the clinical name are both correct and neither is
+   * self-evident to someone opening this for the first time — "Understanding"
+   * and "Patient Intelligence" describe the same panel and a patient would
+   * guess neither. Every space must be understandable without training
+   * [04 §28], so the plain sentence is shown for whichever destination is open.
+   */
+  plain: string
   icon: IconComponent
   /** Oncologist-only destinations are omitted for patients [09.7 §2]. */
   oncologistOnly?: boolean
 }
 
 const ORBIT: readonly OrbitEntry[] = [
-  { id: 'information', label: 'Information', clinical: 'Patient details', icon: UserRound },
-  { id: 'journey', label: 'Journey', clinical: 'Timeline', icon: Activity },
-  { id: 'evidence', label: 'Evidence', clinical: 'Reports', icon: FileText },
+  {
+    id: 'information',
+    label: 'Information',
+    clinical: 'Patient details',
+    plain: 'Personal and contact details, and who is responsible for this care.',
+    icon: UserRound,
+  },
+  {
+    id: 'journey',
+    label: 'Journey',
+    clinical: 'Timeline',
+    plain: 'Everything that has happened so far, in the order it happened.',
+    icon: Activity,
+  },
+  {
+    id: 'evidence',
+    label: 'Evidence',
+    clinical: 'Reports',
+    plain: 'The actual documents — scans, biopsies and blood tests, exactly as issued.',
+    icon: FileText,
+  },
   {
     id: 'understanding',
     label: 'Understanding',
     clinical: 'Patient Intelligence',
+    plain:
+      'What the system has drawn from the reports, with the evidence behind it. A starting point for review, never a conclusion.',
     icon: Sparkles,
     oncologistOnly: true,
   },
-  { id: 'actions', label: 'Actions', clinical: 'Tasks', icon: ListChecks },
-  { id: 'guidance', label: 'Guidance', clinical: 'Notes', icon: StickyNote },
+  {
+    id: 'actions',
+    label: 'Actions',
+    clinical: 'Tasks',
+    plain: 'Things that still need doing, and who needs to do them.',
+    icon: ListChecks,
+  },
+  {
+    id: 'guidance',
+    label: 'Guidance',
+    clinical: 'Notes',
+    plain: 'Written notes from the oncologist. Each one says who can read it.',
+    icon: StickyNote,
+  },
 ]
 
 export default function PatientSpace() {
@@ -226,6 +268,11 @@ export default function PatientSpace() {
       </nav>
 
       <section className="mt-6" aria-live="polite">
+        {/* What the open destination contains, before its contents [04 §28]. */}
+        <Text level="secondary" tone="muted" className="mb-5 max-w-2xl">
+          {visibleOrbit.find((entry) => entry.id === orbit)?.plain}
+        </Text>
+
         {orbit === 'information' && <PatientOverview patient={patient} />}
 
         {orbit === 'journey' && (

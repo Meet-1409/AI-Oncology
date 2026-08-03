@@ -129,6 +129,22 @@
   --text-micro--letter-spacing: 0.04em;
   --text-micro--font-weight: 600;
 
+  /* CINEMATIC RAMP — the Entry only [04 §14].
+     The Entry must "feel premium" and "be memorable", which needs a scale the
+     clinical ramp deliberately refuses. Two extremes and nothing between them:
+     an enormous statement, and a tiny edge label. That contrast — not decoration
+     — is what makes a composition read as designed rather than assembled.
+     Unavailable inside the application, where [04 §28] holds: usability is never
+     sacrificed for visual effect.
+
+     The statement itself has no fixed step. It is sized fluidly against the
+     viewport so it meets the frame edge at every width, which a fixed step
+     cannot do. Only the quiet half of the contrast is a token. */
+  --text-edge: 0.625rem;
+  --text-edge--line-height: 1.2;
+  --text-edge--letter-spacing: 0.22em;
+  --text-edge--font-weight: 500;
+
   /* ================================================================
      SPACING — 4px base [blueprint 03 §4]. One scale for margin,
      padding and gap. Negative space is a design element [04 §10].
@@ -224,6 +240,32 @@
   --motion-ease-enter: cubic-bezier(0.16, 1, 0.3, 1);
   --motion-ease-exit: cubic-bezier(0.7, 0, 0.84, 0);
   --motion-ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* CINEMATIC ENVELOPE — the Entry only [04 §14].
+     The application's envelope tops out at 380ms because a clinician waiting on
+     information must never wait on an animation. The Entry carries no clinical
+     information, and a cinematic introduction needs time to be cinematic. These
+     durations are therefore permitted at Depth 0 and nowhere else; enforced by
+     tools/check-architecture.mjs. */
+  --cinema-settle: 900ms;   /* a layer arriving */
+  --cinema-draw: 1100ms;    /* a stroke being drawn */
+  --cinema-withdraw: 1700ms; /* the camera pulling back */
+
+  /* ================================================================
+     CINEMATIC SURFACE — the Entry only [04 §14].
+     A single light source in darkness, which is what makes the reference
+     compositions read as photographed rather than drawn.
+     ================================================================ */
+  --cinema-void: #05080c;
+  --cinema-veil: rgba(5, 8, 12, 0.72);
+  --cinema-ink: #e8f2f6;
+  --cinema-glow: rgba(47, 122, 151, 0.16);
+  --cinema-line: rgba(232, 242, 246, 0.12);
+  --cinema-line-strong: rgba(232, 242, 246, 0.32);
+
+  /* Film grain. Breaks up flat gradients, which is the difference between a
+     surface that looks lit and one that looks like a CSS gradient. */
+  --cinema-grain-opacity: 0.055;
 }
 
 /*
@@ -236,5 +278,12 @@
     --motion-quick: 0ms;
     --motion-reveal: 0ms;
     --motion-spatial: 0ms;
+
+    /* The cinematic envelope collapses too. The Entry's composition — the
+       statement, the figure, the layering — survives intact; only the time
+       spent arriving at it is removed [00 §11.9]. */
+    --cinema-settle: 0ms;
+    --cinema-draw: 0ms;
+    --cinema-withdraw: 0ms;
   }
 }

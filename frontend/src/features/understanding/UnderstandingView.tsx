@@ -1,6 +1,12 @@
 import { Sparkles } from 'lucide-react'
 import { Icon, StatusIndicator, Surface, Text } from '@/components/primitives'
-import { ChangeIndicator, Confidence, EmptyState, EvidenceList } from '@/components/patterns'
+import {
+  ChangeIndicator,
+  Confidence,
+  EmptyState,
+  EvidenceList,
+  PlainExplanation,
+} from '@/components/patterns'
 import { formatDate } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import type { Understanding } from '@/data/contract/domain'
@@ -68,6 +74,17 @@ export function UnderstandingView({
           Generated {formatDate(understanding.generatedDate)}. The original reports remain
           the source of truth.
         </Text>
+
+        {/* Confidence is a number, and a number without an explanation invites
+            the wrong interpretation — that a high percentage means a finding is
+            correct. It does not, and this panel is exactly where that
+            misreading would be most costly [00 §5.10], [08 §13]. */}
+        <PlainExplanation summary="What does the confidence figure mean?" className="mt-3">
+          It describes how clearly this statement follows from the reports it was
+          drawn from — not how likely it is to be clinically correct. A high figure
+          means the source documents said this plainly. It is never a substitute
+          for reading the report, and it is never a second opinion.
+        </PlainExplanation>
       </section>
 
       <div className="grid gap-5 lg:grid-cols-2">

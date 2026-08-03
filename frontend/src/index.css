@@ -64,3 +64,47 @@
     display: none;
   }
 }
+
+/*
+ * Cinematic keyframes — the Entry only [04 §14].
+ *
+ * Continuous, non-interactive motion. It carries no meaning, so it is exempt
+ * from the four permitted meanings [04 §6] on the same grounds the Entry itself
+ * is: no clinical information is present at Depth 0. Every one of these stops
+ * completely under reduced motion.
+ */
+@layer utilities {
+  @keyframes cinema-drift {
+    from {
+      transform: translate3d(0, 0, 0);
+    }
+    to {
+      transform: translate3d(-50%, 0, 0);
+    }
+  }
+
+  @keyframes cinema-breathe {
+    0%,
+    100% {
+      opacity: 0.55;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+
+  .cinema-marquee {
+    animation: cinema-drift 42s linear infinite;
+  }
+
+  .cinema-breathe {
+    animation: cinema-breathe 3.2s ease-in-out infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cinema-marquee,
+    .cinema-breathe {
+      animation: none;
+    }
+  }
+}

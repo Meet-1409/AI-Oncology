@@ -2,10 +2,17 @@ import { Component, Suspense, lazy, useCallback, useMemo, useState } from 'react
 import type { ErrorInfo, ReactNode } from 'react'
 import { Columns2, Maximize2, Minimize2, RotateCcw, Boxes } from 'lucide-react'
 import { Control, Icon, Surface, Text } from '@/components/primitives'
-import { EmptyState, EvidenceList, SeverityIndicator } from '@/components/patterns'
+import {
+  EmptyState,
+  EvidenceList,
+  PlainExplanation,
+  SeverityIndicator,
+  SeverityLegend,
+} from '@/components/patterns'
 import { detectRenderTier } from '@/lib/capability'
 import type { RenderTier } from '@/lib/capability'
 import { formatDate } from '@/lib/format'
+import { severityMeaning } from '@/lib/status'
 import { cn } from '@/lib/utils'
 import { BodyStructured } from './BodyStructured'
 import { useBodyViewModel } from './use-body-view-model'
@@ -152,6 +159,19 @@ export function BodyView({
         </div>
       </div>
 
+      {/* How to use it, before it is used.
+          The Body is the one place in the application where the primary control
+          is a 3D scene rather than a familiar widget, and nothing on screen
+          announces that it can be turned or tapped. Patients and oncologists
+          both arrive here without training [04 §28], so the instruction is
+          stated plainly rather than left to be discovered. */}
+      {showScene && (
+        <Text level="secondary" tone="muted">
+          Drag to turn the body. Scroll to zoom. Select any part to see what is
+          known about it and which report that came from.
+        </Text>
+      )}
+
       {showScene && (
         <div className={cn('grid gap-4', compareDate && 'lg:grid-cols-2')}>
           {compareDate && comparisonModel.current && (
@@ -221,6 +241,11 @@ export function BodyView({
             </Text>
             <SeverityIndicator severity={selected.severity} />
           </div>
+          {/* The short label beside it is clinical shorthand; this is the same
+              fact in words anyone can read [04 §28]. */}
+          <Text level="secondary" tone="body" className="mt-1.5">
+            {severityMeaning(selected.severity)}
+          </Text>
           {selected.note && (
             <Text level="secondary" tone="muted" className="mt-2">
               {selected.note}
@@ -237,6 +262,14 @@ export function BodyView({
           </div>
         </Surface>
       )}
+
+      {/* The colour scale, explained on demand. Severity is never carried by
+          colour alone [00 §16.2], but the labels beside each colour are clinical
+          shorthand; this gives the whole scale in plain words to anyone who
+          wants it, without pushing an explanation at readers who do not. */}
+      <PlainExplanation summary="What the colours on the body mean">
+        <SeverityLegend />
+      </PlainExplanation>
 
       {/* The structured equivalent is always present, not only on failure — it is
           the accessible representation of the scene [00 §16.5]. */}

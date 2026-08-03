@@ -11,7 +11,26 @@ import {
   VisuallyHidden,
 } from '@/components/primitives'
 import { Reveal } from '@/components/motion'
-import { FocusLayer } from '@/components/patterns'
+import {
+  FocusLayer,
+  Orientation,
+  PlainExplanation,
+  SeverityLegend,
+} from '@/components/patterns'
+// Entry-only vocabulary [04 §14]. Permitted here because the Showcase documents
+// the design system and never ships to production.
+import {
+  CinematicAction,
+  CinematicJump,
+  EdgeLabel,
+  Grain,
+  Hairline,
+  LightField,
+  Marquee,
+  Ordinal,
+  Rise,
+  Settle,
+} from '@/components/cinematic'
 import { duration, easing, severityScale } from '@/design/theme'
 import { severityLabel, SEVERITY_LEVELS } from '@/lib/status'
 
@@ -141,6 +160,30 @@ export default function Showcase() {
               label={severityLabel(level)}
             />
           ))}
+        </div>
+      </Section>
+
+      <Section
+        title="Plain language"
+        note="Every space must be understandable without training. Patients and oncologists both use this, and neither arrives having read a manual."
+      >
+        <div className="space-y-8">
+          <Orientation
+            title="Body"
+            actions={<Control intent="secondary" size="sm">An action</Control>}
+          >
+            One plain sentence saying what this space shows and what to do with
+            it. Every space opens with one.
+          </Orientation>
+
+          <PlainExplanation summary="What the colours on the body mean">
+            <SeverityLegend />
+          </PlainExplanation>
+
+          <PlainExplanation summary="What does the confidence figure mean?">
+            Collapsed by default, so an explanation is always available and never
+            competes with clinical content.
+          </PlainExplanation>
         </div>
       </Section>
 
@@ -380,6 +423,40 @@ export default function Showcase() {
             beneath the scrim.
           </Text>
         </FocusLayer>
+      </Section>
+
+      <Section
+        title="Cinematic layer — Entry only"
+        note="A separate vocabulary for Depth 0, where no clinical information exists. The build fails if anything outside the Entry imports it."
+      >
+        <div className="relative overflow-hidden rounded-2xl bg-[var(--cinema-void)] p-10">
+          <LightField />
+          <div className="relative">
+            <EdgeLabel>Edge label</EdgeLabel>
+            <Rise
+              as="h3"
+              beat={1}
+              className="mt-5 text-[2.5rem] font-semibold leading-[0.9] tracking-[-0.035em] text-[var(--cinema-ink)]"
+            >
+              A line that rises.
+            </Rise>
+            <Settle beat={2} className="mt-6 flex items-center gap-4">
+              <Ordinal value={1} />
+              <Hairline className="max-w-24" />
+              <span className="text-secondary text-[var(--cinema-ink)]/60">
+                Content that settles.
+              </span>
+            </Settle>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <CinematicAction to="#">Solid action</CinematicAction>
+              <CinematicJump href="#">Jump within the page</CinematicJump>
+            </div>
+            <div className="mt-8">
+              <Marquee items={['One phrase', 'Another phrase', 'A third phrase']} />
+            </div>
+          </div>
+          <Grain />
+        </div>
       </Section>
 
       <Section title="Accessibility" note="Verifiable behaviours.">
