@@ -1,8 +1,9 @@
 import { lazy, Suspense } from 'react'
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { Providers } from './providers'
 import { paths, routePattern } from '@/routes/paths'
 import { LoadingSurface } from '@/components/patterns'
+import { SpaceTransition } from '@/components/motion'
 import { EnvironmentShell } from '@/shell/EnvironmentShell'
 
 /**
@@ -41,11 +42,48 @@ function SpaceFallback() {
   )
 }
 
+/**
+ * The outermost region of travel.
+ *
+ * Three regions exist at this level — the Entry, authentication, and the
+ * authenticated environment — and moving between them is a whole-screen
+ * transition, because it genuinely is a change of place: you arrive at the
+ * platform, you identify yourself, you enter.
+ *
+ * Keyed by REGION rather than by pathname, deliberately. Keying on the address
+ * would replay this whole-screen transition on every move inside the
+ * environment, animating the shell out and back in each time a patient is
+ * opened — the shell would blink, and the persistent regions would stop being
+ * persistent. Travel between spaces is the shell's own transition, one level in.
+ */
+function regionOf(pathname: string): string {
+  if (pathname === paths.entry) return 'entry'
+  if (pathname.startsWith(paths.enter)) return 'authenticate'
+  return 'environment'
+}
+
+function TravelRegion({ children }: { children: React.ReactNode }) {
+  const { pathname } = useLocation()
+  const region = regionOf(pathname)
+
+  return (
+    <SpaceTransition
+      // Entering the environment is always a descent; leaving it, an ascent.
+      direction={region === 'environment' ? 'deeper' : 'shallower'}
+      transitionKey={region}
+      className="flex min-h-svh flex-col"
+    >
+      {children}
+    </SpaceTransition>
+  )
+}
+
 export function App() {
   return (
     <Providers>
       <BrowserRouter>
         <Suspense fallback={<SpaceFallback />}>
+          <TravelRegion>
           <Routes>
             {/* Depth 0 */}
             <Route path={routePattern.entry} element={<EntrySpace />} />
@@ -62,6 +100,7 @@ export function App() {
 
             <Route path="*" element={<Navigate to={paths.entry} replace />} />
           </Routes>
+          </TravelRegion>
         </Suspense>
       </BrowserRouter>
     </Providers>

@@ -1,72 +1,129 @@
-import { useEffect, useState } from 'react'
-import type { HTMLAttributes } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import type { ReactNode } from 'react'
 import { cn } from '@/lib/utils'
 import type { TransitionDirection } from '@/state/environment-store'
 
 /**
- * Entering and leaving a space.
+ * Travelling between spaces.
  *
  * Transitions are spatial: entering uses zoom-in, leaving uses zoom-out [04 §6],
  * and direction encodes depth so the user always knows which way they moved
  * [00 §11.4].
  *
- * Only transform and opacity animate. Animating layout-affecting properties in a
- * continuous transition is what breaks the 60fps target [00 §13.5].
+ * BOTH SPACES ANIMATE AT ONCE. The space being left is held mounted and played
+ * out while the arriving one plays in, overlapping in the same frame. This is
+ * the difference between an application that feels continuous and one that
+ * feels like separate pages: animating only the arrival leaves an empty frame
+ * in between, and an empty frame is a page change however carefully it is
+ * eased. It is what [04 §6] means by "sudden page changes must be avoided".
  *
- * Under reduced motion the duration token resolves to 0ms and the space simply
- * appears — spatial transitions become immediate cross-fades [04 §6], losing no
- * information [00 §11.9].
+ * Blur carries the depth. Scale on its own reads as an effect applied to a
+ * page; scale together with focus reads as moving through space, because that
+ * is what happens when a lens moves.
+ *
+ * Under reduced motion both layers collapse to an immediate cross-fade [04 §6]:
+ * the leaving layer is not rendered and the arriving one is simply present. No
+ * information is lost [00 §11.9].
  */
 
-/** The state a space animates *from*, by direction of travel. */
-const ENTER_FROM: Record<TransitionDirection, string> = {
-  // Arriving deeper: the space grows into place, as though moving toward it.
-  deeper: 'scale-[0.985] opacity-0',
-  // Returning outward: the space settles back from slightly beyond.
-  shallower: 'scale-[1.012] opacity-0',
-  // Lateral movement between peers carries no depth cue [09.3 §5].
-  lateral: 'opacity-0',
-  none: 'opacity-0',
+const ENTER: Record<TransitionDirection, string> = {
+  deeper: 'animate-[space-enter-deeper_var(--motion-spatial)]',
+  shallower: 'animate-[space-enter-shallower_var(--motion-spatial)]',
+  lateral: 'animate-[space-enter-lateral_var(--motion-spatial)]',
+  none: 'animate-[space-enter-fade_var(--motion-reveal)]',
 }
 
-export interface SpaceTransitionProps extends HTMLAttributes<HTMLDivElement> {
+const EXIT: Record<TransitionDirection, string> = {
+  deeper: 'animate-[space-exit-deeper_var(--motion-spatial)]',
+  shallower: 'animate-[space-exit-shallower_var(--motion-spatial)]',
+  lateral: 'animate-[space-exit-lateral_var(--motion-spatial)]',
+  none: 'animate-[space-exit-fade_var(--motion-reveal)]',
+}
+
+interface Layer {
+  key: string
+  content: ReactNode
+}
+
+export interface SpaceTransitionProps {
   /** Direction of travel, from the environment store. */
   direction: TransitionDirection
   /** Distinguishes one space from the next so the animation replays. */
   transitionKey: string
+  children: ReactNode
+  className?: string
 }
 
-function SpaceTransitionInner({
+export function SpaceTransition({
   direction,
-  className,
+  transitionKey,
   children,
-  ...props
-}: Omit<SpaceTransitionProps, 'transitionKey'>) {
-  const [entered, setEntered] = useState(false)
+  className,
+}: SpaceTransitionProps) {
+  const [current, setCurrent] = useState<Layer>({ key: transitionKey, content: children })
+  const [leaving, setLeaving] = useState<Layer | null>(null)
+  const [travel, setTravel] = useState<TransitionDirection>('none')
+  const timer = useRef<number | undefined>(undefined)
 
   useEffect(() => {
-    // Next frame, so the browser paints the "from" state before transitioning.
-    const frame = requestAnimationFrame(() => setEntered(true))
-    return () => cancelAnimationFrame(frame)
-  }, [])
+    setCurrent((layer) => {
+      if (layer.key === transitionKey) {
+        // Same space, new content — the space updated in place rather than
+        // being travelled to. Swapping without replaying the arrival animation
+        // is what stops every data refresh looking like navigation.
+        return { ...layer, content: children }
+      }
+
+      setLeaving(layer)
+      setTravel(direction)
+
+      // The frozen copy is released on a timer rather than on animationend,
+      // because animationend does not fire in a backgrounded tab — the
+      // outgoing space would then stay pinned over the new one on return.
+      window.clearTimeout(timer.current)
+      timer.current = window.setTimeout(() => setLeaving(null), spatialDuration() + 40)
+
+      return { key: transitionKey, content: children }
+    })
+  }, [transitionKey, direction, children])
+
+  useEffect(() => () => window.clearTimeout(timer.current), [])
 
   return (
-    <div
-      className={cn(
-        'transition-[opacity,transform] duration-[var(--motion-spatial)]',
-        'ease-[var(--motion-ease-enter)] will-change-[transform,opacity]',
-        entered ? 'scale-100 opacity-100' : ENTER_FROM[direction],
-        className,
+    <div className={cn('relative isolate', className)}>
+      {leaving && (
+        <div
+          key={leaving.key}
+          aria-hidden
+          // Frozen mid-departure. Hidden from assistive technology and from
+          // pointer events the moment it starts leaving, so a screen reader
+          // never announces two spaces at once and a click never lands in the
+          // one on its way out.
+          className={cn('space-layer space-leaving', EXIT[travel])}
+        >
+          {leaving.content}
+        </div>
       )}
-      {...props}
-    >
-      {children}
+
+      <div key={current.key} className={cn('flex flex-1 flex-col space-layer', ENTER[travel])}>
+        {current.content}
+      </div>
     </div>
   )
 }
 
-export function SpaceTransition({ transitionKey, ...props }: SpaceTransitionProps) {
-  // Remounting on key change is what makes the enter animation replay for the
-  // next space rather than only on first render.
-  return <SpaceTransitionInner key={transitionKey} {...props} />
+/**
+ * The spatial duration currently in force, in milliseconds.
+ *
+ * Read from the token rather than hard-coded, so reduced motion — which sets it
+ * to 0ms — also removes the wait before the outgoing layer is released.
+ */
+function spatialDuration(): number {
+  if (typeof window === 'undefined') return 380
+  const raw = getComputedStyle(document.documentElement)
+    .getPropertyValue('--motion-spatial')
+    .trim()
+  const value = Number.parseFloat(raw)
+  if (!Number.isFinite(value)) return 380
+  return raw.endsWith('ms') ? value : value * 1000
 }

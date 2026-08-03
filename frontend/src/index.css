@@ -3,15 +3,22 @@
 
 @layer base {
   html {
-    color-scheme: light;
+    /* Set from the theme preference at runtime [09.10 §8]; this is only the
+       value before the first paint. */
+    color-scheme: dark;
     /* Respects the user's font-size preference; no absolute px root sizing. */
     -webkit-text-size-adjust: 100%;
+    background: var(--surface-base);
   }
 
   body {
     margin: 0;
-    background: var(--color-neutral-50);
-    color: var(--color-neutral-800);
+    /* Semantic tokens, not primitives. The page itself has to follow the theme
+       or a dark application sits on a white sheet everywhere the content does
+       not reach — the overscroll area, short pages, and the moment before the
+       first paint. */
+    background: var(--surface-base);
+    color: var(--text-body-color);
     font-family: var(--font-sans);
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
@@ -22,7 +29,7 @@
   }
 
   h1, h2, h3, h4, h5, h6 {
-    color: var(--color-neutral-900);
+    color: var(--text-primary);
     font-weight: 600;
     letter-spacing: -0.01em;
     text-wrap: balance;
@@ -30,13 +37,13 @@
 
   /* Focus is never removed. 3:1 minimum contrast [00 §16.3]. */
   :focus-visible {
-    outline: 2px solid var(--color-brand-500);
+    outline: 2px solid var(--focus-ring);
     outline-offset: 2px;
   }
 
   ::selection {
-    background: var(--color-brand-200);
-    color: var(--color-brand-900);
+    background: var(--accent);
+    color: var(--text-on-accent);
   }
 
   ::-webkit-scrollbar {
@@ -47,12 +54,12 @@
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background: var(--color-neutral-300);
+    background: var(--border-strong);
     border-radius: 999px;
-    border: 2px solid var(--color-neutral-50);
+    border: 2px solid var(--surface-base);
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: var(--color-neutral-400);
+    background: var(--text-subtle);
   }
 }
 
@@ -62,6 +69,96 @@
   }
   .scrollbar-none::-webkit-scrollbar {
     display: none;
+  }
+}
+
+/*
+ * Spatial travel.
+ *
+ * Every movement between spaces is a camera move, not a page change: the space
+ * you leave recedes or advances and blurs out of the focal plane while the one
+ * you arrive at comes into it. Both play at once, which is the whole point —
+ * an enter animation on its own leaves a blank frame between spaces, and a
+ * blank frame is what makes an application feel like separate pages.
+ *
+ * Blur is the depth cue. Scale alone reads as a zoom effect; scale plus focus
+ * reads as physically moving through a space, because that is what a lens does.
+ *
+ * Direction encodes where you went [00 §11.4]:
+ *   deeper     — the old space rushes past you, the new one grows into place
+ *   shallower  — the old space falls away, the new one settles back from beyond
+ *   lateral    — peers slide past each other, no depth change [09.3 §5]
+ *
+ * All within the documented 180-420ms envelope [04 §6], calm easing, no bounce.
+ */
+@layer utilities {
+  @keyframes space-enter-deeper {
+    from { opacity: 0; transform: scale(0.92); filter: blur(14px); }
+    to   { opacity: 1; transform: scale(1);    filter: blur(0); }
+  }
+  @keyframes space-exit-deeper {
+    from { opacity: 1; transform: scale(1);    filter: blur(0); }
+    to   { opacity: 0; transform: scale(1.08); filter: blur(16px); }
+  }
+
+  @keyframes space-enter-shallower {
+    from { opacity: 0; transform: scale(1.06); filter: blur(14px); }
+    to   { opacity: 1; transform: scale(1);    filter: blur(0); }
+  }
+  @keyframes space-exit-shallower {
+    from { opacity: 1; transform: scale(1);    filter: blur(0); }
+    to   { opacity: 0; transform: scale(0.93); filter: blur(16px); }
+  }
+
+  @keyframes space-enter-lateral {
+    from { opacity: 0; transform: translate3d(2.5%, 0, 0); filter: blur(10px); }
+    to   { opacity: 1; transform: translate3d(0, 0, 0);    filter: blur(0); }
+  }
+  @keyframes space-exit-lateral {
+    from { opacity: 1; transform: translate3d(0, 0, 0);     filter: blur(0); }
+    to   { opacity: 0; transform: translate3d(-2.5%, 0, 0); filter: blur(12px); }
+  }
+
+  @keyframes space-enter-fade {
+    from { opacity: 0; filter: blur(8px); }
+    to   { opacity: 1; filter: blur(0); }
+  }
+  @keyframes space-exit-fade {
+    from { opacity: 1; filter: blur(0); }
+    to   { opacity: 0; filter: blur(10px); }
+  }
+
+  .space-layer {
+    animation-duration: var(--motion-spatial);
+    animation-timing-function: var(--motion-ease-enter);
+    animation-fill-mode: both;
+    will-change: transform, opacity, filter;
+  }
+
+  /* The leaving space is lifted out of flow so the arriving one can take its
+     place without the page height jumping between them. */
+  .space-leaving {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    animation-timing-function: var(--motion-ease-exit);
+  }
+
+  /*
+   * Reduced motion turns travel into an immediate cross-fade [04 §6].
+   * Movement and blur are removed; the change of space is still legible, and no
+   * information is lost [00 §11.9].
+   */
+  @media (prefers-reduced-motion: reduce) {
+    .space-layer {
+      animation-name: none !important;
+      opacity: 1;
+      transform: none;
+      filter: none;
+    }
+    .space-leaving {
+      display: none;
+    }
   }
 }
 

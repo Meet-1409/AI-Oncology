@@ -204,3 +204,73 @@ if (mismatches.length > 0) {
 }
 
 console.log('Severity scale synchronised across CSS, theme and status: OK')
+
+/*
+ * Theme completeness.
+ *
+ * Every component consumes semantic tokens, so a token defined for the light
+ * theme but forgotten in the dark one does not fail loudly — the light value is
+ * inherited, and the result is dark text on a dark surface, or an invisible
+ * border, or a status chip nobody can read. It looks like a styling slip and it
+ * can hide clinical information.
+ *
+ * Two rules, checked here rather than trusted:
+ *   1. Every semantic token has a dark value.
+ *   2. The dark theme never redefines a severity value. The scale is fixed by
+ *      documentation [00 §6.7], shared with three.js and checked for equality
+ *      across three files above; a theme that restyled it would mean the same
+ *      finding rendering as two different colours depending on a display
+ *      preference.
+ */
+const tokensSource = readFileSync(join(SRC, 'design', 'tokens.css'), 'utf8')
+
+function declaredIn(selector) {
+  const start = tokensSource.indexOf(selector)
+  if (start === -1) return null
+  const open = tokensSource.indexOf('{', start)
+  let depth = 0
+  let end = open
+  for (let i = open; i < tokensSource.length; i++) {
+    if (tokensSource[i] === '{') depth++
+    else if (tokensSource[i] === '}') {
+      depth--
+      if (depth === 0) {
+        end = i
+        break
+      }
+    }
+  }
+  const body = tokensSource.slice(open, end)
+  return new Set([...body.matchAll(/^\s*(--[\w-]+)\s*:/gm)].map((m) => m[1]))
+}
+
+const lightTokens = declaredIn(':root {')
+const darkTokens = declaredIn(":root[data-theme='dark'] {")
+
+if (!lightTokens || !darkTokens) {
+  console.error('\nTheme check failed: could not locate the semantic token blocks.')
+  process.exit(1)
+}
+
+// Motion and cinematic tokens are intentionally theme-independent: durations,
+// easing and the Entry's own palette do not change with the lighting.
+const THEME_EXEMPT = /^--(motion|cinema|severity-ring|body-volume)/
+
+const missingInDark = [...lightTokens].filter(
+  (token) => !THEME_EXEMPT.test(token) && !darkTokens.has(token),
+)
+
+const severityInDark = [...darkTokens].filter((token) => token.startsWith('--color-severity-'))
+
+if (missingInDark.length > 0 || severityInDark.length > 0) {
+  console.error('\nTheme completeness failed.\n')
+  for (const token of missingInDark) {
+    console.error(`  ${token} has no dark value — it would inherit the light one.`)
+  }
+  for (const token of severityInDark) {
+    console.error(`  ${token} is redefined by the dark theme; the severity scale is fixed.`)
+  }
+  process.exit(1)
+}
+
+console.log(`Theme completeness (${darkTokens.size} dark tokens): OK`)

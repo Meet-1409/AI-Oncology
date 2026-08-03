@@ -1,10 +1,13 @@
 import type { ReactNode } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
+import { ArrowLeft } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { Control, Icon } from '@/components/primitives'
 import { SpaceTransition } from '@/components/motion'
 import { useEnvironmentStore } from '@/state/environment-store'
 import { useDepthSync } from './use-depth'
 import { useContinuousReturn } from './use-continuous-return'
+import { useSpaceArrival } from './use-space-arrival'
 
 /**
  * The application shell — the permanent structure of the environment.
@@ -41,9 +44,13 @@ export function AppShell({ identity, signals, intent, context }: AppShellProps) 
   const location = useLocation()
   const direction = useEnvironmentStore((s) => s.direction)
 
-  // Keep depth in step with the address, and bind Continuous Return globally.
+  // Keep depth in step with the address, bind Continuous Return globally, and
+  // put every arrival at the top of the space it arrived at.
   useDepthSync()
-  useContinuousReturn()
+  const ascend = useContinuousReturn()
+  useSpaceArrival()
+
+  const depth = useEnvironmentStore((s) => s.depth)
 
   return (
     <div className="flex min-h-svh flex-col bg-[var(--surface-base)]">
@@ -69,6 +76,22 @@ export function AppShell({ identity, signals, intent, context }: AppShellProps) 
           'bg-[color-mix(in_srgb,var(--surface-base)_88%,transparent)] backdrop-blur-md',
         )}
       >
+        {/* The way back, made visible.
+            Continuous Return is bound to Escape [04 §5], and a keyboard shortcut
+            nobody can see is not a way back for a patient on a tablet. The same
+            single action, in the place the eye already looks for it, appearing
+            only where there is somewhere to ascend to. */}
+        {depth > 1 && (
+          <Control
+            size="icon"
+            intent="quiet"
+            onClick={ascend}
+            aria-label="Back"
+            title="Back (Esc)"
+          >
+            <Icon icon={ArrowLeft} size="sm" />
+          </Control>
+        )}
         {context}
         <div className="flex-1" />
         {intent}
