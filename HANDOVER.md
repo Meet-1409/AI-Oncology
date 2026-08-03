@@ -2,7 +2,7 @@
 
 **Repository:** `C:\Users\Asus\Desktop\AI Oncology`
 **Scope of this document:** the frontend, end to end. Backend, AI and infrastructure are out of scope and have not been started.
-**As of:** commit `3a05b81`, 3 August 2026. Working tree clean.
+**Originally written as of:** commit `3a05b81`, 3 August 2026. **Updated 4 August 2026** — see §2.1 and the commit list in §14 for what changed since.
 
 ---
 
@@ -37,12 +37,18 @@ Three things will save you the most time.
 
 ### Outstanding
 
-- **Report comparison view** `[09.4 §14]` — Focus-level stub.
-- **Document preview zoom and paging** `[09.4 §16]` — Focus-level stub; currently a placeholder panel.
-- **Component and end-to-end tests.** None exist. `npm i -D vitest @testing-library/react @testing-library/user-event jsdom @axe-core/react` is the intended stack.
-- **Responsive and accessibility audits on real devices.** Both were designed in and neither has been audited on hardware.
-- **An anatomical model atlas.** See section 7. The loading path is built and tested; the asset has not been licensed or installed.
+- **An anatomical model atlas.** See section 7. The loading path is built and tested; the asset has not been licensed or installed — this needs a product-owner decision on source/licence, not an engineering one.
+- **Real-device audit.** See section 2.1 below — a real-browser/DOM-level pass is done; hardware has not been touched.
 - **Backend integration.** See section 9.
+
+### 2.1 Completed since the commit above
+
+- **Report comparison view** `[09.4 §14]` — done. `data/contract/domain.ts` gained `reportComparisonSchema`; the mock layer (`data/adapters/mock-store.ts`) compares two reports' `keyFindings`, classifying only what a documented keyword vocabulary or a verbatim repeat actually supports (`stable`/`progression`/`regression`) and surfacing anything else, unclaimed, as `otherFindings` — asserting a direction the wording doesn't support would be interpreting beyond available evidence `[08 §9]`. `ComparisonFocus` (`spaces/focus/index.tsx`) and a compare-selection mode in `EvidenceView` are the UI. Verified live against the seeded r3→r7 breast-MRI pair (100% confidence, three correctly-classified improvements) in an actual browser, not just tests.
+- **Document preview zoom and paging** `[09.4 §16]` — done, as `components/patterns/document-preview.tsx`. Zoom (50%–250%, real `transform: scale`) and full screen (real Fullscreen API) are fully functional. Page navigation honestly shows "Page 1 of 1" with Previous/Next disabled rather than inventing a page count `[00 §5.8]` — there is still no file storage backend, so there is no real multi-page document to page through; the controls are real and already wired for a real page count the moment one exists.
+- **Test runner** — Vitest + `@testing-library/react` + `@testing-library/user-event` + `@testing-library/jest-dom`, folded into `npm run verify`. **Not** `@axe-core/react` — that package's own README says it does not support React 18+. `jest-axe` is used instead (runs `axe-core` directly against rendered DOM, so it's React-version-independent); see BLUEPRINT `05 §9`. 20 tests, 0 failures, 0 axe violations across the components exercised.
+- **Responsive/accessibility audit (feasible subset)** — done. No horizontal overflow at 768px or 375px for Evidence, compare-selection mode, `ComparisonFocus`, or `DocumentPreview`; Escape closes Focus layers; touch targets confirmed sized via the existing `pointer-coarse:` responsive classes (structurally verified — this environment doesn't emulate a coarse pointer, so the 44px path itself wasn't visually observed). axe-core covers structural accessibility only — contrast checks are disabled under jsdom (no real layout engine) and remain a manual/real-browser check.
+  - **Flagged, not fixed (out of scope for this pass):** the Body's WebGL canvas appeared stuck at its default 300×150 buffer regardless of container size when the browser window was resized in this session — WebGL context creation succeeded and `BodyStructured` (the accessible fallback) rendered and worked correctly at every tested size, so nothing was blocked, but a screenshot to confirm whether this is a real R3F/ResizeObserver issue or an artifact of this specific remote browser wasn't obtainable here. Worth a look with real screenshot tooling or a device before the next release.
+- **Unused `motion` dependency** — removed, along with its now-dead `vendor-motion` manual chunk in `vite.config.ts`.
 
 ### Never started, by instruction
 
@@ -337,7 +343,9 @@ Things that have already cost time, or will.
 
 **zustand v5 and SSR.** `getInitialState` is React's server snapshot, so `setState` is ignored under `renderToString`. The safety suite uses an aliased auth-store test double for this reason.
 
-**The `motion` package is installed but unused.** Approved as decision D3, then superseded — transitions are CSS keyframes and the View Transitions API. Either use it or remove it; leaving it is a 60KB dependency doing nothing.
+**`@axe-core/react` does not support React 18+ — its own README says so.** Do not wire it in; `jest-axe` runs the same `axe-core` engine directly against rendered DOM and works with any React version. Already swapped in; see BLUEPRINT `05 §9`.
+
+**Module augmentation of an already-typed package silently replaces it instead of merging, in a `.d.ts` file with no top-level `import`/`export`.** `declare module 'vitest' { interface Assertion... }` inside a script-mode `.d.ts` file discards vitest's real types outright (`describe`/`it`/`expect` all vanish) rather than extending them. Fix: give that file its own `export {}` — or, simpler, keep ambient module declarations for untyped packages (which want script mode) and augmentations of typed packages (which want module mode) in separate files, as `src/test/jest-axe.d.ts` and `src/test/vitest-axe-matchers.d.ts` now do.
 
 ---
 
@@ -360,18 +368,20 @@ Things that have already cost time, or will.
 
 In rough order of value:
 
-1. **License and install an anatomical atlas.** The largest single visual improvement available, and the path is built and tested. Section 7.
-2. **Add a test runner.** Vitest plus Testing Library. The safety suite covers clinical invariants; nothing covers component behaviour.
-3. **Audit on real devices.** Responsive and accessibility, on a tablet in particular — `[04 §24]` requires full tablet function.
-4. **Finish the two Focus stubs** — report comparison `[09.4 §14]` and document preview `[09.4 §16]`.
-5. **Resolve the unused `motion` dependency.**
-6. **Backend integration** when endpoints exist. Section 10.
+1. **License and install an anatomical atlas.** The largest single visual improvement available, and the path is built and tested. Section 7. Needs a product-owner licensing decision, not just engineering time.
+2. **Confirm the Body's WebGL canvas sizing on a real device or with real screenshot tooling.** Flagged in 2.1, not fixed — the accessible fallback works, so this is a visual-fidelity check, not a blocker.
+3. **Audit on real hardware.** The DOM/browser-level responsive and accessibility pass is done (2.1); actual devices — a tablet in particular, `[04 §24]` — have not been touched.
+4. **Add Playwright** for the integration/E2E layer named in BLUEPRINT `05 §9` (A8) — component-level coverage exists now; nothing exercises full documented workflows end to end yet.
+5. **Backend integration** when endpoints exist. Section 10.
 
 ---
 
 ## 14. Commit history
 
 ```
+65ec0c4  test(frontend): add Vitest, Testing Library and jest-axe; remove unused motion
+a81d873  feat(evidence): finish report comparison and document preview
+20145c8  docs: add frontend handover
 3a05b81  feat(shell): continuous spatial travel and one theme throughout
 a1f1ca6  feat(theme): add dark theme as the default appearance
 8d6e31f  feat(body): load sculpted anatomy from a model atlas
