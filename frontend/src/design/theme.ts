@@ -22,12 +22,33 @@ export const severityScale: Readonly<Record<SeverityLevel, string>> = {
   5: '#841a13',
 }
 
-/** Anatomy colors for organs with no disease involvement. */
+/**
+ * The Body's palette.
+ *
+ * The figure is presented as a rim-lit form in a dark volume rather than as a
+ * literal flesh render. Two reasons, and the second is the clinical one:
+ *
+ *   1. A photoreal body invites the reading that this IS the patient's body.
+ *      It is not — it represents body structure [09.6 §5] and is deliberately
+ *      not an exact physical replica [00 §6.4]. A figure that reads as an
+ *      instrument display cannot be mistaken for a photograph of anyone.
+ *   2. The severity scale is red. Red on flesh tones is the worst possible
+ *      pairing: hue separation is small and the eye discounts it. Against a
+ *      dark blue volume every severity step separates cleanly, which is what
+ *      the whole visualization exists to communicate.
+ */
 export const anatomyPalette = {
-  organ: '#c98f80',
-  bone: '#e7e0cd',
-  lymph: '#d8c6bd',
-  skin: '#e4c9ae',
+  organ: '#7fb3cc',
+  bone: '#a9c7d8',
+  lymph: '#8fbdd4',
+  /** Base tint of the body shell. Nearly unlit; the rim carries the form. */
+  skin: '#2c6f96',
+  /** Fresnel rim, which is what makes the silhouette read at all. */
+  rim: '#7fd6ff',
+  /** Vertex points scattered over the surface. */
+  spark: '#cdf0ff',
+  /** The volume the figure stands in. */
+  volume: '#07131f',
 } as const
 
 /**

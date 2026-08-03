@@ -18,7 +18,13 @@ import {
 import { severityScale } from '@/design/theme'
 import { buildBodyViewModel } from '@/features/body/use-body-view-model'
 import { ORGANS, SELECTABLE_IDS, organLabel } from '@/features/body/anatomy'
-import { ORGAN_SCALE } from '@/features/body/figure'
+import {
+  BODY_FORMS,
+  ORGAN_SCALE,
+  bodyFormFor,
+  bodyHalfExtents,
+  buildFigureGeometry,
+} from '@/features/body/figure'
 import { mockStore } from '@/data/adapters/mock-store'
 import { patientSpaceSchema } from '@/data/contract/domain'
 import { digitalTwinSnapshots } from '@/data/mock-data'
@@ -263,57 +269,145 @@ function buildModel(snapshots: typeof digitalTwinSnapshots, date?: string) {
 
 /* 10 — Anatomical containment.
    Every organ must sit inside the body silhouette. An organ poking through the
-   skin reads as a rendering fault and undermines trust in the visualization. */
-check('every organ sits inside the body silhouette', () => {
-  // Half-width and half-depth of the torso/head at a given height, derived from
-  // the figure segments that form the trunk.
-  const TRUNK = [
-    { y: 1.185, halfW: 0.108 * 0.92, halfD: 0.108, span: 0.108 * 1.18 },
-    { y: 1.005, halfW: 0.054, halfD: 0.054, span: 0.055 },
-    { y: 0.945, halfW: 0.12 * 1.45, halfD: 0.12 * 0.85, span: 0.12 * 0.5 },
-    { y: 0.8, halfW: 0.155 * 1.2, halfD: 0.155 * 0.72, span: 0.155 + 0.1 },
-    { y: 0.6, halfW: 0.128 * 1.14, halfD: 0.128 * 0.76, span: 0.128 + 0.05 },
-    { y: 0.42, halfW: 0.142 * 1.16, halfD: 0.142 * 0.8, span: 0.142 + 0.055 },
-    { y: 0.33, halfW: 0.135 * 1.24, halfD: 0.135 * 0.86, span: 0.135 * 0.72 },
-  ]
+   skin reads as a rendering fault and undermines trust in the visualization.
 
-  function bounds(y: number): { halfW: number; halfD: number } | null {
-    let best: { halfW: number; halfD: number } | null = null
-    for (const part of TRUNK) {
-      if (Math.abs(y - part.y) <= part.span) {
-        if (!best || part.halfW > best.halfW) best = { halfW: part.halfW, halfD: part.halfD }
-      }
-    }
-    return best
-  }
-
+   The limits come from bodyHalfExtents(), which samples the same trunk profile
+   the mesh is lofted from. This test used to carry its own hand-copied table of
+   body widths, which could silently disagree with the figure it was checking —
+   it would then either pass organs that visibly protrude, or fail correct ones. */
+check('every organ sits inside every body form', () => {
   const offenders: string[] = []
 
-  for (const organ of ORGANS) {
-    const [x, y, z] = organ.position
-    const scale = organ.scale ?? [1, 1, 1]
-    const radius = organ.args[0] ?? 0
-    // Widest horizontal extent of the organ mesh, after its own scale and the
-    // global organ scale factor.
-    const extentX = radius * scale[0] * ORGAN_SCALE
-    const extentZ = radius * scale[2] * ORGAN_SCALE
+  // Checked against EVERY form, not just the default. The female form has a
+  // narrower waist and shoulders, so an organ that fits the male trunk can
+  // still protrude on hers — and that patient would see a rendering fault on
+  // her own record while the same data looked correct on someone else's.
+  for (const form of BODY_FORMS) {
+    for (const organ of ORGANS) {
+      const [x, y, z] = organ.position
+      const scale = organ.scale ?? [1, 1, 1]
+      const radius = organ.args[0] ?? 0
+      // Widest horizontal extent of the organ mesh, after its own scale and the
+      // global organ scale factor. For the torus this is the ring radius; its
+      // tube adds a little more, which the tolerance below absorbs.
+      const extentX = radius * scale[0] * ORGAN_SCALE
+      const extentZ = radius * scale[2] * ORGAN_SCALE
 
-    const limit = bounds(y)
-    if (!limit) {
-      offenders.push(`${organ.label}: no trunk segment covers y=${y}`)
-      continue
-    }
-    if (Math.abs(x) + extentX > limit.halfW) {
-      offenders.push(
-        `${organ.label}: reaches x=${(Math.abs(x) + extentX).toFixed(3)}, body half-width is ${limit.halfW.toFixed(3)}`,
-      )
-    }
-    if (Math.abs(z) + extentZ > limit.halfD + 0.02) {
-      offenders.push(
-        `${organ.label}: reaches z=${(Math.abs(z) + extentZ).toFixed(3)}, body half-depth is ${limit.halfD.toFixed(3)}`,
-      )
+      const limit = bodyHalfExtents(y, form)
+      if (!limit) {
+        offenders.push(`${form}/${organ.label}: y=${y} is outside the trunk entirely`)
+        continue
+      }
+      if (Math.abs(x) + extentX > limit.halfWidth) {
+        offenders.push(
+          `${form}/${organ.label}: reaches x=${(Math.abs(x) + extentX).toFixed(3)}, body half-width is ${limit.halfWidth.toFixed(3)}`,
+        )
+      }
+
+      // Front and back are checked separately, because the body is not
+      // symmetric front to back: the chest projects forward and the buttocks
+      // backward. A single symmetric limit would either wave through an organ
+      // protruding from the chest or reject one correctly placed near the spine.
+      const skin =
+        z >= limit.centre ? limit.centre + limit.frontDepth : limit.centre - limit.backDepth
+      const reach = z >= limit.centre ? z + extentZ : z - extentZ
+      if (Math.abs(reach) > Math.abs(skin) + 0.02) {
+        offenders.push(
+          `${form}/${organ.label}: reaches z=${reach.toFixed(3)}, the skin is at z=${skin.toFixed(3)}`,
+        )
+      }
     }
   }
 
   assert(offenders.length === 0, `organs outside the body:\n        ${offenders.join('\n        ')}`)
+})
+
+/* 12 — The figure must match the patient it represents.
+   The form is chosen from the sex on the record. A mapping that silently fell
+   through to one default would draw every patient the same way while appearing
+   to be sex-aware, which is the kind of defect nobody reports because the
+   screen still looks plausible. */
+check('the body form follows the sex recorded for the patient', () => {
+  assert(bodyFormFor('Male') === 'male', 'a male patient is not drawn as male')
+  assert(bodyFormFor('Female') === 'female', 'a female patient is not drawn as female')
+
+  // Anything else is answered honestly rather than guessed.
+  assert(bodyFormFor('Other') === 'neutral', 'Other should not be resolved to a sexed form')
+  assert(bodyFormFor(undefined) === 'neutral', 'a missing value should not be guessed')
+
+  // The forms must actually differ, or the feature is decorative.
+  const male = bodyHalfExtents(0.912, 'male')
+  const female = bodyHalfExtents(0.912, 'female')
+  const maleHip = bodyHalfExtents(0.478, 'male')
+  const femaleHip = bodyHalfExtents(0.478, 'female')
+  assert(male !== null && female !== null, 'no shoulder measurement available')
+  assert(maleHip !== null && femaleHip !== null, 'no hip measurement available')
+  assert(
+    female.halfWidth < male.halfWidth,
+    `female shoulders (${female.halfWidth.toFixed(3)}) are not narrower than male (${male.halfWidth.toFixed(3)})`,
+  )
+  assert(
+    femaleHip.halfWidth > maleHip.halfWidth,
+    `female hips (${femaleHip.halfWidth.toFixed(3)}) are not wider than male (${maleHip.halfWidth.toFixed(3)})`,
+  )
+
+  // Every form must produce a real mesh, not just the default one.
+  for (const form of BODY_FORMS) {
+    const geometry = buildFigureGeometry(form)
+    const position = geometry.getAttribute('position')
+    assert(position !== undefined && position.count > 2000, `the ${form} figure failed to build`)
+    geometry.dispose()
+  }
+})
+
+/* 11 — The figure mesh must actually be a mesh.
+   The body is generated procedurally rather than loaded from a model file, so
+   a defect in the loft produces no import error — it produces a body that is
+   silently absent, inside out, or full of holes, while every other part of the
+   feature keeps working. */
+check('the generated human figure is a valid, closed, finite mesh', () => {
+  const geometry = buildFigureGeometry()
+
+  const position = geometry.getAttribute('position')
+  const index = geometry.getIndex()
+
+  assert(position !== undefined, 'the figure has no position attribute')
+  assert(index !== null, 'the figure has no index — it would render as nothing')
+  assert(position.count > 2000, `the figure has only ${position.count} vertices; the loft collapsed`)
+  assert(index.count % 3 === 0, 'the figure index is not a whole number of triangles')
+
+  const array = position.array
+  for (let i = 0; i < array.length; i++) {
+    assert(Number.isFinite(array[i] as number), `figure vertex ${i} is not finite`)
+  }
+
+  // Every index must address a real vertex. An out-of-range index is undefined
+  // behaviour in WebGL and can take the whole canvas down.
+  for (let i = 0; i < index.count; i++) {
+    const value = index.getX(i)
+    assert(
+      value >= 0 && value < position.count,
+      `figure triangle index ${value} is outside the vertex range`,
+    )
+  }
+
+  // Smooth shading depends on normals existing; without them the surface renders
+  // black and the silhouette disappears.
+  const normal = geometry.getAttribute('normal')
+  assert(normal !== undefined, 'the figure has no normals — it would render unlit')
+
+  // The figure must occupy the documented standing space: feet near y = -0.51,
+  // crown near y = 1.31. A loft that silently drifts would put every organ in
+  // the wrong place relative to the body.
+  let minY = Number.POSITIVE_INFINITY
+  let maxY = Number.NEGATIVE_INFINITY
+  for (let i = 1; i < array.length; i += 3) {
+    const value = array[i] as number
+    if (value < minY) minY = value
+    if (value > maxY) maxY = value
+  }
+  assert(Math.abs(minY - -0.51) < 0.03, `the figure's feet are at y=${minY.toFixed(3)}, not -0.51`)
+  assert(Math.abs(maxY - 1.31) < 0.03, `the figure's crown is at y=${maxY.toFixed(3)}, not 1.31`)
+
+  geometry.dispose()
 })

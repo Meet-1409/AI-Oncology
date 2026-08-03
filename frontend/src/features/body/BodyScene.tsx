@@ -8,8 +8,8 @@ import { maxPixelRatio } from '@/lib/capability'
 import type { RenderTier } from '@/lib/capability'
 import { useReducedMotion } from '@/components/motion'
 import { BONES, LYMPH_NODES, ORGANS } from './anatomy'
-import { FIGURE, ORGAN_SCALE } from './figure'
-import type { FigureSegment } from './figure'
+import { buildFigureGeometry, ORGAN_SCALE } from './figure'
+import type { BodyForm } from './figure'
 import type { OrganDefinition } from './anatomy'
 import type { BodyViewModel } from './use-body-view-model'
 import type { SeverityLevel } from '@/lib/status'
@@ -123,49 +123,113 @@ function organGeometry(organ: OrganDefinition): ReactNode {
 }
 
 /**
- * The body silhouette.
+ * Fresnel rim material.
  *
- * Rendered BackSide only: the viewer sees the inside of the far surface, which
- * produces a soft, volumetric shell that reads as a body without occluding the
- * organs inside it. Front faces are omitted entirely, so nothing sits between the
- * eye and the anatomy.
+ * Brightness rises where the surface turns away from the eye, so the silhouette
+ * and every curve of the form glow while the flat facing areas stay dark. This
+ * single effect is what makes a body read as a volume rather than as a
+ * translucent blob — a plain transparent material gives a uniform wash with no
+ * shape information in it at all.
+ *
+ * Additive and depth-write disabled, so it layers over the organs without ever
+ * hiding one. Nothing clinical is communicated by this material; it is the
+ * container the clinical colour sits inside.
  */
-function figureGeometry(segment: FigureSegment) {
-  const args = segment.args as number[]
-  switch (segment.shape) {
-    case 'sphere':
-      return <sphereGeometry args={args as [number, number, number]} />
-    case 'capsule':
-      return <capsuleGeometry args={args as [number, number, number, number]} />
-    case 'cylinder':
-      return <cylinderGeometry args={args as [number, number, number, number]} />
-    case 'box':
-      return <boxGeometry args={args as [number, number, number]} />
-  }
+function createRimMaterial(color: string, intensity: number): THREE.ShaderMaterial {
+  return new THREE.ShaderMaterial({
+    uniforms: {
+      uColor: { value: new THREE.Color(color) },
+      uIntensity: { value: intensity },
+    },
+    vertexShader: /* glsl */ `
+      varying vec3 vNormal;
+      varying vec3 vToEye;
+      void main() {
+        vNormal = normalize(normalMatrix * normal);
+        vec4 viewPosition = modelViewMatrix * vec4(position, 1.0);
+        vToEye = normalize(-viewPosition.xyz);
+        gl_Position = projectionMatrix * viewPosition;
+      }
+    `,
+    fragmentShader: /* glsl */ `
+      uniform vec3 uColor;
+      uniform float uIntensity;
+      varying vec3 vNormal;
+      varying vec3 vToEye;
+      void main() {
+        float facing = abs(dot(normalize(vNormal), normalize(vToEye)));
+        float rim = pow(1.0 - facing, 2.6);
+        // A little base fill keeps the facing surfaces from vanishing entirely,
+        // which would leave the body reading as an outline rather than a solid.
+        float value = rim * uIntensity + 0.055;
+        gl_FragColor = vec4(uColor * value, value);
+      }
+    `,
+    transparent: true,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+    side: THREE.DoubleSide,
+  })
 }
 
-function BodyShell({ tier }: { tier: RenderTier }) {
+/**
+ * The body silhouette.
+ *
+ * ONE continuous lofted surface, generated in figure.ts — not a collection of
+ * primitives. Built once per mount and disposed on unmount; a few thousand
+ * triangles, so generating it is cheaper than shipping and parsing a model file
+ * and it carries no external asset.
+ *
+ * Three passes, cheapest first:
+ *   1. A dark BackSide shell, giving the form interior volume without ever
+ *      putting a surface between the eye and the anatomy.
+ *   2. The fresnel rim, which carries the shape.
+ *   3. Surface points, at full tier only — the scatter that reads as a scanned
+ *      body rather than a modelled one.
+ */
+function BodyShell({ tier, form }: { tier: RenderTier; form: BodyForm }) {
+  const geometry = useMemo(() => buildFigureGeometry(form), [form])
+  const rim = useMemo(
+    () => createRimMaterial(anatomyPalette.rim, tier === 'reduced' ? 0.85 : 1.15),
+    [tier],
+  )
+
+  useEffect(() => {
+    return () => {
+      geometry.dispose()
+      rim.dispose()
+    }
+  }, [geometry, rim])
+
   return (
     <group>
-      {FIGURE.map((segment) => (
-        <mesh
-          key={segment.key}
-          position={segment.position as [number, number, number]}
-          rotation={(segment.rotation ?? [0, 0, 0]) as [number, number, number]}
-          scale={(segment.scale ?? [1, 1, 1]) as [number, number, number]}
-        >
-          {figureGeometry(segment)}
-          <meshStandardMaterial
-            color={anatomyPalette.skin}
+      <mesh geometry={geometry}>
+        <meshStandardMaterial
+          color={anatomyPalette.skin}
+          transparent
+          opacity={tier === 'reduced' ? 0.22 : 0.16}
+          roughness={0.9}
+          metalness={0}
+          side={THREE.BackSide}
+          depthWrite={false}
+        />
+      </mesh>
+
+      <mesh geometry={geometry} material={rim} />
+
+      {tier === 'full' && (
+        <points geometry={geometry}>
+          <pointsMaterial
+            size={0.0055}
+            sizeAttenuation
+            color={anatomyPalette.spark}
             transparent
-            opacity={tier === 'reduced' ? 0.3 : 0.24}
-            roughness={0.85}
-            metalness={0}
-            side={THREE.BackSide}
+            opacity={0.5}
             depthWrite={false}
+            blending={THREE.AdditiveBlending}
           />
-        </mesh>
-      ))}
+        </points>
+      )}
     </group>
   )
 }
@@ -175,11 +239,13 @@ function Anatomy({
   selectedOrgan,
   onSelectOrgan,
   tier,
+  form,
 }: {
   model: BodyViewModel
   selectedOrgan: string | null
   onSelectOrgan: (organId: string) => void
   tier: RenderTier
+  form: BodyForm
 }) {
   const colorFor = (severity: SeverityLevel, fallback: string) =>
     severity > 0 ? severityScale[severity] : fallback
@@ -189,7 +255,7 @@ function Anatomy({
 
   return (
     <group position={[0, -0.1, 0]}>
-      <BodyShell tier={tier} />
+      <BodyShell tier={tier} form={form} />
 
       {BONES.map((bone) => (
         <AnimatedPart
@@ -249,6 +315,8 @@ export interface BodySceneProps {
   selectedOrgan: string | null
   onSelectOrgan: (organId: string) => void
   tier: RenderTier
+  /** Which figure to draw, from the sex recorded for this patient [09.6 §5]. */
+  form: BodyForm
   /** Exposes the camera reset so the surrounding controls can drive it [09.6 §8]. */
   resetSignal: number
 }
@@ -258,6 +326,7 @@ export function BodyScene({
   selectedOrgan,
   onSelectOrgan,
   tier,
+  form,
   resetSignal,
 }: BodySceneProps) {
   const controls = useRef<React.ComponentRef<typeof OrbitControls>>(null)
@@ -276,20 +345,24 @@ export function BodyScene({
       frameloop="always"
       gl={{ antialias: tier === 'full', powerPreference: 'high-performance' }}
     >
-      <ambientLight intensity={0.45} />
-      {/* Key */}
-      <directionalLight position={[2.2, 2.6, 2.4]} intensity={1.15} castShadow={false} />
-      {/* Cool fill from the opposite side, so shadowed faces stay readable */}
-      <directionalLight position={[-2.4, 0.8, -1.2]} intensity={0.42} color="#9fc3d4" />
-      {/* Rim, separating the silhouette from the background */}
-      <directionalLight position={[0, 1.4, -2.6]} intensity={0.55} color="#dbeaf2" />
-      {tier === 'full' && <pointLight position={[0, 0.9, 1.8]} intensity={0.35} />}
+      {/* The scene is lit for a dark volume. Ambient stays low so the fresnel
+          rim does the describing; a bright ambient would flatten the form back
+          into the wash it used to be. Organs are lit enough that every severity
+          step stays distinguishable, which is the one lighting requirement that
+          is not negotiable [00 §6.7]. */}
+      <ambientLight intensity={0.75} />
+      {/* Key, from the front and above */}
+      <directionalLight position={[1.8, 2.4, 2.6]} intensity={0.95} castShadow={false} />
+      {/* Cool fill from behind, so shadowed faces keep their colour */}
+      <directionalLight position={[-2.4, 0.8, -1.6]} intensity={0.5} color="#8fbede" />
+      {tier === 'full' && <pointLight position={[0, 0.9, 1.6]} intensity={0.3} color="#cfeaff" />}
 
       <Anatomy
         model={model}
         selectedOrgan={selectedOrgan}
         onSelectOrgan={onSelectOrgan}
         tier={tier}
+        form={form}
       />
 
       <OrbitControls

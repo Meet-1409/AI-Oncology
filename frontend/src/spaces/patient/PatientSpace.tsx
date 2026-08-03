@@ -228,6 +228,7 @@ export default function PatientSpace() {
       <section className="mt-6" aria-label="Digital Twin">
         <BodyView
           snapshots={data.body}
+          gender={patient.gender}
           date={date}
           compareDate={compareDate}
           selectedOrgan={organ}

@@ -189,6 +189,22 @@ Three components in `components/patterns/orientation.tsx` carry this:
 - **`PlainExplanation`** — a collapsed disclosure for concepts that need more than a sentence. Always available, never competing with clinical content.
 - **`SeverityLegend`** — the whole severity scale as swatch, clinical label and plain sentence, marked up as a definition list.
 
+### 6.0 The Body is generated, not imported
+
+`features/body/figure.ts` builds the human figure procedurally — cross-sections at real anatomical landmarks, splined into a dense ring stack and skinned into one smooth surface. No model file, no external asset, no licence.
+
+Three constructional rules, each of which came from a visible defect:
+
+- **Never join primitives.** A sphere on a cylinder always looks like a sphere on a cylinder. Only a lofted surface reads as a body.
+- **Bury every closing cap.** A loft closes with a flat disc at each end. If the first ring of the arm is wider than the trapezius it emerges from, that disc protrudes as a hard shoulder plate; the same mistake in the leg draws a horizontal line straight across the hips. Both were observed before being fixed.
+- **The trunk does not carry shoulder width.** The deltoid belongs to the arm loft. A torso widened to the acromion gives the square shoulder-pad silhouette that reads as armour.
+
+Three forms exist — `male`, `female`, `neutral` — selected by `bodyFormFor()` from the sex on the patient's own record. The differences are multipliers on shoulder, chest, waist, hip, head and limb; the shoulder-to-hip ratio is the cue that actually reads. `Other` and a missing value both resolve to `neutral`, because guessing is worse than being plainly non-committal.
+
+All three share one vertical frame (crown 1.31, floor -0.51). Real stature differs, but organ coordinates in `anatomy.ts` are absolute — two heights would mean two organ sets and twice the surface on which an organ can end up in the wrong place. The patient-safety suite checks organ containment against **every** form, because a narrower female waist can push through an organ that fits the male trunk.
+
+The figure is presented rim-lit in a dark volume rather than as flesh. Partly so it cannot be mistaken for a photograph of the patient — it represents body structure `[09.6 §5]` and is explicitly not a physical replica `[00 §6.4]` — and partly because the severity scale is red, and red on flesh tones loses most of its step-to-step separation.
+
 ### 6.1 What plain language may and may not say
 
 `severityMeaning()` in `lib/status.ts` describes **position on a documented scale and nothing more**. It does not estimate size, spread or outlook. Doing so would be the interface inventing a clinical claim the underlying data never made, which `[00 §5]` forbids — and it would be most dangerous precisely where it would be most reassuring.

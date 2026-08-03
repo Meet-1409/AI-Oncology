@@ -207,6 +207,14 @@
   /* Focus ring — never removed, 3:1 minimum [00 §16.3] */
   --focus-ring: var(--color-brand-500);
 
+  /* The Body's volume.
+     The one dark surface inside an otherwise light application. The severity
+     scale is red; red against a light clinical surface loses most of its
+     separation between adjacent steps, while against this it holds all six
+     [00 §6.7]. The dark area is bounded by the viewport and nothing outside it
+     changes. */
+  --body-volume: #07131f;
+
   /* Status — each carries surface, border and foreground so contrast
      is guaranteed in every context. Never the sole signal [00 §16.2]. */
   --status-success-surface: var(--color-success-50);

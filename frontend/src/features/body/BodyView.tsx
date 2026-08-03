@@ -13,6 +13,8 @@ import { detectRenderTier } from '@/lib/capability'
 import type { RenderTier } from '@/lib/capability'
 import { formatDate } from '@/lib/format'
 import { severityMeaning } from '@/lib/status'
+import { bodyFormFor } from './figure'
+import type { BodyForm } from './figure'
 import { cn } from '@/lib/utils'
 import { BodyStructured } from './BodyStructured'
 import { useBodyViewModel } from './use-body-view-model'
@@ -54,6 +56,14 @@ class SceneBoundary extends Component<
 
 export interface BodyViewProps {
   snapshots: readonly BodySnapshot[]
+  /**
+   * Sex recorded for this patient, which selects the figure drawn.
+   *
+   * Passed as the raw record value rather than a resolved form, so that the one
+   * place deciding what an unrecorded or non-binary value means is bodyFormFor()
+   * — not each call site guessing separately.
+   */
+  gender?: string | undefined
   /** Clinical date currently displayed, from the URL. */
   date?: string | undefined
   /** Clinical date being compared against, when comparison is active. */
@@ -67,6 +77,7 @@ export interface BodyViewProps {
 
 export function BodyView({
   snapshots,
+  gender,
   date,
   compareDate,
   selectedOrgan,
@@ -76,6 +87,7 @@ export function BodyView({
   className,
 }: BodyViewProps) {
   const [tier, setTier] = useState<RenderTier>(() => detectRenderTier())
+  const form: BodyForm = bodyFormFor(gender)
   const [resetSignal, setResetSignal] = useState(0)
   const [fullscreen, setFullscreen] = useState(false)
 
@@ -184,7 +196,7 @@ export function BodyView({
               <Surface
                 elevation="sunken"
                 radius="xl"
-                className="relative overflow-hidden"
+                className="relative overflow-hidden bg-[var(--body-volume)]"
                 style={{ height: fullscreen ? '70vh' : 380 }}
               >
                 <SceneBoundary onError={handleSceneError}>
@@ -194,6 +206,7 @@ export function BodyView({
                       selectedOrgan={selectedOrgan}
                       onSelectOrgan={handleSelect}
                       tier={tier}
+                      form={form}
                       resetSignal={resetSignal}
                     />
                   </Suspense>
@@ -213,7 +226,7 @@ export function BodyView({
             <Surface
               elevation="sunken"
               radius="xl"
-              className="relative overflow-hidden"
+              className="relative overflow-hidden bg-[var(--body-volume)]"
               style={{ height: fullscreen ? '70vh' : compareDate ? 380 : 460 }}
             >
               <SceneBoundary onError={handleSceneError}>
@@ -223,6 +236,7 @@ export function BodyView({
                     selectedOrgan={selectedOrgan}
                     onSelectOrgan={handleSelect}
                     tier={tier}
+                    form={form}
                     resetSignal={resetSignal}
                   />
                 </Suspense>
