@@ -12,13 +12,5 @@
     "no-console": ["error", { "allow": ["warn", "error"] }],
     "eqeqeq": "error"
   },
-  "overrides": [
-    {
-      "files": ["src/components/**"],
-      "rules": {
-        "import/no-restricted-paths": "off"
-      }
-    }
-  ],
   "ignorePatterns": ["dist", "node_modules", "tools"]
 }

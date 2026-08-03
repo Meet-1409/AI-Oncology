@@ -14,7 +14,8 @@
  */
 
 export { Grain, LightField, Hairline } from './atmosphere'
-export { Rise, Settle, useOnApproach } from './reveal'
+export { useOnApproach } from './use-on-approach'
+export { Rise, Settle } from './reveal'
 export type { RiseProps, SettleProps } from './reveal'
 export { Marquee } from './marquee'
 export { CinematicAction, CinematicJump, EdgeLabel, Ordinal } from './controls'

@@ -1,6 +1,7 @@
-import { createElement, useEffect, useRef, useState } from 'react'
+import { createElement } from 'react'
 import type { ReactNode } from 'react'
 import { cn } from '@/lib/utils'
+import { useOnApproach } from './use-on-approach'
 
 /**
  * The host element a reveal renders as.
@@ -29,38 +30,6 @@ type HostTag = 'div' | 'section' | 'span' | 'p' | 'li' | 'h1' | 'h2' | 'h3' | 'h
  * content is present in the DOM from first paint either way, so nothing depends
  * on JavaScript or on the animation completing [00 §11.9].
  */
-
-/** Fires once, when the element first enters the viewport. */
-export function useOnApproach<T extends HTMLElement>(rootMargin = '0px 0px -10% 0px') {
-  const ref = useRef<T>(null)
-  const [approached, setApproached] = useState(false)
-
-  useEffect(() => {
-    const node = ref.current
-    if (!node) return
-
-    // Without IntersectionObserver the content is simply shown. Degrading to
-    // visible is the only acceptable failure mode for a reveal.
-    if (typeof IntersectionObserver === 'undefined') {
-      setApproached(true)
-      return
-    }
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry?.isIntersecting) {
-          setApproached(true)
-          observer.disconnect()
-        }
-      },
-      { threshold: 0.12, rootMargin },
-    )
-    observer.observe(node)
-    return () => observer.disconnect()
-  }, [rootMargin])
-
-  return { ref, approached }
-}
 
 export interface RiseProps {
   children: ReactNode
