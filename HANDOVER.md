@@ -10,9 +10,9 @@
 
 Three things will save you the most time.
 
-**The `READ THIS/` folder is frozen.** Nineteen documents. They are the only source of truth for what the product does. Do not modify them. Every design decision in the code cites them by section — `[04 §14]` means document 04, section 14. When code and documentation disagree, the documentation wins.
+**`READ THIS/` was deliberately cut down to two files, 4 August 2026: `00_Ground_Rules.txt` and `02_Technical_Requirements_Document.txt`.** It used to be nineteen. The Product Owner asked for this directly: everything else in that folder was locked-in feature/flow detail that "can change every now and then," and treating it as permanently frozen was the wrong level of rigidity. **Ground Rules stay permanent and non-negotiable — follow them exactly, always, and implement any future change to that file the moment it happens.** The TRD is kept as the durable architecture reference (overall system split, module responsibilities, cross-cutting rules) — not a rigid spec either, but a useful map. Everything the seventeen removed documents used to pin down (exact screen layouts, navigation trees, per-feature business rules) is now something to use good engineering judgment on, informed by the Ground Rules, the actual codebase, and `BLUEPRINT/`, rather than something to look up and match exactly. The old files are not gone — they're recoverable from git history (`git show <commit>:"READ THIS/<file>"`) if a past decision's original wording is ever needed. Code comments citing sections of the removed documents (`[09.4 §14]` etc.) were left as-is: they're historical rationale, not live links, and rewriting all of them wasn't part of what was asked.
 
-**`BLUEPRINT/` is the engineering companion and *is* editable.** Seven documents covering 35 architecture topics. It records how the frozen requirements were turned into a build, and why. If you make an architectural decision, record it there.
+**`BLUEPRINT/` is the engineering companion and *is* editable.** Records how requirements were turned into a build, and why. If you make an architectural decision, record it there.
 
 **The safety tests are not UI tests.** `frontend/tools/safety-tests.ts` guards clinical properties, and several exist because the corresponding defect actually shipped and was caught. Read section 6 before changing anything they touch.
 
