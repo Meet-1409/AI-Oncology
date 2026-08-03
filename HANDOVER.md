@@ -1,0 +1,392 @@
+# AI Oncology Patient Intelligence Platform — Frontend Handover
+
+**Repository:** `C:\Users\Asus\Desktop\AI Oncology`
+**Scope of this document:** the frontend, end to end. Backend, AI and infrastructure are out of scope and have not been started.
+**As of:** commit `3a05b81`, 3 August 2026. Working tree clean.
+
+---
+
+## 1. Read this first
+
+Three things will save you the most time.
+
+**The `READ THIS/` folder is frozen.** Nineteen documents. They are the only source of truth for what the product does. Do not modify them. Every design decision in the code cites them by section — `[04 §14]` means document 04, section 14. When code and documentation disagree, the documentation wins.
+
+**`BLUEPRINT/` is the engineering companion and *is* editable.** Seven documents covering 35 architecture topics. It records how the frozen requirements were turned into a build, and why. If you make an architectural decision, record it there.
+
+**The safety tests are not UI tests.** `frontend/tools/safety-tests.ts` guards clinical properties, and several exist because the corresponding defect actually shipped and was caught. Read section 6 before changing anything they touch.
+
+---
+
+## 2. Current state
+
+### Complete
+
+| Area | State |
+|---|---|
+| Design system, tokens, primitives, patterns | Complete, with a dev-only Showcase |
+| Global shell, depth model, spatial travel | Complete |
+| Entry (landing) and authentication UI | Complete |
+| Home Space / Practice Space / Patient Home Space | Complete |
+| Patient Space with Contextual Orbit | Complete |
+| The Body (Digital Twin) — 3D and structured | Complete, with a model-atlas path |
+| Journey, Evidence, Understanding, Actions, Guidance | Complete |
+| Signals, Account, Intent Bar (⌘K) | Complete |
+| Data layer — zod contracts, adapter, mock store | Complete, backend-ready |
+| Light and dark themes | Complete |
+
+### Outstanding
+
+- **Report comparison view** `[09.4 §14]` — Focus-level stub.
+- **Document preview zoom and paging** `[09.4 §16]` — Focus-level stub; currently a placeholder panel.
+- **Component and end-to-end tests.** None exist. `npm i -D vitest @testing-library/react @testing-library/user-event jsdom @axe-core/react` is the intended stack.
+- **Responsive and accessibility audits on real devices.** Both were designed in and neither has been audited on hardware.
+- **An anatomical model atlas.** See section 7. The loading path is built and tested; the asset has not been licensed or installed.
+- **Backend integration.** See section 9.
+
+### Never started, by instruction
+
+Backend, AI, APIs, database logic, authentication logic. The frontend is prepared for all of them and implements none.
+
+---
+
+## 3. Running and verifying
+
+```bash
+cd frontend
+npm install        # on Windows, natively — see the warning below
+npm run dev        # http://localhost:5173
+npm run verify     # typecheck + architecture + safety + lint
+npm run verify:full  # the above, plus build and production-bundle check
+```
+
+### ⚠ Never run `npm install` inside a Linux sandbox against this folder
+
+It has broken the working tree once. `node_modules` holds Windows-native binaries (`@tailwindcss/oxide-win32-x64-msvc`); a Linux install replaces them and `npm run dev` then fails with `Cannot find native binding`. Recovery is deleting `package-lock.json` and reinstalling natively on Windows.
+
+### `.ts` files that will not open by double-click
+
+`.ts` is also the extension for MPEG-2 Transport Stream, so Windows hands them to a media player. Open them from inside VS Code or Cursor.
+
+---
+
+## 4. Architecture
+
+### Stack
+
+React 19 · TypeScript 6 (strict) · Vite 8 · Tailwind v4 (CSS-first `@theme`) · Radix UI · TanStack Query · Zustand · react-router-dom v7 · three.js + @react-three/fiber + drei · zod · lucide-react · class-variance-authority
+
+`exactOptionalPropertyTypes` is deliberately **off** — React and `@react-three` component types declare optional props without `| undefined`, which forced annotations everywhere without catching a single real defect here. Every other strict flag is on. Documented in `tsconfig.app.json`.
+
+### Layering
+
+```
+spaces  →  features  →  components  →  lib
+              ↘  data
+```
+
+Enforced by `tools/check-architecture.mjs`, which fails the build. Features may not import each other; shared behaviour goes to `components` or is coordinated by the shell.
+
+### The spatial model — the organising idea
+
+Four depth levels. This is not decoration; it drives routing, motion and the shell.
+
+| Depth | Space | Route |
+|---|---|---|
+| 0 | Entry, authentication | `/`, `/enter` |
+| 1 | Home Space / Practice Space, Account | `/home`, `/account` |
+| 2 | Patient Space | `/patient/:id` |
+| 3 | Focus | `/patient/:id/report/:id` etc. |
+
+**Focus opens *above* a preserved parent** — nested routes and `<Outlet />`, never a route swap. The space behind stays mounted and visible `[04 §4]`.
+
+### Vocabulary
+
+Every surface pairs a spatial name with the clinical name. Both are shown; neither is self-evident alone.
+
+| Spatial | Clinical |
+|---|---|
+| Entry | Landing |
+| Home Space / Practice Space | Dashboard |
+| Patient Space | Patient Profile |
+| Body | Digital Twin |
+| Journey | Timeline |
+| Evidence | Reports |
+| Understanding | Patient Intelligence |
+| Actions | Tasks |
+| Guidance | Notes |
+| Signals | Notifications |
+| Account | Settings |
+
+### URL as state
+
+Routes encode *place*. State that modifies a space **in situ** lives in query parameters, because moving through the Journey moves the whole space through time rather than navigating `[00 §15.5]`:
+
+`?t=` clinical date · `?organ=` selected organ · `?compare=` comparison date
+
+This matters when you touch scroll or transition behaviour — see `use-space-arrival.ts`.
+
+### Data layer
+
+Contract-first and backend-ready:
+
+```
+zod schemas (data/contract) → DataAdapter interface → mock-adapter | http-adapter
+```
+
+Every response is validated at the boundary. Swapping `mock-adapter` for an HTTP adapter is the entire backend integration on the frontend side.
+
+---
+
+## 5. Locked constraints
+
+From the project owner, standing:
+
+- `READ THIS/` is frozen. Do not modify.
+- Do not redesign workflows. Do not add features. Do not remove features. Do not simplify the product.
+- No placeholder implementations, no TODO comments, no incomplete components.
+- **No UI component outside the Design System without a documented reason.** The Design System is the single source of truth for components.
+- Frontend only. Prepare for backend integration; do not build backend.
+- Features 1, 2 and 3 (initialization, design system, global layout) are frozen.
+- If a decision affects product requirements, user workflow, the security model, or the Ground Rules — **stop and ask.** Otherwise make the best engineering decision and continue.
+
+There is exactly one documented exception to the Design System rule: the **cinematic layer** (section 8).
+
+---
+
+## 6. Safety invariants
+
+Each of these exists because of a real defect. They are enforced, not trusted.
+
+### 6.1 Severity colours must be literal hex — never `var(--x)`
+
+`SEVERITY_COLOR` in `lib/status.ts` is handed to `three.Color`. three.js **cannot parse CSS custom properties**: it emits a warning and silently yields white. Shipping that once made every diseased organ render white while the feature appeared to work perfectly.
+
+The scale is necessarily duplicated in three places, because `three.Color` cannot read CSS without a build step:
+
+```
+design/tokens.css   CSS consumers
+design/theme.ts     three.js materials
+lib/status.ts       status mapping
+```
+
+`check-architecture.mjs` asserts all three agree, on every build. **Do not add a fourth copy.**
+
+### 6.2 The severity scale is never themed
+
+Fixed by documentation — lighter is lower severity, darker is higher `[00 §6.7]`. A theme that restyled it would mean the same finding rendering as two different colours depending on a display preference. The dark theme delineates the swatch with a themed *ring* instead. `check-architecture.mjs` fails the build if the dark theme redefines any severity token.
+
+### 6.3 One view-model, two renderers
+
+`use-body-view-model.ts` feeds both `BodyScene` (3D) and `BodyStructured` (accessible). They cannot drift, and a safety test asserts every organ reachable in one is reachable in the other `[00 §16.5]`.
+
+### 6.4 Role isolation is checked at the transport boundary
+
+A patient session must never receive private notes, Patient Intelligence, or oncologist-only timeline events `[09.5 §19]`. Tested against `mockStore.handle` directly, not against the UI.
+
+### 6.5 Time resolution never interpolates
+
+Selecting a date returns a real, validated snapshot — never an invented clinical state `[09.6 §18]`.
+
+### 6.6 Plain language may not invent clinical claims
+
+`severityMeaning()` describes **position on a documented scale and nothing more**. Not size, not spread, not outlook. Saying more would be the interface inventing a claim the data never made `[00 §5]` — and it would be most dangerous exactly where it would be most reassuring.
+
+### 6.7 Every semantic token needs a dark value
+
+A token defined for light but forgotten in dark inherits the light value silently: dark text on a dark surface, an invisible border, an unreadable status chip. `check-architecture.mjs` fails the build. Negative-tested.
+
+### Running them
+
+```bash
+npm run test:safety     # 16 checks
+```
+
+---
+
+## 7. The Body — the deepest subsystem
+
+Files: `features/body/` — `figure.ts`, `anatomy.ts`, `model.ts`, `use-figure-geometry.ts`, `BodyScene.tsx`, `BodyStructured.tsx`, `BodyView.tsx`, `use-body-view-model.ts`
+
+### Coordinate frame
+
+A standing figure, **feet at y = -0.51, crown at y = 1.31**, facing +Z. 1.82 units tall, so one unit is one metre. Every landmark is a real fraction of stature. All 16 organ coordinates in `anatomy.ts` are **absolute** within this frame.
+
+### Two sources of geometry
+
+**1. Generated (`figure.ts`)** — always present, no asset required. Cross-sections defined at anatomical landmarks, splined with Catmull-Rom into a dense ring stack, skinned into one continuous surface. Three construction rules, each from a visible defect:
+
+- **Never join primitives.** A sphere on a cylinder always looks like a sphere on a cylinder.
+- **Bury every closing cap.** A loft closes with a flat disc. A cap wider than the mass it emerges from protrudes as a shoulder plate, or draws a hard horizontal line across the hips. Both were observed.
+- **The trunk does not carry shoulder width.** The deltoid belongs to the arm loft. A torso widened to the acromion reads as armour.
+
+Three forms — `male`, `female`, `neutral` — selected by `bodyFormFor()` from the sex on the patient's record. `Other` and missing both resolve to `neutral`; guessing is worse than being non-committal. All three share one vertical frame so a single organ coordinate set stays correct in each.
+
+**2. A sculpted atlas (`model.ts`)** — used automatically when installed. **Not yet installed.**
+
+### Installing an atlas
+
+Drop into `frontend/public/models/`:
+
+```
+body-male.glb  body-female.glb  body-neutral.glb   organs.glb
+```
+
+Organ meshes must be named for their organ id (`liver`, `left-lung`, `right-kidney`…). Matching is forgiving about case, spaces, underscores, trailing numbers and `.001` suffixes.
+
+**The one thing you must get right:** `body-*.glb` and `organs.glb` must be exported from **the same source atlas in the same coordinate space**. The loader fits the *body* into the figure frame, then applies that exact transform to the organs. Different sources and the organs will be *plausibly* wrong — nothing on screen will look broken. That is far worse than an obvious failure and the tests cannot catch it for you.
+
+Requirements, licensing options and the full rationale are in `frontend/public/models/README.md`.
+
+**Licence before shipping.** The model displays inside a clinical product; that is commercial use. Most anatomy models on Sketchfab and TurboSquid are personal-use only. **BodyParts3D** (CC-BY-SA) and **Z-Anatomy** (CC-BY-SA) both permit commercial use with attribution. Record the choice in `ATTRIBUTIONS.md`.
+
+### Fallbacks are per organ
+
+A missing atlas leaves the generated figure. A *partial* atlas gives sculpted meshes for what it has and primitives for the rest, so coverage can grow incrementally `[08 §11]`.
+
+### Presentation
+
+Rim-lit form in a dark volume, not flesh. Two reasons, the second clinical:
+
+1. A photoreal body invites the reading that this **is** the patient's body. It is not — it represents body structure `[09.6 §5]` and is explicitly not a physical replica `[00 §6.4]`.
+2. The severity scale is red. Red on flesh tones has small hue separation and the eye discounts it; against a dark blue volume every step separates cleanly.
+
+The shell renders `DoubleSide` with `depthWrite: false` at low opacity, so organs draw first as opaque and the shell blends over them. **The shell cannot hide an organ** — that is the property being bought.
+
+---
+
+## 8. Two visual vocabularies
+
+The frozen docs ask for two incompatible things:
+
+- `[04 §14]` — the Entry must be "a cinematic introduction to the system, not a traditional landing page", memorable, premium.
+- `[04 §28]` — inside the application, "usability is never sacrificed for visual effect" and "every space should be understandable without training".
+
+One system tuned for both is a compromise at each end. So there are two, and the boundary is enforced.
+
+**The cinematic layer** lives in `components/cinematic/` — `Grain`, `LightField`, `Hairline`, `Rise`, `Settle`, `Marquee`, `CinematicAction`, `CinematicJump`, `EdgeLabel`, `Ordinal`. Its own `--cinema-*` tokens and a longer motion envelope (to 1700ms, versus the application's 380ms ceiling).
+
+`check-architecture.mjs` **fails the build** if anything outside `src/spaces/entry` imports it. The one exception is `src/dev/showcase`, which documents the design system and is stripped from production. Negative-tested.
+
+### The Entry's key move
+
+The point field renders **above** the CANCER wordmark in `mix-blend-mode: screen`, so the word sits *inside* the figure rather than in front of a backdrop. Screen blending can only add light, so it is arithmetically incapable of reducing text contrast: the depth is real and costs nothing in legibility. Depth layering — not animation volume — is what makes the reference compositions read as expensive.
+
+---
+
+## 9. Motion and travel
+
+### The envelope
+
+| Token | Duration | Use |
+|---|---|---|
+| `--motion-quick` | 180ms | hover, control state |
+| `--motion-reveal` | 260ms | content revealing, Signals arriving |
+| `--motion-spatial` | 380ms | depth change, Focus open and close |
+
+Motion carries exactly one of four meanings `[04 §6]`: depth, time, clinical, process. Nothing animates for decoration inside the application.
+
+**Reduced motion is honoured at the token level** — every duration resolves to 0ms and every consumer inherits it without opting in. Presentation changes; information and functionality do not `[00 §11.9]`.
+
+### Spatial travel
+
+Both spaces animate at once. The space being left is held mounted and played out while the arriving one plays in, overlapping in the same frame. Animating only the arrival leaves an empty frame between spaces — and an empty frame is a page change however carefully it is eased.
+
+Blur carries the depth. Scale alone reads as an effect applied to a page; scale plus focus reads as moving through space, because that is what a lens does.
+
+```
+deeper      old space rushes past, new one grows into place
+shallower   old falls away, new settles back from beyond
+lateral     peers slide past each other, no depth change
+```
+
+Applied at **two levels**. The outermost carries Entry ↔ authentication ↔ environment, keyed by *region* rather than address — keying on the address would replay it on every move inside the environment and the persistent shell would blink. Space-to-space travel is the shell's own transition, one level in.
+
+### Continuous Return
+
+One gesture always moves exactly one depth level out `[04 §5]`. Bound to Escape, and now also a visible control in the shell whenever there is somewhere to ascend to — a keyboard shortcut nobody can see is not a way back for a patient on a tablet. It ignores Escape while the user is typing, so it can never discard unsaved work.
+
+---
+
+## 10. Backend integration — what the backend team needs to provide
+
+The frontend is contract-first. Every shape the backend must return is already declared in `data/contract/domain.ts` as a zod schema, and every response is validated at the boundary.
+
+To integrate:
+
+1. Implement the `DataAdapter` interface (`data/adapters/adapter.ts`) against real endpoints.
+2. Swap `mock-adapter` for it in `data/adapters/index.ts`.
+
+Nothing else in the frontend changes.
+
+**Enforced on the server, not here.** The role guard in `EnvironmentShell` is a second lock and a navigation convenience — never the only protection `[02 §7]`. Authorization, and the filtering of private notes and Patient Intelligence out of patient sessions, must be enforced server-side. The safety suite checks the frontend's mock honours it; that is a test of the contract, not a substitute for it.
+
+**Every AI output must carry evidence and confidence** `[00 §5.9]`, `[00 §5.10]`. The UI renders confidence beside every derived statement and refuses to hide it behind an interaction. Summaries without a confidence value will fail schema validation.
+
+---
+
+## 11. Traps
+
+Things that have already cost time, or will.
+
+**Verification in a Linux sandbox is slow and misleading.** `tsc` against the mounted folder does not finish inside a normal timeout. The workaround is copying `src`, `tools`, the tsconfigs and the needed `node_modules` packages to local disk — **in small batches**, because a batch loop that times out leaves packages silently truncated. A truncated `zod` makes every inferred type `any` (a wave of TS7006); a truncated `@react-three/drei` makes `OrbitControls` "not exported". Before believing any error, confirm the package copied completely. The reliable check is `git archive` of the last known-good commit into a parallel directory and diffing the two error sets.
+
+**oxlint only ships a Windows binary here.** Lint cannot run in a Linux sandbox. Audit by hand against `.oxlintrc.json` if you cannot run it.
+
+**Dead lint config fails silently and loudly.** An override referencing `import/no-restricted-paths` — a rule oxlint does not have — caused config loading to fail outright, so lint never ran at all while appearing configured. Layer boundaries are enforced by `check-architecture.mjs`, which is stricter.
+
+**zustand v5 and SSR.** `getInitialState` is React's server snapshot, so `setState` is ignored under `renderToString`. The safety suite uses an aliased auth-store test double for this reason.
+
+**The `motion` package is installed but unused.** Approved as decision D3, then superseded — transitions are CSS keyframes and the View Transitions API. Either use it or remove it; leaving it is a 60KB dependency doing nothing.
+
+---
+
+## 12. Decisions on record
+
+| # | Decision | Rationale |
+|---|---|---|
+| D1 | Clean rebuild rather than refactor | The original app was a flat-sidebar dashboard; the rewritten docs describe a spatial model that could not be reached incrementally |
+| D2 | Custom stylized anatomy, not a purchased model | Later revisited — see D5 |
+| D3 | Motion library | Superseded by CSS keyframes + View Transitions API |
+| D4 | Modern evergreen browsers + WebGL2 | Every space remains usable with WebGL absent |
+| D5 | Load a sculpted atlas when installed, generate otherwise | Procedural geometry has a ceiling a sculpt clears; the fallback keeps the Body from ever being absent |
+| D6 | Two visual vocabularies, hard boundary | The frozen docs require both a cinematic Entry and a restrained application |
+| D7 | Dark as the default theme | The Entry and the Body are both lit volumes in darkness; a bright application between them reads as a different product. Light and System remain available `[09.10 §8]` |
+| D8 | Male / female / neutral body forms | The sites that matter clinically sit differently, and a figure that does not match the person is a constant small signal the record is not theirs |
+
+---
+
+## 13. Where to pick up
+
+In rough order of value:
+
+1. **License and install an anatomical atlas.** The largest single visual improvement available, and the path is built and tested. Section 7.
+2. **Add a test runner.** Vitest plus Testing Library. The safety suite covers clinical invariants; nothing covers component behaviour.
+3. **Audit on real devices.** Responsive and accessibility, on a tablet in particular — `[04 §24]` requires full tablet function.
+4. **Finish the two Focus stubs** — report comparison `[09.4 §14]` and document preview `[09.4 §16]`.
+5. **Resolve the unused `motion` dependency.**
+6. **Backend integration** when endpoints exist. Section 10.
+
+---
+
+## 14. Commit history
+
+```
+3a05b81  feat(shell): continuous spatial travel and one theme throughout
+a1f1ca6  feat(theme): add dark theme as the default appearance
+8d6e31f  feat(body): load sculpted anatomy from a model atlas
+6fdad7e  feat(body): open pose, glass shell and surface relief
+dd36b85  feat(body): a real lofted human figure, with male and female forms
+8ac4e3a  fix(frontend): remove dead oxlint override that broke the lint step
+2681ab1  feat(frontend): cinematic Entry composition and plain-language clinical spaces
+a390094  feat(frontend): cinematic Entry scene and anatomically credible human figure
+1984e98  feat(frontend): Intent Bar, task composer and patient-safety test suite
+32d0429  feat(frontend): Digital Twin, Patient Space, Home Spaces, Signals and Account
+6df0012  feat(frontend): Feature 3 global layout, dev showcase, data layer, Entry and Auth
+f420e2a  feat(frontend): complete Feature 2 - Design System
+73a0738  feat(frontend): complete Feature 1 - Project Initialization
+30872b0  docs: add frontend engineering blueprint
+31e591f  docs: rewrite project documentation for spatial experience model
+```
+
+Commit messages carry the reasoning for each change, including the defects that motivated the safety invariants. They are worth reading before changing the Body or the token system.
