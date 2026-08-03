@@ -8,7 +8,7 @@ import { maxPixelRatio } from '@/lib/capability'
 import type { RenderTier } from '@/lib/capability'
 import { useReducedMotion } from '@/components/motion'
 import { BONES, LYMPH_NODES, ORGANS } from './anatomy'
-import { buildFigureGeometry, ORGAN_SCALE } from './figure'
+import { armPoseAngle, buildFigureGeometry, ORGAN_SCALE, poseArmPoint } from './figure'
 import type { BodyForm } from './figure'
 import type { OrganDefinition } from './anatomy'
 import type { BodyViewModel } from './use-body-view-model'
@@ -203,19 +203,26 @@ function BodyShell({ tier, form }: { tier: RenderTier; form: BodyForm }) {
 
   return (
     <group>
-      <mesh geometry={geometry}>
+      {/* Glass, not a silhouette.
+          DoubleSide and depthWrite off, so the near surface, the far surface and
+          every organ between them are all visible at once. The organs are opaque
+          and draw first; the shell then blends over them, which is what puts them
+          convincingly INSIDE the body rather than floating in front of a
+          cut-out. Nothing here can hide an organ — that is the property being
+          bought, and it is why the shell writes no depth. */}
+      <mesh geometry={geometry} renderOrder={2}>
         <meshStandardMaterial
           color={anatomyPalette.skin}
           transparent
-          opacity={tier === 'reduced' ? 0.22 : 0.16}
-          roughness={0.9}
+          opacity={tier === 'reduced' ? 0.16 : 0.11}
+          roughness={0.95}
           metalness={0}
-          side={THREE.BackSide}
+          side={THREE.DoubleSide}
           depthWrite={false}
         />
       </mesh>
 
-      <mesh geometry={geometry} material={rim} />
+      <mesh geometry={geometry} material={rim} renderOrder={3} />
 
       {tier === 'full' && (
         <points geometry={geometry}>
@@ -261,7 +268,8 @@ function Anatomy({
         <AnimatedPart
           key={bone.key}
           geometry={<cylinderGeometry args={bone.args as [number, number, number, number]} />}
-          position={bone.position}
+          position={bone.arm ? poseArmPoint(bone.position, bone.arm) : bone.position}
+          rotation={bone.arm ? [0, 0, armPoseAngle(bone.arm)] : undefined}
           color={colorFor(bones?.severity ?? 0, anatomyPalette.bone)}
           selected={selectedOrgan === 'bones'}
           roughness={0.7}

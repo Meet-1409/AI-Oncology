@@ -442,11 +442,29 @@ interface Part {
  * smooth surface all the way round. A repeated seam vertex would leave a
  * visible crease running the length of the figure.
  */
+/**
+ * Surface relief.
+ *
+ * Returns a radius multiplier for a point at height fraction `t` and angle
+ * `theta`, where theta = pi/2 is directly in front and 3*pi/2 directly behind.
+ * This is what puts a sternum groove between the pectorals and a furrow down
+ * the spine — the small landmarks the eye uses to decide whether it is looking
+ * at a body or at a smooth shape shaped like one.
+ */
+type Relief = (t: number, theta: number, at: number) => number
+
 function loft(
   sections: readonly Section[],
-  options: { axis: 'y' | 'z'; segments?: number; rings?: number },
+  options: {
+    axis: 'y' | 'z'
+    segments?: number
+    rings?: number
+    relief?: Relief
+    /** Applied to every vertex after lofting, for limbs that are not vertical. */
+    transform?: THREE.Matrix4
+  },
 ): Part {
-  const { axis, segments = 44, rings = 64 } = options
+  const { axis, segments = 44, rings = 64, relief, transform } = options
   const channel = channelsOf(sections)
 
   const positions: number[] = []
@@ -467,9 +485,11 @@ function loft(
       // The depth half-axis switches at the sides, where both are zero, so the
       // asymmetric section stays continuous rather than stepping.
       const forward = Math.sin(theta) >= 0
-      const a = centreA + superellipse(theta, halfWidth, exponent)
+      const scale = relief ? relief(t, theta, at) : 1
+      const a = centreA + superellipse(theta, halfWidth * scale, exponent)
       const b =
-        centreB + superellipse(theta - Math.PI / 2, forward ? frontDepth : backDepth, exponent)
+        centreB +
+        superellipse(theta - Math.PI / 2, (forward ? frontDepth : backDepth) * scale, exponent)
 
       if (axis === 'y') positions.push(a, at, b)
       else positions.push(a, b, at)
@@ -512,7 +532,123 @@ function loft(
   capEnd(0, true)
   capEnd(rings - 1, false)
 
+  if (transform) {
+    const point = new THREE.Vector3()
+    for (let i = 0; i < positions.length; i += 3) {
+      point
+        .set(positions[i] as number, positions[i + 1] as number, positions[i + 2] as number)
+        .applyMatrix4(transform)
+      positions[i] = point.x
+      positions[i + 1] = point.y
+      positions[i + 2] = point.z
+    }
+  }
+
   return { positions, indices }
+}
+
+/* ------------------------------------------------------------------ *
+ * Pose and relief
+ * ------------------------------------------------------------------ */
+
+/**
+ * The arms are carried away from the body.
+ *
+ * Every anatomical reference figure stands this way, and it is not decoration:
+ * arms held against the torso overlap the trunk silhouette from the front, and
+ * the trunk is exactly where most of the selectable anatomy is. Opening the
+ * pose clears the chest and abdomen and widens the target area for organ
+ * selection [09.6 §9] — the pose that looks right is also the one that works.
+ */
+// About 21 degrees. A full 40-degree A-pose is what an anatomy reference uses,
+// but this figure lives in a panel a few hundred pixels wide: at 40 degrees the
+// arms alone claim half the frame, and the trunk — where nearly all the
+// selectable anatomy is — shrinks to fit. This clears the torso silhouette
+// completely while keeping the body large in the viewport.
+const ARM_ANGLE = 0.37
+const SHOULDER_PIVOT = { x: 0.128, y: 0.928 }
+
+function armPose(side: 1 | -1): THREE.Matrix4 {
+  const pivotX = SHOULDER_PIVOT.x * side
+  return new THREE.Matrix4()
+    .makeTranslation(pivotX, SHOULDER_PIVOT.y, 0)
+    .multiply(new THREE.Matrix4().makeRotationZ(ARM_ANGLE * side))
+    .multiply(new THREE.Matrix4().makeTranslation(-pivotX, -SHOULDER_PIVOT.y, 0))
+}
+
+/**
+ * Rotation to apply to anything that must travel with the arm.
+ *
+ * The humerus is inside the arm. When the arm moved into an open pose and the
+ * bone did not, it stayed behind in the chest — a bone floating in the wrong
+ * part of the body, on a display whose entire purpose is showing where things
+ * are. Exported so the bone is posed from the same source as the limb rather
+ * than from a copied number that can silently fall out of step.
+ */
+export const armPoseAngle = (side: 1 | -1): number => ARM_ANGLE * side
+
+/** Moves a point from the resting arm position into the posed one. */
+export function poseArmPoint(
+  point: readonly [number, number, number],
+  side: 1 | -1,
+): [number, number, number] {
+  const pivotX = SHOULDER_PIVOT.x * side
+  const dx = point[0] - pivotX
+  const dy = point[1] - SHOULDER_PIVOT.y
+  const angle = ARM_ANGLE * side
+  const cos = Math.cos(angle)
+  const sin = Math.sin(angle)
+  return [pivotX + dx * cos - dy * sin, SHOULDER_PIVOT.y + dx * sin + dy * cos, point[2]]
+}
+
+/**
+ * Trunk relief — the landmarks that read as anatomy rather than as a shape.
+ *
+ * Deliberately shallow, a few percent of radius. Deeper modelling of individual
+ * muscles would be a claim this visualization is not entitled to make: the form
+ * represents body structure [09.6 §5] and is not a replica of any patient
+ * [00 §6.4]. These are the few landmarks a viewer needs in order to orient
+ * themselves on the body, and nothing beyond that.
+ */
+function trunkRelief(_t: number, theta: number, at: number): number {
+  // Smooth 0-1 band, so relief fades in and out instead of stepping.
+  const band = (value: number, from: number, to: number) => {
+    const mid = (from + to) / 2
+    const half = Math.abs(to - from) / 2
+    const d = Math.abs(value - mid) / half
+    return d >= 1 ? 0 : Math.cos((d * Math.PI) / 2) ** 2
+  }
+  // Angular lobe centred on `centre`, width `spread`.
+  const lobe = (centre: number, spread: number) => {
+    let d = theta - centre
+    while (d > Math.PI) d -= Math.PI * 2
+    while (d < -Math.PI) d += Math.PI * 2
+    return Math.abs(d) >= spread ? 0 : Math.cos((d / spread) * (Math.PI / 2)) ** 2
+  }
+
+  const front = Math.PI / 2
+  const back = (3 * Math.PI) / 2
+
+  let scale = 1
+
+  // Pectorals, with the sternum falling away between them.
+  const chest = band(at, 0.775, 0.895)
+  scale += chest * 0.05 * (lobe(front - 0.5, 0.42) + lobe(front + 0.5, 0.42))
+  scale -= chest * 0.035 * lobe(front, 0.2)
+
+  // Linea alba, the shallow furrow down the centre of the abdomen.
+  scale -= band(at, 0.60, 0.79) * 0.03 * lobe(front, 0.26)
+
+  // The spinal furrow, all the way up the back.
+  scale -= band(at, 0.52, 0.94) * 0.04 * lobe(back, 0.22)
+
+  // Shoulder blades.
+  scale += band(at, 0.82, 0.93) * 0.028 * (lobe(back - 0.55, 0.38) + lobe(back + 0.55, 0.38))
+
+  // The dip at the side of the waist, above the iliac crest.
+  scale -= band(at, 0.60, 0.70) * 0.03 * (lobe(0, 0.5) + lobe(Math.PI, 0.5))
+
+  return scale
 }
 
 /* ------------------------------------------------------------------ *
@@ -529,13 +665,26 @@ function loft(
  */
 export function buildFigureGeometry(form: BodyForm = 'neutral'): THREE.BufferGeometry {
   const parts: Part[] = [
-    loft(shapeTrunk(form), { axis: 'y', segments: 52, rings: 132 }),
-    ...([1, -1] as const).flatMap((side) => [
-      loft(shapeLimb(arm(side), form, 'shoulder'), { axis: 'y', segments: 26, rings: 44 }),
-      loft(shapeLimb(hand(side), form, 'shoulder'), { axis: 'y', segments: 22, rings: 26 }),
-      loft(shapeLimb(leg(side), form, 'hip'), { axis: 'y', segments: 30, rings: 56 }),
-      loft(shapeLimb(foot(side), form, 'hip'), { axis: 'z', segments: 22, rings: 26 }),
-    ]),
+    loft(shapeTrunk(form), { axis: 'y', segments: 64, rings: 148, relief: trunkRelief }),
+    ...([1, -1] as const).flatMap((side) => {
+      const pose = armPose(side)
+      return [
+        loft(shapeLimb(arm(side), form, 'shoulder'), {
+          axis: 'y',
+          segments: 28,
+          rings: 48,
+          transform: pose,
+        }),
+        loft(shapeLimb(hand(side), form, 'shoulder'), {
+          axis: 'y',
+          segments: 24,
+          rings: 28,
+          transform: pose,
+        }),
+        loft(shapeLimb(leg(side), form, 'hip'), { axis: 'y', segments: 32, rings: 60 }),
+        loft(shapeLimb(foot(side), form, 'hip'), { axis: 'z', segments: 24, rings: 28 }),
+      ]
+    }),
   ]
 
   const positions: number[] = []

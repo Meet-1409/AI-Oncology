@@ -74,6 +74,8 @@ export const BONES: readonly {
   key: string
   position: readonly [number, number, number]
   args: readonly [number, number, number, number]
+  /** Set when the bone sits inside an arm and must travel with it. */
+  arm?: 1 | -1
 }[] = [
   // Spine: sacrum at y ≈ 0.44 to the base of the skull at y ≈ 1.04.
   { key: 'spine', position: [0, 0.740, -0.060], args: [0.021, 0.026, 0.60, 8] },
@@ -81,8 +83,9 @@ export const BONES: readonly {
   { key: 'femur-left', position: [-0.082, 0.255, 0], args: [0.019, 0.023, 0.47, 6] },
   { key: 'femur-right', position: [0.082, 0.255, 0], args: [0.019, 0.023, 0.47, 6] },
   // Humerus: shoulder y ≈ 0.93 down to the elbow at y ≈ 0.637.
-  { key: 'humerus-left', position: [-0.174, 0.786, 0], args: [0.014, 0.017, 0.29, 6] },
-  { key: 'humerus-right', position: [0.174, 0.786, 0], args: [0.014, 0.017, 0.29, 6] },
+  // Positions are given for the resting arm; the scene poses them with the limb.
+  { key: 'humerus-left', position: [-0.174, 0.786, 0], args: [0.014, 0.017, 0.29, 6], arm: -1 },
+  { key: 'humerus-right', position: [0.174, 0.786, 0], args: [0.014, 0.017, 0.29, 6], arm: 1 },
 ] as const
 
 /** Organs represented as clusters rather than single meshes. */
