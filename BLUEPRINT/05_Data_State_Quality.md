@@ -213,6 +213,18 @@ Sustained frame drops reduce visual complexity automatically — never clinical 
 
 **[ASSUMPTION]** The docs require verification `[00 §17.7]` but name no tooling. Proposed: Vitest + Testing Library + Playwright + axe. None currently installed.
 
+**Implemented (unit/component/accessibility layers):** Vitest + `@testing-library/react` +
+`@testing-library/user-event` + `@testing-library/jest-dom`, wired into `npm run verify`.
+`@axe-core/react` — this document's original axe pick — does not support React
+18 and above by its own README; `jest-axe` runs the same `axe-core` engine
+directly against rendered DOM instead of via React internals, so it is
+React-version-independent, and is what `src/test/setup.ts` actually extends
+`expect` with (`toHaveNoViolations()`). Contrast rules are disabled by
+`jest-axe` under jsdom (no real layout engine to measure against), so the
+automated pass covers structural accessibility — labels, ARIA validity,
+heading order — and contrast remains a manual/real-browser check. Playwright
+(the integration/E2E layer) is not yet installed.
+
 | Layer | Scope |
 |---|---|
 | **Unit** | contract schemas, severity mapping, time interpolation, visibility filtering, format utilities |

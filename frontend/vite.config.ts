@@ -1,14 +1,13 @@
-import { defineConfig } from 'vite'
+import { defineConfig } from 'vitest/config'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import { fileURLToPath, URL } from 'node:url'
 
 // The Entry must stay fast and must not pay for the 3D runtime [04 §14].
-// Three.js and the motion runtime are therefore isolated into their own chunks so
-// that route-level code splitting can keep them out of the initial payload.
+// Three.js is therefore isolated into its own chunk so that route-level code
+// splitting can keep it out of the initial payload.
 const MANUAL_CHUNKS: Record<string, string[]> = {
   'vendor-three': ['three', '@react-three/fiber', '@react-three/drei'],
-  'vendor-motion': ['motion'],
   'vendor-react': ['react', 'react-dom', 'react-router-dom'],
 }
 
@@ -39,5 +38,14 @@ export default defineConfig({
         },
       },
     },
+  },
+  test: {
+    environment: 'jsdom',
+    setupFiles: ['./src/test/setup.ts'],
+    css: false,
+    // Explicit imports (`import { describe, it, expect } from 'vitest'`) rather
+    // than globals, matching the explicit-import convention used everywhere
+    // else in this codebase.
+    globals: false,
   },
 })

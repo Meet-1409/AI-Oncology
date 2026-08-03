@@ -11,7 +11,9 @@
     "check:architecture": "node tools/check-architecture.mjs",
     "check:prod": "node tools/check-production-bundle.mjs",
     "preview": "vite preview",
-    "verify": "npm run typecheck && npm run check:architecture && npm run test:safety && npm run lint",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "verify": "npm run typecheck && npm run check:architecture && npm run test:safety && npm run test && npm run lint",
     "verify:full": "npm run verify && npm run build && npm run check:prod",
     "test:safety": "vite build --ssr tools/safety-tests.ts --outDir tools/.out-safety --emptyOutDir --logLevel error && node tools/.out-safety/safety-tests.js"
   },
@@ -36,7 +38,6 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^1.28.0",
-    "motion": "^12.34.2",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-hook-form": "^7.84.0",
@@ -48,13 +49,19 @@
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.1.16",
+    "@testing-library/jest-dom": "^7.0.0",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
     "@types/node": "^24.13.3",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.4",
+    "jest-axe": "^11.0.0",
+    "jsdom": "^30.0.1",
     "oxlint": "^1.75.0",
     "tailwindcss": "^4.1.16",
     "typescript": "~6.0.2",
-    "vite": "^8.2.0"
+    "vite": "^8.2.0",
+    "vitest": "^4.1.10"
   }
 }
