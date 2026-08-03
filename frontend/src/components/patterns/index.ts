@@ -24,3 +24,6 @@ export type { ChangeDirection } from './clinical'
 
 export { Orientation, PlainExplanation, SeverityLegend } from './orientation'
 export type { OrientationProps } from './orientation'
+
+export { DocumentPreview } from './document-preview'
+export type { DocumentPreviewProps } from './document-preview'

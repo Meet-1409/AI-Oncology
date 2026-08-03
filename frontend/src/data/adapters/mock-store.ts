@@ -1,4 +1,5 @@
 import { ApiFailure } from '@/data/contract/envelope'
+import type { ReportComparison } from '@/data/contract/domain'
 import type {
   AppNotification,
   Note,
@@ -186,6 +187,93 @@ function completeTask(taskId: string, reportId?: string): PatientTask {
   return updated
 }
 
+/**
+ * Directional vocabulary for classifying a new finding [08 §9]. Deliberately a
+ * closed, documented list rather than free-form inference — a finding that
+ * matches neither list is not guessed at; it is returned in `otherFindings`
+ * instead of being forced into a direction the wording does not support.
+ */
+const REGRESSION_WORDS = [
+  'reduc', 'regress', 'resolv', 'improv', 'decreas', 'response', 'no evidence',
+  'no recurrence', 'clear margins', 'negative',
+]
+const PROGRESSION_WORDS = [
+  'increas', 'enlarg', 'new ', 'progress', 'worsen', 'recurrence', 'metasta', 'grew', 'growing',
+]
+
+function classifyFinding(text: string): 'progression' | 'regression' | null {
+  const lower = text.toLowerCase()
+  if (REGRESSION_WORDS.some((word) => lower.includes(word))) return 'regression'
+  if (PROGRESSION_WORDS.some((word) => lower.includes(word))) return 'progression'
+  return null
+}
+
+/**
+ * Compares two reports [09.4 §14].
+ *
+ * Only two things are ever asserted with a direction: a finding stated
+ * identically in both reports (stable — positive evidence of no change, not an
+ * inference from absence), and a new finding whose own wording matches the
+ * documented directional vocabulary above. A finding merely absent from the
+ * later report is never read as resolved — absence is not evidence [08 §9],
+ * [08 §17] — so only what the later report actually states is compared.
+ *
+ * This stands in for the AI comparison service [08 §9]; once a backend exists,
+ * this function is deleted and the read below points at it instead.
+ */
+function compareReports(from: Report, to: Report): ReportComparison {
+  const fromFindings = new Set(from.keyFindings ?? [])
+  const toFindings = to.keyFindings ?? []
+
+  const detectedChanges: ReportComparison['detectedChanges'] = []
+  const otherFindings: string[] = []
+  const supportingEvidence: ReportComparison['supportingEvidence'] = []
+
+  for (const finding of toFindings) {
+    if (fromFindings.has(finding)) {
+      detectedChanges.push({
+        label: finding,
+        type: 'stable',
+        description: `Also stated in the earlier report (${from.name}).`,
+      })
+      supportingEvidence.push({
+        reportId: from.id,
+        reportName: from.name,
+        reportDate: from.reportDate,
+        finding,
+      })
+      continue
+    }
+
+    const direction = classifyFinding(finding)
+    if (direction) {
+      detectedChanges.push({ label: finding, type: direction, description: finding })
+    } else {
+      otherFindings.push(finding)
+    }
+    supportingEvidence.push({
+      reportId: to.id,
+      reportName: to.name,
+      reportDate: to.reportDate,
+      finding,
+    })
+  }
+
+  const classified = detectedChanges.length
+  const total = toFindings.length
+
+  return {
+    fromReportId: from.id,
+    toReportId: to.id,
+    detectedChanges,
+    otherFindings,
+    supportingEvidence,
+    // How much of the later report's findings this comparison could ground in
+    // explicit wording — not a clinical likelihood [00 §5.10], [08 §14].
+    confidence: total === 0 ? 0 : classified / total,
+  }
+}
+
 interface Params {
   [key: string]: string | number | boolean | undefined
 }
@@ -229,6 +317,29 @@ function handle(path: string, params?: Params, body?: unknown): unknown {
         body: digitalTwinForPatient(patientId),
         understanding: role === 'oncologist' ? (intelligenceForPatient(patientId) ?? null) : null,
       }
+    }
+
+    // /patients/:id/reports/compare — comparing two reports is an oncologist
+    // action [09.4 §14]; both reports must belong to this patient.
+    if (segments[2] === 'reports' && segments[3] === 'compare') {
+      const fromId = params?.from as string | undefined
+      const toId = params?.to as string | undefined
+      if (!fromId || !toId) {
+        throw new ApiFailure({ kind: 'validation', message: 'Select two reports to compare.' })
+      }
+      const patientReports = state.reports.filter((r) => r.patientId === patientId)
+      const fromReport = patientReports.find((r) => r.id === fromId)
+      const toReport = patientReports.find((r) => r.id === toId)
+      if (!fromReport || !toReport) {
+        throw new ApiFailure({
+          kind: 'not_found',
+          message: 'One of the selected reports could not be found.',
+        })
+      }
+      // Comparison always reads chronologically, regardless of selection order.
+      const [earlier, later] =
+        fromReport.reportDate <= toReport.reportDate ? [fromReport, toReport] : [toReport, fromReport]
+      return compareReports(earlier, later)
     }
   }
 

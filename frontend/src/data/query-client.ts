@@ -61,6 +61,8 @@ export const queryKeys = {
   evidence: {
     forPatient: (patientId: string) => ['patients', patientId, 'evidence'] as const,
     detail: (reportId: string) => ['evidence', reportId] as const,
+    comparison: (patientId: string, fromId: string, toId: string) =>
+      ['patients', patientId, 'evidence', 'compare', fromId, toId] as const,
   },
 
   journey: {

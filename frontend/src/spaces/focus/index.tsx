@@ -1,12 +1,20 @@
-import { Download, FileText, Image as ImageIcon, Sparkles } from 'lucide-react'
+import { ArrowRight, Download, FileText, GitCompare, Image as ImageIcon, Sparkles } from 'lucide-react'
 import { Control, Icon, Surface, Text } from '@/components/primitives'
 import {
+  ChangeIndicator,
   Confidence,
+  DocumentPreview,
+  EmptyState,
+  ErrorState,
+  EvidenceList,
   FocusLayer,
+  LoadingSurface,
+  PlainExplanation,
   PriorityIndicator,
   ProcessingStatusIndicator,
   TaskStatusIndicator,
 } from '@/components/patterns'
+import { useReportComparison } from '@/data/queries'
 import { formatDate, formatDateTime } from '@/lib/format'
 import type { PatientTask, Report, TimelineEvent } from '@/types'
 
@@ -34,25 +42,9 @@ export function ReportFocus({ report, onClose }: { report: Report; onClose: () =
       }
     >
       <div className="space-y-6">
-        {/* The original document. */}
-        <Surface
-          elevation="sunken"
-          radius="lg"
-          inset="lg"
-          className="border border-dashed border-[var(--border-default)] text-center"
-        >
-          <Icon
-            icon={report.fileKind === 'image' ? ImageIcon : FileText}
-            size="lg"
-            className="mx-auto text-[var(--text-subtle)]"
-          />
-          <Text level="secondary" tone="muted" className="mt-3">
-            Original document preview
-          </Text>
-          <Text level="caption" tone="subtle" className="mt-1">
-            {report.fileSizeKb.toLocaleString()} KB · {report.fileKind.toUpperCase()}
-          </Text>
-        </Surface>
+        {/* The original document — zoomable, paginated and full-screenable
+            without downloading [09.4 §16]. */}
+        <DocumentPreview report={report} />
 
         {/* AI summary, with evidence and confidence attached [00 §5.9], [00 §5.10]. */}
         <section>
@@ -132,6 +124,168 @@ export function ReportFocus({ report, onClose }: { report: Report; onClose: () =
             ))}
           </dl>
         </section>
+      </div>
+    </FocusLayer>
+  )
+}
+
+/** One side of a comparison [09.4 §14]. */
+function ReportSummaryCard({ label, report }: { label: string; report: Report }) {
+  return (
+    <Surface elevation="raised" radius="lg" border="subtle" inset="md">
+      <Text level="caption" tone="subtle">
+        {label}
+      </Text>
+      <div className="mt-1.5 flex items-start gap-2.5">
+        <Icon
+          icon={report.fileKind === 'image' ? ImageIcon : FileText}
+          size="sm"
+          className="mt-0.5 shrink-0 text-[var(--text-subtle)]"
+        />
+        <span className="min-w-0">
+          <Text level="secondary" tone="primary" weight="medium">
+            {report.name}
+          </Text>
+          <Text level="caption" tone="muted" className="mt-0.5">
+            {report.type} · {formatDate(report.reportDate)}
+          </Text>
+        </span>
+      </div>
+    </Surface>
+  )
+}
+
+/**
+ * Two reports, compared [09.4 §14].
+ *
+ * Always ordered chronologically regardless of selection order, so "detected
+ * changes" reads as a direction of travel rather than an arbitrary diff.
+ * Original reports remain reachable throughout — comparison summarizes them,
+ * it never replaces them [09.4 §14].
+ */
+export function ComparisonFocus({
+  patientId,
+  fromReport,
+  toReport,
+  onClose,
+  reportHref,
+}: {
+  patientId: string
+  fromReport: Report
+  toReport: Report
+  onClose: () => void
+  reportHref?: ((reportId: string) => string) | undefined
+}) {
+  const [earlier, later] =
+    fromReport.reportDate <= toReport.reportDate ? [fromReport, toReport] : [toReport, fromReport]
+  const { data, isLoading, isError, refetch } = useReportComparison(patientId, earlier.id, later.id)
+
+  return (
+    <FocusLayer
+      open
+      onOpenChange={(next) => !next && onClose()}
+      title="Comparing reports"
+      description="The original reports remain the source of truth for both."
+      eyebrow={
+        <Icon icon={GitCompare} size="sm" className="text-[var(--accent)]" />
+      }
+      className="sm:w-[min(56rem,94vw)]"
+    >
+      <div className="space-y-6">
+        <div className="grid items-center gap-3 sm:grid-cols-[1fr_auto_1fr]">
+          <ReportSummaryCard label="Earlier report" report={earlier} />
+          <Icon
+            icon={ArrowRight}
+            size="sm"
+            className="mx-auto hidden text-[var(--text-subtle)] sm:block"
+          />
+          <ReportSummaryCard label="Later report" report={later} />
+        </div>
+
+        {isLoading && <LoadingSurface lines={3} label="Comparing reports" />}
+
+        {isError && (
+          <ErrorState
+            title="Comparison could not be completed"
+            description="Both original reports remain available above for direct review."
+            onRetry={() => void refetch()}
+          />
+        )}
+
+        {data && data.detectedChanges.length === 0 && data.otherFindings.length === 0 && (
+          <EmptyState
+            icon={GitCompare}
+            title="Not enough structured information to compare automatically"
+            description="Both original reports remain available above for direct review."
+          />
+        )}
+
+        {data && (data.detectedChanges.length > 0 || data.otherFindings.length > 0) && (
+          <>
+            <section>
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <Text as="h3" level="subheading" tone="primary">
+                  Detected changes
+                </Text>
+                <Confidence value={data.confidence} />
+              </div>
+
+              <ul className="mt-3 space-y-3">
+                {data.detectedChanges.map((change) => (
+                  <li key={change.label} className="flex items-start gap-3">
+                    <span className="mt-0.5 shrink-0">
+                      <ChangeIndicator direction={change.type} />
+                    </span>
+                    <Text level="secondary" tone="body" className="min-w-0">
+                      {change.description}
+                    </Text>
+                  </li>
+                ))}
+              </ul>
+
+              <PlainExplanation summary="What does the confidence figure mean?" className="mt-3">
+                It describes how much of the later report's findings could be matched
+                to explicit wording in this comparison — not how likely the changes are
+                to be clinically correct. It is never a substitute for reading both
+                reports, and it is never a second opinion.
+              </PlainExplanation>
+            </section>
+
+            {data.otherFindings.length > 0 && (
+              <section>
+                <Text as="h3" level="subheading" tone="primary">
+                  Also noted in the later report
+                </Text>
+                <Text level="caption" tone="muted" className="mt-1">
+                  New findings the comparison could not confidently direct. No direction
+                  is claimed for these — review the original report above.
+                </Text>
+                <ul className="mt-3 space-y-1.5">
+                  {data.otherFindings.map((finding) => (
+                    <li key={finding} className="flex items-start gap-2">
+                      <span
+                        aria-hidden
+                        className="mt-2 size-1 shrink-0 rounded-full bg-[var(--text-subtle)]"
+                      />
+                      <Text as="span" level="secondary" tone="body">
+                        {finding}
+                      </Text>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
+
+            <section>
+              <Text as="h3" level="subheading" tone="primary">
+                Supporting evidence
+              </Text>
+              <div className="mt-3">
+                <EvidenceList items={data.supportingEvidence} hrefFor={reportHref} />
+              </div>
+            </section>
+          </>
+        )}
       </div>
     </FocusLayer>
   )

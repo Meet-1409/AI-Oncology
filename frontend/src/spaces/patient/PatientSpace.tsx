@@ -22,7 +22,7 @@ import { useSessionStore } from '@/state/session-store'
 import { SPACE_PARAM } from '@/routes/paths'
 import { calculateAge } from '@/lib/format'
 import { cn } from '@/lib/utils'
-import { ReportFocus, EventFocus, TaskFocus } from '@/spaces/focus'
+import { ReportFocus, EventFocus, TaskFocus, ComparisonFocus } from '@/spaces/focus'
 import { PatientOverview } from './PatientOverview'
 import type { Report, PatientTask, TimelineEvent } from '@/types'
 
@@ -123,6 +123,7 @@ export default function PatientSpace() {
   const [focusReport, setFocusReport] = useState<Report | null>(null)
   const [focusEvent, setFocusEvent] = useState<TimelineEvent | null>(null)
   const [focusTask, setFocusTask] = useState<PatientTask | null>(null)
+  const [focusCompare, setFocusCompare] = useState<{ from: Report; to: Report } | null>(null)
 
   const date = params.get(SPACE_PARAM.time) ?? undefined
   const organ = params.get(SPACE_PARAM.organ)
@@ -293,6 +294,9 @@ export default function PatientSpace() {
             onUpload={() => setUploadFor({})}
             scopeLabel={organ && scopedReports.length !== data.reports.length ? organ : undefined}
             onClearScope={() => setParam(SPACE_PARAM.organ, undefined)}
+            onCompare={
+              isOncologist ? (from, to) => setFocusCompare({ from, to }) : undefined
+            }
           />
         )}
 
@@ -328,6 +332,15 @@ export default function PatientSpace() {
       )}
       {focusEvent && <EventFocus event={focusEvent} onClose={() => setFocusEvent(null)} />}
       {focusTask && <TaskFocus task={focusTask} onClose={() => setFocusTask(null)} />}
+      {focusCompare && patientId && (
+        <ComparisonFocus
+          patientId={patientId}
+          fromReport={focusCompare.from}
+          toReport={focusCompare.to}
+          onClose={() => setFocusCompare(null)}
+          reportHref={reportHref}
+        />
+      )}
 
       {uploadFor && patientId && (
         <UploadComposer

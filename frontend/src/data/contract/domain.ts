@@ -99,6 +99,32 @@ export const reportSchema = z.object({
   relatedTaskId: z.string().optional(),
 })
 
+export const reportChangeSchema = z.object({
+  label: z.string(),
+  type: z.enum(['progression', 'regression', 'stable']),
+  description: z.string(),
+})
+
+/**
+ * Two reports, compared [09.4 §14].
+ *
+ * `detectedChanges` holds only what the comparison could ground in explicit
+ * wording — a finding repeated verbatim (stable), or a new finding matched
+ * against a documented directional vocabulary (progression/regression).
+ * `otherFindings` holds new findings the comparison could not confidently
+ * direct; they are surfaced, not discarded, but without a claimed direction,
+ * because asserting one without a matching signal would be interpreting
+ * beyond available evidence [08 §9].
+ */
+export const reportComparisonSchema = z.object({
+  fromReportId: z.string(),
+  toReportId: z.string(),
+  detectedChanges: z.array(reportChangeSchema),
+  otherFindings: z.array(z.string()),
+  supportingEvidence: z.array(evidenceRefSchema),
+  confidence: z.number(),
+})
+
 export const timelineEventSchema = z.object({
   id: z.string(),
   patientId: z.string(),
@@ -237,3 +263,5 @@ export type Session = z.infer<typeof sessionSchema>
 export type PatientSpaceData = z.infer<typeof patientSpaceSchema>
 export type BodySnapshot = z.infer<typeof bodySnapshotSchema>
 export type Understanding = z.infer<typeof understandingSchema>
+export type ReportChange = z.infer<typeof reportChangeSchema>
+export type ReportComparison = z.infer<typeof reportComparisonSchema>

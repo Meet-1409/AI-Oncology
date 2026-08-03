@@ -10,3 +10,4 @@ export {
 } from './use-patient-space'
 export type { UploadInput } from './use-patient-space'
 export { useSignals, useMarkSignalRead, useMarkAllSignalsRead } from './use-signals'
+export { useReportComparison } from './use-report-comparison'
