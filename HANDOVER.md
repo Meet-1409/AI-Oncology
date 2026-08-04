@@ -433,7 +433,7 @@ In rough order of value:
 ## 14. Commit history
 
 ```
-xxxxxxx  feat(home,body): darker theme, real skin surface, two-column Practice Space
+a17daa0  feat(home,body): darker theme, real skin surface, two-column Practice Space
 9076460  feat(motion): real-time depth and motion throughout the application
 160b6a0  feat(body): real organ silhouettes, per-organ color, sex-specific organs
 06c42e3  docs: cut READ THIS down to Ground Rules and the TRD
