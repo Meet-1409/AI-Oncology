@@ -1,9 +1,10 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ChevronRight, Search, Users } from 'lucide-react'
-import { Field, Icon, Input, StatusIndicator, Text } from '@/components/primitives'
+import { Field, Icon, Input, StatusIndicator, Surface, Text } from '@/components/primitives'
 import { EmptyState, ErrorState, LoadingSurface } from '@/components/patterns'
 import { Reveal } from '@/components/motion'
+import { DemoBodyPreview } from '@/features/body'
 import { usePatients, useSession } from '@/data/queries'
 import { paths } from '@/routes/paths'
 import { sharedNames } from '@/shell'
@@ -128,7 +129,7 @@ export default function PracticeSpace() {
   const doctorName = session.data?.user.name ?? ''
 
   return (
-    <div className="mx-auto w-full max-w-4xl px-4 py-10 sm:px-6">
+    <div className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6">
       <header>
         <Text as="h1" level="title" tone="primary">
           {doctorName ? `Good to see you, ${doctorName.replace(/^Dr\.\s*/, '')}` : 'Your practice'}
@@ -143,53 +144,75 @@ export default function PracticeSpace() {
         </Text>
       </header>
 
-      <div className="mt-8">
-        <Field label="Find a patient">
-          {({ id }) => (
-            <div className="relative">
-              <Icon
-                icon={Search}
-                size="sm"
-                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-subtle)]"
-              />
-              <Input
-                id={id}
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                placeholder="Name, patient ID or mobile number"
-                className="pl-9"
-              />
-            </div>
+      {/* Patients on the left; finding one and the Digital Twin on the right
+          [09.2 §1] — the search narrows the list beside it rather than a
+          second, disconnected filter. Stacks on narrow viewports, list
+          first, since the list is what the space exists to answer. */}
+      <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start">
+        <section>
+          <Text as="h2" level="micro" tone="subtle">
+            Your patients
+          </Text>
+
+          {visible.length === 0 ? (
+            <EmptyState
+              icon={patients.length === 0 ? Users : Search}
+              title={patients.length === 0 ? 'No assigned patients' : 'No matching patients'}
+              description={
+                patients.length === 0
+                  ? 'Patients assigned to you will appear here.'
+                  : 'Nothing matched that search. Try a name, patient ID or mobile number.'
+              }
+              className="mt-3"
+            />
+          ) : (
+            <ul className="mt-2 divide-y divide-[var(--border-subtle)]">
+              {visible.map((patient, index) => (
+                <li key={patient.id}>
+                  <PatientPresence patient={patient} index={index} />
+                </li>
+              ))}
+            </ul>
           )}
-        </Field>
+        </section>
+
+        <aside className="lg:sticky lg:top-6">
+          <Surface elevation="raised" radius="xl" border="subtle" inset="lg" className="space-y-5">
+            <Field label="Find a patient">
+              {({ id }) => (
+                <div className="relative">
+                  <Icon
+                    icon={Search}
+                    size="sm"
+                    className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-subtle)]"
+                  />
+                  <Input
+                    id={id}
+                    value={query}
+                    onChange={(event) => setQuery(event.target.value)}
+                    placeholder="Name, patient ID or mobile number"
+                    className="pl-9"
+                  />
+                </div>
+              )}
+            </Field>
+
+            <div>
+              <Text level="micro" tone="subtle" className="mb-2">
+                Digital Twin
+              </Text>
+              {/* Decorative only — every organ here is healthy by
+                  construction, never a real patient's data [00 §5.8]. */}
+              <div className="relative h-64 overflow-hidden rounded-lg bg-[var(--body-volume)]">
+                <DemoBodyPreview className="h-full w-full" />
+              </div>
+              <Text level="caption" tone="muted" className="mt-2">
+                A demo view — drag to turn it. Open a patient to see their own.
+              </Text>
+            </div>
+          </Surface>
+        </aside>
       </div>
-
-      <section className="mt-8">
-        <Text as="h2" level="micro" tone="subtle">
-          Your patients
-        </Text>
-
-        {visible.length === 0 ? (
-          <EmptyState
-            icon={patients.length === 0 ? Users : Search}
-            title={patients.length === 0 ? 'No assigned patients' : 'No matching patients'}
-            description={
-              patients.length === 0
-                ? 'Patients assigned to you will appear here.'
-                : 'Nothing matched that search. Try a name, patient ID or mobile number.'
-            }
-            className="mt-3"
-          />
-        ) : (
-          <ul className="mt-2 divide-y divide-[var(--border-subtle)]">
-            {visible.map((patient, index) => (
-              <li key={patient.id}>
-                <PatientPresence patient={patient} index={index} />
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
     </div>
   )
 }

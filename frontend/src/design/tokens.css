@@ -300,12 +300,16 @@
 :root[data-theme='dark'] {
   /* Surfaces: a dark blue-grey, never pure black. Pure black against white
      text is the highest-contrast pairing there is and the harshest to read for
-     any length of time — and clinical text is read at length. */
-  --surface-base: #0b1219;
-  --surface-raised: #121b24;
-  --surface-sunken: #080e14;
+     any length of time — and clinical text is read at length.
+     Deepened at the product owner's request, 4 August 2026, to sit closer to
+     the Body's own volume (--body-volume) and the Entry's (--cinema-void), so
+     the darkness reads as one deliberate register rather than three shades of
+     "dark enough". */
+  --surface-base: #070a0f;
+  --surface-raised: #0d141b;
+  --surface-sunken: #050810;
   --surface-inverse: var(--color-neutral-50);
-  --surface-scrim: rgba(3, 6, 10, 0.62);
+  --surface-scrim: rgba(2, 4, 7, 0.68);
 
   /* Text: off-white rather than white, for the same reason. */
   --text-primary: #e8eef4;

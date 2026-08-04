@@ -6,6 +6,8 @@
 
 **Updated again 4 August 2026, evening** — realistic organ anatomy, sex-specific organs and a first pass of motion/depth throughout the application. See §2.2, §7 and §9.
 
+**Updated again 4 August 2026, later that evening** — a darker theme, a real skin-like Body shell (the point-cloud "dots" are gone), and a two-column Practice Space with a demo Digital Twin. See §2.3.
+
 ---
 
 ## 1. Read this first
@@ -70,6 +72,14 @@ The product owner asked directly for two more things: organs that read as real o
 - `components/motion/use-on-approach.ts` is a new, app-safe (not cinematic) on-approach reveal hook.
 - Applied mechanically: staggered reveals on `PatientOverview`'s info cards, `SignalsView` rows and Intent Bar search results; a hover lift on Practice Space's patient rows; a one-shot arrival animation on the unread Signals dot (`.signal-dot` in `index.css`); height transitions already present on the Body's fullscreen/compare toggle got a matching cross-fade on the canvas itself.
 - **Intent Bar** (⌘K) — the single highest-leverage surface, per the product owner's own comparison to Vercel/Apple — now has a real entrance (scale + translate + blur-free fade, scrim fading in) and a real exit (same, reversed, with the dialog staying mounted for the closing transition rather than vanishing instantly), instead of one-shot CSS keyframes that only ever played on open. Its result rows stagger in. **Note on verification:** this remote browser tool's tab reports `document.visibilityState: "hidden"`, which suspends `requestAnimationFrame` — the same root cause already flagged in 2.1 for the Body's canvas-sizing anomaly. This made the *entrance* transition unobservable here (rAF-gated), while the *exit* path was confirmed working functionally (Escape correctly closed the dialog via the `setTimeout`-gated unmount, which is not rAF-suspended). The code follows the exact mount-then-flip pattern already proven live elsewhere in this codebase; treat as functionally verified, visually unconfirmed in this specific tool.
+
+### 2.3 Completed since 2.2 — a darker theme, real skin, and a Practice Space home
+
+Three more direct product-owner requests, done together:
+
+- **Darker theme.** `--surface-base`/`--surface-raised`/`--surface-sunken` in `design/tokens.css` are deepened — closer to the Body's own `--body-volume` and the Entry's `--cinema-void`, so the whole application, the Body and the Entry now read as one dark register instead of three different shades of "dark enough." Only the dark theme's semantic values changed; nothing else needed touching, which is the entire reason the token system is two layers.
+- **The Body's shell is a real skin surface, not a point cloud.** The previous shell was a nearly-invisible glass mesh (11% opacity) plus a scattered layer of points — the "dots" the product owner was reacting to. The points layer is gone. The shell itself is now warm-toned (`anatomyPalette.skin`, `design/theme.ts`) and substantially more opaque (0.42–0.48, up from 0.11–0.16), lit properly by the scene rather than sitting below the threshold where lighting mattered. It still stops short of fully opaque on purpose — organ severity, drawn opaque underneath, has to keep reading through it; §6.3/§7's "the shell cannot hide an organ" property is untouched. This also makes a *future* skin-level finding renderable at all, which a near-invisible outline structurally couldn't carry — no such finding is built yet, same as the tumor note in §2.2.
+- **Practice Space is now two columns.** The oncologist's post-login screen (`spaces/home/PracticeSpace.tsx`) puts the patient list on the left and, on the right, the "Find a patient" search above a small Digital Twin preview (`features/body/DemoBodyPreview.tsx`, new). The search narrows the same list beside it rather than being a second, disconnected control. The preview is intentionally not real clinical data: it is built from an *empty* snapshot list through the same `useBodyViewModel`, so every organ resolves to a real, defined "no findings recorded" state rather than an invented one `[00 §5.8]` — it says as much in its caption. Stacks to a single column below the `lg` breakpoint, list first.
 
 ### Never started, by instruction
 
@@ -423,6 +433,7 @@ In rough order of value:
 ## 14. Commit history
 
 ```
+xxxxxxx  feat(home,body): darker theme, real skin surface, two-column Practice Space
 9076460  feat(motion): real-time depth and motion throughout the application
 160b6a0  feat(body): real organ silhouettes, per-organ color, sex-specific organs
 06c42e3  docs: cut READ THIS down to Ground Rules and the TRD

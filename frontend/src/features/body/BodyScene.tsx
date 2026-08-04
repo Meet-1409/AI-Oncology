@@ -191,12 +191,16 @@ function createRimMaterial(color: string, intensity: number): THREE.ShaderMateri
  * installed, otherwise the figure generated in figure.ts — never a collection of
  * primitives, and never nothing.
  *
- * Three passes, cheapest first:
- *   1. A dark BackSide shell, giving the form interior volume without ever
- *      putting a surface between the eye and the anatomy.
- *   2. The fresnel rim, which carries the shape.
- *   3. Surface points, at full tier only — the scatter that reads as a scanned
- *      body rather than a modelled one.
+ * Two passes:
+ *   1. A skin-toned, mostly-matte shell — lit like an actual surface, not a
+ *      near-invisible outline. Revised 4 August 2026: the previous version
+ *      (opacity 0.11, plus a scattered point cloud) read as a translucent
+ *      point-cloud rather than a body, and a surface that thin cannot carry a
+ *      future skin-level finding. This still stops short of fully opaque —
+ *      organ severity, drawn opaque and first, must keep reading through it;
+ *      that is the one property this shell may never trade away.
+ *   2. The fresnel rim on top, which still carries the silhouette at every
+ *      turn — the skin tone alone flattens out at grazing angles without it.
  */
 function BodyShell({
   tier,
@@ -206,7 +210,7 @@ function BodyShell({
   geometry: THREE.BufferGeometry
 }) {
   const rim = useMemo(
-    () => createRimMaterial(anatomyPalette.rim, tier === 'reduced' ? 0.85 : 1.15),
+    () => createRimMaterial(anatomyPalette.rim, tier === 'reduced' ? 0.6 : 0.8),
     [tier],
   )
 
@@ -214,7 +218,7 @@ function BodyShell({
 
   return (
     <group>
-      {/* Glass, not a silhouette.
+      {/* Skin, not glass.
           DoubleSide and depthWrite off, so the near surface, the far surface and
           every organ between them are all visible at once. The organs are opaque
           and draw first; the shell then blends over them, which is what puts them
@@ -225,8 +229,8 @@ function BodyShell({
         <meshStandardMaterial
           color={anatomyPalette.skin}
           transparent
-          opacity={tier === 'reduced' ? 0.16 : 0.11}
-          roughness={0.95}
+          opacity={tier === 'reduced' ? 0.48 : 0.42}
+          roughness={0.82}
           metalness={0}
           side={THREE.DoubleSide}
           depthWrite={false}
@@ -234,20 +238,6 @@ function BodyShell({
       </mesh>
 
       <mesh geometry={geometry} material={rim} renderOrder={3} />
-
-      {tier === 'full' && (
-        <points geometry={geometry}>
-          <pointsMaterial
-            size={0.0055}
-            sizeAttenuation
-            color={anatomyPalette.spark}
-            transparent
-            opacity={0.5}
-            depthWrite={false}
-            blending={THREE.AdditiveBlending}
-          />
-        </points>
-      )}
     </group>
   )
 }
