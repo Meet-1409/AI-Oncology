@@ -40,6 +40,7 @@ function AnimatedPart({
   roughness = 0.55,
   onSelect,
   label,
+  beats = false,
 }: {
   geometry: ReactNode
   position: readonly [number, number, number]
@@ -50,8 +51,11 @@ function AnimatedPart({
   roughness?: number
   onSelect?: (() => void) | undefined
   label?: string
+  /** Only the heart. Drives the systolic contraction below. */
+  beats?: boolean
 }) {
   const material = useRef<THREE.MeshStandardMaterial>(null)
+  const mesh = useRef<THREE.Mesh>(null)
   const reduced = useReducedMotion()
 
   const target = useMemo(() => new THREE.Color(color), [color])
@@ -62,7 +66,29 @@ function AnimatedPart({
 
   const settled = useRef(false)
 
-  useFrame((_, delta) => {
+  const baseScale = useMemo(
+    () => new THREE.Vector3(...((scale ?? [1, 1, 1]) as [number, number, number])),
+    [scale],
+  )
+
+  useFrame((state, delta) => {
+    // The heartbeat is a CONTRACTION, not a throb: the heart snaps inward at
+    // systole and relaxes slowly back, with a smaller second beat as the
+    // ventricles close. Deliberately scale only — colour on this body means
+    // severity and nothing else [00 §6.7], so a beating heart may never borrow
+    // it, however good a glowing pulse would look.
+    if (beats && mesh.current) {
+      if (reduced) {
+        mesh.current.scale.copy(baseScale)
+      } else {
+        const cycle = (state.clock.elapsedTime % 1) / 1 // 60 bpm
+        const lub = Math.exp(-(((cycle - 0.12) / 0.05) ** 2))
+        const dub = Math.exp(-(((cycle - 0.34) / 0.06) ** 2)) * 0.5
+        const contraction = 1 - (lub + dub) * 0.035
+        mesh.current.scale.copy(baseScale).multiplyScalar(contraction)
+      }
+    }
+
     const mat = material.current
     if (!mat) return
     // The first frame snaps to the target rather than easing toward it, so
@@ -90,6 +116,7 @@ function AnimatedPart({
 
   return (
     <mesh
+      ref={mesh}
       position={position as [number, number, number]}
       rotation={(rotation ?? [0, 0, 0]) as [number, number, number]}
       scale={(scale ?? [1, 1, 1]) as [number, number, number]}
@@ -154,18 +181,55 @@ function organGeometry(organ: OrganDefinition): ReactNode {
  * hiding one. Nothing clinical is communicated by this material; it is the
  * container the clinical colour sits inside.
  */
+/**
+ * The breath, as a vertex displacement.
+ *
+ * A living body is the whole point of this object, and a body that holds
+ * perfectly still reads as a specimen. But a uniform pulse — the cheap version —
+ * reads as a throb, because nothing about real breathing is uniform: the thorax
+ * expands, the abdomen follows slightly, and the head, arms and legs do not move
+ * at all.
+ *
+ * So the displacement is weighted by height with a gaussian centred on the
+ * sternum, and pushes outward along the body's own radial axis rather than along
+ * a world axis, so the back expands as the chest does. Amplitude is ~5mm at the
+ * sternum on a 1.82m figure — the real figure for quiet breathing, and small
+ * enough that it is felt before it is noticed.
+ *
+ * Done on the GPU, in a shader chunk shared by the skin pass and the rim pass,
+ * because those two draw the SAME geometry and any drift between them would
+ * separate the silhouette from its own outline.
+ */
+const BREATH_GLSL = /* glsl */ `
+  uniform float uBreath;
+
+  vec3 aoBreathe(vec3 p) {
+    // Sternum sits at y = 0.88 in the figure frame (floor -0.51, crown 1.31).
+    float t = (p.y - 0.88) / 0.30;
+    float thorax = exp(-t * t);
+    float r = length(p.xz);
+    vec2 outward = r > 1e-4 ? p.xz / r : vec2(0.0);
+    float amp = uBreath * 0.005 * thorax;
+    // The chest rises as it expands; the lift fades out below the diaphragm.
+    float lift = amp * 0.4 * smoothstep(0.45, 1.05, p.y);
+    return vec3(p.x + outward.x * amp, p.y + lift, p.z + outward.y * amp);
+  }
+`
+
 function createRimMaterial(color: string, intensity: number): THREE.ShaderMaterial {
   return new THREE.ShaderMaterial({
     uniforms: {
       uColor: { value: new THREE.Color(color) },
       uIntensity: { value: intensity },
+      uBreath: { value: 0 },
     },
     vertexShader: /* glsl */ `
+      ${BREATH_GLSL}
       varying vec3 vNormal;
       varying vec3 vToEye;
       void main() {
         vNormal = normalize(normalMatrix * normal);
-        vec4 viewPosition = modelViewMatrix * vec4(position, 1.0);
+        vec4 viewPosition = modelViewMatrix * vec4(aoBreathe(position), 1.0);
         vToEye = normalize(-viewPosition.xyz);
         gl_Position = projectionMatrix * viewPosition;
       }
@@ -221,12 +285,51 @@ function BodyShell({
   tier: RenderTier
   geometry: THREE.BufferGeometry
 }) {
+  const reduced = useReducedMotion()
+
   const rim = useMemo(
     () => createRimMaterial(anatomyPalette.rim, tier === 'reduced' ? 0.4 : 0.55),
     [tier],
   )
 
-  useEffect(() => () => rim.dispose(), [rim])
+  // The skin pass is a standard material so it keeps real lighting; the breath
+  // is patched into its vertex stage rather than replacing it.
+  const skin = useMemo(() => {
+    const material = new THREE.MeshStandardMaterial({
+      color: new THREE.Color(anatomyPalette.skin),
+      transparent: true,
+      opacity: tier === 'reduced' ? 0.66 : 0.6,
+      roughness: 0.82,
+      metalness: 0,
+      side: THREE.DoubleSide,
+      depthWrite: false,
+    })
+    material.onBeforeCompile = (shader) => {
+      shader.uniforms['uBreath'] = { value: 0 }
+      shader.vertexShader = shader.vertexShader
+        .replace('void main() {', `${BREATH_GLSL}\nvoid main() {`)
+        .replace('#include <begin_vertex>', 'vec3 transformed = aoBreathe(position);')
+      material.userData['shader'] = shader
+    }
+    return material
+  }, [tier])
+
+  useEffect(() => {
+    return () => {
+      rim.dispose()
+      skin.dispose()
+    }
+  }, [rim, skin])
+
+  useFrame((state) => {
+    // ~13 breaths per minute — a resting adult rate. Sine rather than a
+    // sawtooth: inhalation and exhalation are close enough in length at rest
+    // that the asymmetry is not what sells it, and a smooth curve never ticks.
+    const phase = reduced ? 0 : Math.sin(state.clock.elapsedTime * ((Math.PI * 2) / 4.6))
+    rim.uniforms['uBreath']!.value = phase
+    const shader = skin.userData['shader'] as { uniforms: Record<string, { value: number }> } | undefined
+    if (shader?.uniforms['uBreath']) shader.uniforms['uBreath'].value = phase
+  })
 
   return (
     <group>
@@ -237,17 +340,7 @@ function BodyShell({
           convincingly INSIDE the body rather than floating in front of a
           cut-out. Nothing here can hide an organ — that is the property being
           bought, and it is why the shell writes no depth. */}
-      <mesh geometry={geometry} renderOrder={2}>
-        <meshStandardMaterial
-          color={anatomyPalette.skin}
-          transparent
-          opacity={tier === 'reduced' ? 0.66 : 0.6}
-          roughness={0.82}
-          metalness={0}
-          side={THREE.DoubleSide}
-          depthWrite={false}
-        />
-      </mesh>
+      <mesh geometry={geometry} material={skin} renderOrder={2} />
 
       <mesh geometry={geometry} material={rim} renderOrder={3} />
     </group>
@@ -333,6 +426,7 @@ function Anatomy({
             selected={selectedOrgan === organ.id}
             onSelect={() => onSelectOrgan(organ.id)}
             label={organ.label}
+            beats={organ.id === 'heart'}
           />
         )
       })}
