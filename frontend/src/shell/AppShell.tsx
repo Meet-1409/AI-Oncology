@@ -42,11 +42,15 @@ export interface AppShellProps {
 
 export function AppShell({ identity, signals, intent, context }: AppShellProps) {
   const location = useLocation()
-  const direction = useEnvironmentStore((s) => s.direction)
 
   // Keep depth in step with the address, bind Continuous Return globally, and
   // put every arrival at the top of the space it arrived at.
-  useDepthSync()
+  //
+  // The direction comes back from useDepthSync rather than from the store: it
+  // is derived during render, so the arriving space animates the right way on
+  // its FIRST frame. Read from the store it lagged one navigation behind and
+  // everything played the generic fade.
+  const direction = useDepthSync()
   const ascend = useContinuousReturn()
   useSpaceArrival()
 
