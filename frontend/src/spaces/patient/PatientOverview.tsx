@@ -43,8 +43,17 @@ function listOrNone(values: readonly string[]): string {
   return values.length > 0 ? values.join(', ') : 'None recorded'
 }
 
+/** A freshly signed-in patient has real fields with nothing in them yet — an
+ * honest "not yet recorded" beats a blank cell or a NaN computed from it. */
+function orNotRecorded(value: string): string {
+  return value.trim() ? value : 'Not yet recorded'
+}
+
 export function PatientOverview({ patient }: { patient: PatientRecord }) {
-  const bmi = (patient.weightKg / (patient.heightCm / 100) ** 2).toFixed(1)
+  const hasBodyMetrics = patient.heightCm > 0 && patient.weightKg > 0
+  const bmi = hasBodyMetrics
+    ? (patient.weightKg / (patient.heightCm / 100) ** 2).toFixed(1)
+    : 'Not yet recorded'
 
   return (
     <div className="grid gap-6 lg:grid-cols-2">
@@ -52,21 +61,24 @@ export function PatientOverview({ patient }: { patient: PatientRecord }) {
         <Surface elevation="raised" radius="lg" border="subtle" inset="md" className="space-y-6">
           <Group title="Patient">
             <Row label="Patient ID" value={patient.patientCode} />
-            <Row label="Age" value={`${calculateAge(patient.dob)} years`} />
+            <Row label="Age" value={patient.dob ? `${calculateAge(patient.dob)} years` : 'Not yet recorded'} />
             <Row label="Gender" value={patient.gender} />
-            <Row label="Date of birth" value={formatDate(patient.dob)} />
-            <Row label="Blood group" value={patient.bloodGroup} />
-            <Row label="Height" value={`${patient.heightCm} cm`} />
-            <Row label="Weight" value={`${patient.weightKg} kg`} />
+            <Row label="Date of birth" value={patient.dob ? formatDate(patient.dob) : 'Not yet recorded'} />
+            <Row label="Blood group" value={orNotRecorded(patient.bloodGroup)} />
+            <Row label="Height" value={patient.heightCm > 0 ? `${patient.heightCm} cm` : 'Not yet recorded'} />
+            <Row label="Weight" value={patient.weightKg > 0 ? `${patient.weightKg} kg` : 'Not yet recorded'} />
             <Row label="BMI" value={bmi} />
           </Group>
 
           <Group title="Diagnosis">
-            <Row label="Primary cancer" value={patient.primaryCancer} />
-            <Row label="Primary site" value={patient.primarySite} />
-            <Row label="Stage" value={patient.stage} />
-            <Row label="Diagnosed" value={formatDate(patient.diagnosisDate)} />
-            <Row label="Current treatment" value={patient.currentTreatment} />
+            <Row label="Primary cancer" value={orNotRecorded(patient.primaryCancer)} />
+            <Row label="Primary site" value={orNotRecorded(patient.primarySite)} />
+            <Row label="Stage" value={orNotRecorded(patient.stage)} />
+            <Row
+              label="Diagnosed"
+              value={patient.diagnosisDate ? formatDate(patient.diagnosisDate) : 'Not yet recorded'}
+            />
+            <Row label="Current treatment" value={orNotRecorded(patient.currentTreatment)} />
           </Group>
         </Surface>
       </Reveal>
@@ -78,9 +90,9 @@ export function PatientOverview({ patient }: { patient: PatientRecord }) {
             <Row label="Current medications" value={listOrNone(patient.currentMedications)} />
             <Row label="Previous treatments" value={listOrNone(patient.previousTreatments)} />
             <Row label="Past surgeries" value={listOrNone(patient.pastSurgeries)} />
-            <Row label="Family history" value={patient.familyHistory} />
-            <Row label="Smoking history" value={patient.smokingHistory} />
-            <Row label="Alcohol history" value={patient.alcoholHistory} />
+            <Row label="Family history" value={orNotRecorded(patient.familyHistory)} />
+            <Row label="Smoking history" value={orNotRecorded(patient.smokingHistory)} />
+            <Row label="Alcohol history" value={orNotRecorded(patient.alcoholHistory)} />
           </Group>
 
           <section>

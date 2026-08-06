@@ -19,8 +19,8 @@ const textVariants = cva('', {
   variants: {
     /** Visual level from the type scale. */
     level: {
-      display: 'text-display',
-      title: 'text-title',
+      display: 'text-display font-display',
+      title: 'text-title font-display',
       heading: 'text-heading',
       subheading: 'text-subheading',
       body: 'text-body',

@@ -13,6 +13,19 @@
 import type { SeverityLevel } from '@/lib/status'
 import type { OrganId } from '@/types'
 
+/**
+ * The scene volume — literal hex, synced with `--scene-void`/`--scene-fog` in
+ * tokens.css. Every space is now this one volume, so the whole persistent
+ * Canvas is lit and fogged from these two values rather than each space
+ * inventing its own background.
+ */
+export const scenePalette = {
+  void: '#05080d',
+  fog: '#05080d',
+  fogNear: 2.2,
+  fogFar: 9,
+} as const
+
 /** Disease severity, light to dark red [00 §6.7]. Consumed by the Body. */
 export const severityScale: Readonly<Record<SeverityLevel, string>> = {
   0: '#dde1e7',

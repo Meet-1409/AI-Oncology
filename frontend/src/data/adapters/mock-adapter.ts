@@ -39,6 +39,7 @@ export function createMockAdapter(): DataAdapter {
     const value = mockStore.handle(path, options?.params, body)
     const parsed = schema.safeParse(value)
     if (!parsed.success) {
+      console.error('[mock-adapter] schema validation failed for', path, parsed.error.issues)
       throw new ApiFailure({
         kind: 'server',
         message: 'The server returned information this application could not read.',

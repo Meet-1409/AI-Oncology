@@ -140,7 +140,7 @@ function Station({
       <Rise
         as="h2"
         beat={1}
-        className="mt-7 max-w-4xl text-[clamp(1.9rem,4.4vw,3.4rem)] font-semibold leading-[1.06] tracking-[-0.03em] text-[var(--cinema-ink)]"
+        className="mt-7 max-w-4xl font-display text-[clamp(1.9rem,4.4vw,3.4rem)] font-semibold leading-[1.06] tracking-[-0.03em] text-[var(--cinema-ink)]"
       >
         {title}
       </Rise>

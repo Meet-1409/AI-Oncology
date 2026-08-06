@@ -26,3 +26,11 @@ dist-ssr
 
 # Safety test build output
 tools/.out-safety
+
+# Cached sign-in state written by tools/shot.mjs so repeat screenshot runs
+# skip the login flow. Session state, never source.
+.auth-*.json
+
+# Screenshots captured during self-verification.
+*.shot.png
+shot-*.png

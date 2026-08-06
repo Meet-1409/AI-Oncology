@@ -1,12 +1,28 @@
 /**
- * Architecture boundary check.
+ * Architecture boundary check — rebuilt for the spatial shell.
  *
- * The layering rules in the engineering blueprint are enforced here rather than
- * left to code review, so a violation fails the build. Dependencies point downward
- * only:
+ * Layering is unchanged: dependencies point downward only.
  *
  *   spaces  ->  features  ->  components  ->  lib
  *                    \-> data
+ *
+ * The cinematic/clinical visual-vocabulary boundary that used to be enforced
+ * here is retired, not merely relaxed: the whole premise of the rebuild is
+ * that there is one continuous 3D volume, not a premium Entry and a
+ * restrained app. (`components/cinematic/` still exists and is still
+ * imported by the not-yet-migrated Entry — that's fine; nothing here
+ * prevents it, because there is no longer a rule saying it shouldn't be.)
+ *
+ * Two checks are new, generalizing the ONE dual-renderer discipline that
+ * already existed for the Body (`use-body-view-model.ts` feeding both
+ * `BodyScene` and `BodyStructured`) to every space being rebuilt:
+ *
+ *   - a `*ViewModel`/`use-*-view-model` module must never import `three` —
+ *     "camera state can never reach clinical state" as an enforced lint,
+ *     not just a comment.
+ *   - an `*Accessible` module (the flat fallback rendered when there's no
+ *     WebGL2) must never import `three` either — it has to work with the
+ *     Canvas entirely unmounted.
  *
  * Run with: npm run check:architecture
  */
@@ -25,6 +41,7 @@ const FORBIDDEN = {
 }
 
 const IMPORT_PATTERN = /(?:import|export)[\s\S]*?from\s+['"]([^'"]+)['"]/g
+const THREE_IMPORT_PATTERN = /from\s+['"](three|@react-three\/[a-z-]+)['"]/
 
 function walk(dir) {
   const out = []
@@ -84,32 +101,46 @@ for (const file of walk(join(SRC, 'features'))) {
 }
 
 /*
- * The cinematic layer is confined to the Entry.
+ * ViewModel purity: camera state can never reach clinical state.
  *
- * [04 §14] permits the Entry a presentation vocabulary the clinical Design System
- * does not have, because the Entry carries no clinical information. [04 §28] then
- * governs everywhere else: usability is never sacrificed for visual effect. That
- * boundary is only real if it is enforced — a cinematic control that drifts into
- * a patient space would trade legibility for spectacle in exactly the place the
- * documentation forbids it.
+ * Generalizes the invariant `use-body-view-model.ts` already had to every
+ * space's own view-model — a file matching this naming convention computes
+ * what a space shows, never how the camera is doing it.
  */
-for (const file of walk(SRC)) {
-  const relativePath = relative(SRC, file)
-  const inEntry = relativePath.startsWith(join('spaces', 'entry'))
-  const isCinematicItself = relativePath.startsWith(join('components', 'cinematic'))
-  // The Showcase documents the design system and is stripped from production
-  // builds, so demonstrating the layer there cannot reach a clinical space.
-  const isShowcase = relativePath.startsWith(join('dev', 'showcase'))
-  if (inEntry || isCinematicItself || isShowcase) continue
+const VIEW_MODEL_PATTERN = /(use-.*-view-model|ViewModel)\.tsx?$/
 
+for (const file of walk(SRC)) {
+  if (!VIEW_MODEL_PATTERN.test(file)) continue
   const source = readFileSync(file, 'utf8')
-  for (const match of source.matchAll(IMPORT_PATTERN)) {
-    if (!match[1].startsWith('@/components/cinematic')) continue
+  const match = source.match(THREE_IMPORT_PATTERN)
+  if (match) {
     violations.push({
-      file: relativePath,
-      layer: 'this file',
-      target: 'the cinematic layer, which is Entry-only [04 §14]',
-      specifier: match[1],
+      file: relative(SRC, file),
+      layer: 'a view-model',
+      target: 'three.js — camera state can never reach clinical state',
+      specifier: match[0],
+    })
+  }
+}
+
+/*
+ * AccessibleView purity: the flat fallback has to work with the Canvas
+ * entirely unmounted — no WebGL2, jsdom, a screen reader, or simply the
+ * rendering failure path. A file matching this convention importing three
+ * defeats the one property it exists to guarantee.
+ */
+const ACCESSIBLE_VIEW_PATTERN = /(Accessible|Structured)\.tsx?$/
+
+for (const file of walk(SRC)) {
+  if (!ACCESSIBLE_VIEW_PATTERN.test(file)) continue
+  const source = readFileSync(file, 'utf8')
+  const match = source.match(THREE_IMPORT_PATTERN)
+  if (match) {
+    violations.push({
+      file: relative(SRC, file),
+      layer: 'an accessible view',
+      target: 'three.js — this must render with the Canvas unmounted',
+      specifier: match[0],
     })
   }
 }
@@ -132,6 +163,7 @@ console.log('Architecture boundaries: OK')
  * `var(--x)` — it warns and yields white, which silently renders every diseased
  * organ as healthy-looking white while the feature appears to work. This has
  * happened once already, so it is checked on every build rather than trusted.
+ * The rebuild does not change these values — see design/theme.ts.
  */
 const statusSource = readFileSync(join(SRC, 'lib', 'status.ts'), 'utf8')
 const severityBlock = statusSource.match(/SEVERITY_COLOR[^}]*}/s)?.[0] ?? ''
@@ -252,9 +284,10 @@ if (!lightTokens || !darkTokens) {
   process.exit(1)
 }
 
-// Motion and cinematic tokens are intentionally theme-independent: durations,
-// easing and the Entry's own palette do not change with the lighting.
-const THEME_EXEMPT = /^--(motion|cinema|severity-ring|body-volume)/
+// Motion, cinema (transitional — see tokens.css), scene, and body-volume
+// (transitional) tokens are intentionally theme-independent: the scene is
+// only ever dark, and durations/easing don't change with the lighting.
+const THEME_EXEMPT = /^--(motion|cinema|severity-ring|body-volume|scene|glass-blur)/
 
 const missingInDark = [...lightTokens].filter(
   (token) => !THEME_EXEMPT.test(token) && !darkTokens.has(token),

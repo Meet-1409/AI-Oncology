@@ -1,0 +1,11 @@
+import { readFileSync } from 'node:fs';
+const path = process.argv[2];
+const buf = readFileSync(path);
+const jsonLength = buf.readUInt32LE(12);
+const jsonBuf = buf.subarray(20, 20 + jsonLength);
+const gltf = JSON.parse(jsonBuf.toString('utf8'));
+console.log('meshes:', gltf.meshes?.length);
+console.log('nodes:', gltf.nodes?.length);
+console.log('materials:', gltf.materials?.length);
+console.log('--- node names (first 250) ---');
+(gltf.nodes || []).slice(0, 5000).forEach((n, i) => console.log(i, n.name || '(unnamed)'));

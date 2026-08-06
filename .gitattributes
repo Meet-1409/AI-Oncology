@@ -1,1 +1,12 @@
 * text=auto eol=lf
+
+# Binary assets must never go through line-ending normalisation. Git's
+# text=auto heuristic normally detects these correctly, but a corrupted
+# anatomical model fails silently — the body simply stops loading and falls
+# back to generated geometry — so it is declared rather than inferred.
+*.glb binary
+*.gltf binary
+*.png binary
+*.jpg binary
+*.woff binary
+*.woff2 binary

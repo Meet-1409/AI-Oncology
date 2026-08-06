@@ -60,15 +60,22 @@ function AnimatedPart({
     [selected, color],
   )
 
-  // Apply the initial colour without a transition, so there is no flash of the
-  // default material on mount.
-  useEffect(() => {
-    material.current?.color.set(target)
-  }, [])
+  const settled = useRef(false)
 
   useFrame((_, delta) => {
     const mat = material.current
     if (!mat) return
+    // The first frame snaps to the target rather than easing toward it, so
+    // there is no flash of the default material on mount. Done here rather
+    // than in an effect because this is the first moment the material is
+    // guaranteed to exist, and it keeps emissive in step with colour.
+    if (!settled.current) {
+      settled.current = true
+      mat.color.set(target)
+      mat.emissive.set(emissive)
+      mat.emissiveIntensity = selected ? 0.4 : 0
+      return
+    }
     if (reduced) {
       mat.color.set(target)
       mat.emissive.set(emissive)
@@ -170,10 +177,15 @@ function createRimMaterial(color: string, intensity: number): THREE.ShaderMateri
       varying vec3 vToEye;
       void main() {
         float facing = abs(dot(normalize(vNormal), normalize(vToEye)));
-        float rim = pow(1.0 - facing, 2.6);
+        float rim = pow(1.0 - facing, 2.2);
         // A little base fill keeps the facing surfaces from vanishing entirely,
         // which would leave the body reading as an outline rather than a solid.
-        float value = rim * uIntensity + 0.055;
+        // Narrow parts (limbs) present a grazing angle across nearly their whole
+        // visible surface, so the same rim strength that reads as "volume" on
+        // the wide torso reads as a uniformly glowing tube on a thin cylinder —
+        // the base fill term is what keeps a limb's core visible instead of
+        // just its outline.
+        float value = rim * uIntensity + 0.16;
         gl_FragColor = vec4(uColor * value, value);
       }
     `,
@@ -210,7 +222,7 @@ function BodyShell({
   geometry: THREE.BufferGeometry
 }) {
   const rim = useMemo(
-    () => createRimMaterial(anatomyPalette.rim, tier === 'reduced' ? 0.6 : 0.8),
+    () => createRimMaterial(anatomyPalette.rim, tier === 'reduced' ? 0.4 : 0.55),
     [tier],
   )
 
@@ -229,7 +241,7 @@ function BodyShell({
         <meshStandardMaterial
           color={anatomyPalette.skin}
           transparent
-          opacity={tier === 'reduced' ? 0.48 : 0.42}
+          opacity={tier === 'reduced' ? 0.66 : 0.6}
           roughness={0.82}
           metalness={0}
           side={THREE.DoubleSide}
@@ -328,6 +340,9 @@ function Anatomy({
   )
 }
 
+/** Roughly the figure's centre of mass — where the camera orbits by default. */
+const ORBIT_TARGET: [number, number, number] = [0, 0.45, 0]
+
 export interface BodySceneProps {
   model: BodyViewModel
   selectedOrgan: string | null
@@ -389,6 +404,11 @@ export function BodyScene({
         enablePan
         enableZoom
         enableRotate
+        // Zoom travels toward the pointer, not toward the figure's centre.
+        // Dollying to a fixed centre means examining a shoulder or a knee
+        // requires zooming past it and then panning back — the anatomy the
+        // user aimed at slides out of frame exactly as they approach it.
+        zoomToCursor
         // Damped and settling, never springy [09.6 §16].
         enableDamping={!reduced}
         dampingFactor={0.075}
@@ -397,7 +417,9 @@ export function BodyScene({
         // Clamped so the anatomy is never viewed from a disorienting angle.
         minPolarAngle={Math.PI * 0.15}
         maxPolarAngle={Math.PI * 0.85}
-        target={[0, 0.45, 0]}
+        // Module-level constant, not a literal: zoomToCursor moves the target
+        // itself, and a fresh array each render would keep snapping it back.
+        target={ORBIT_TARGET}
       />
     </Canvas>
   )

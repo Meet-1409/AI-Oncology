@@ -1,86 +1,95 @@
 /*
- * Design tokens — the complete visual language.
+ * Design tokens — the complete visual language, rebuilt for the spatial shell.
  *
- * Two layers:
+ * Two layers, unchanged in shape from before the rebuild:
  *   1. PRIMITIVE — raw values. Never referenced directly by components.
  *   2. SEMANTIC  — meaning. This is what components consume.
  *
- * A component that uses a primitive token directly is a defect: it makes theming
- * and consistency unmaintainable, and [00 §10.16] requires the design language to
- * stay consistent across the entire environment.
+ * A component that uses a primitive token directly is a defect: theming and
+ * consistency become unmaintainable otherwise.
  *
- * RULE — severity values are literal colors, never var() references.
- * The severity scale is consumed by both CSS and three.js. three.Color cannot parse
- * `var(--x)`; it warns and silently yields white, which once made every diseased
- * organ render white while appearing to work. Kept in sync with lib/status.ts and
- * enforced by tools/check-architecture.mjs.  [00 §6.7]
+ * What's new here: the app no longer has a separate "cinematic" register and a
+ * separate "clinical" register — one persistent 3D volume replaces both, so
+ * there is one dark register, one glass-surface treatment, and one set of
+ * scene/fog tokens used everywhere a camera moves through space.
+ *
+ * RULE — severity values are literal colors, never var() references, and their
+ * VALUES do not change in this rebuild. three.Color cannot parse `var(--x)`; it
+ * warns and silently yields white, which once made every diseased organ render
+ * white while appearing to work. Kept in sync with lib/status.ts and
+ * design/theme.ts, enforced by tools/check-architecture.mjs.
  */
 
 @theme {
   /* ================================================================
-     PRIMITIVE — Neutrals. Dominate the interface [04 §9].
-     Slightly cool so they sit beside clinical imagery without tinting it.
+     PRIMITIVE — Neutrals. One dark register for the whole app, not a
+     lighter "app" register plus a darker "cinematic" one.
      ================================================================ */
   --color-neutral-0: #ffffff;
-  --color-neutral-50: #f7f8fa;
-  --color-neutral-100: #eef1f4;
-  --color-neutral-150: #e6e9ed;
-  --color-neutral-200: #dde1e7;
-  --color-neutral-250: #d3d9e0;
-  --color-neutral-300: #c3cad3;
-  --color-neutral-400: #98a2b0;
-  --color-neutral-500: #707b8a;
-  --color-neutral-600: #4f5967;
-  --color-neutral-700: #374050;
-  --color-neutral-800: #212836;
-  --color-neutral-900: #141924;
-  --color-neutral-950: #0a0d14;
+  --color-neutral-50: #f4f6f9;
+  --color-neutral-100: #e8ecf1;
+  --color-neutral-150: #d9dfe8;
+  --color-neutral-200: #c7d0dc;
+  --color-neutral-300: #a3afc0;
+  --color-neutral-400: #7c8aa0;
+  --color-neutral-500: #5b6980;
+  --color-neutral-600: #414d62;
+  --color-neutral-700: #2c3648;
+  --color-neutral-800: #1a2130;
+  --color-neutral-900: #0e1420;
+  --color-neutral-950: #060a12;
 
-  /* PRIMITIVE — Brand. Restrained clinical blue-teal.
-     If brand color appears, something is actionable or active. Never decorative. */
-  --color-brand-50: #eff6f8;
-  --color-brand-100: #d9eaf0;
-  --color-brand-200: #b3d5e1;
-  --color-brand-300: #83b9cc;
-  --color-brand-400: #4f97b3;
-  --color-brand-500: #2f7a97;
-  --color-brand-600: #1f607c;
-  --color-brand-700: #1c4d66;
-  --color-brand-800: #193f54;
-  --color-brand-900: #14313f;
-  --color-brand-950: #0b1e28;
+  /* PRIMITIVE — Brand. A cyan-violet pair drawn from the same family as the
+     Body's organ palette, so the chrome and the anatomy read as one
+     instrument rather than two different products glued together. */
+  --color-brand-50: #eef8fb;
+  --color-brand-100: #d3edf5;
+  --color-brand-200: #a6dbec;
+  --color-brand-300: #72c3dd;
+  --color-brand-400: #4aa8cb;
+  --color-brand-500: #3688ab;
+  --color-brand-600: #296b87;
+  --color-brand-700: #23566d;
+  --color-brand-800: #1e4557;
+  --color-brand-900: #193849;
+  --color-brand-950: #0f2430;
 
-  /* PRIMITIVE — Semantic hues, fixed by documentation [04 §9]. */
-  --color-success-50: #f0faf4;
-  --color-success-100: #d7f0e2;
-  --color-success-500: #1f9d55;
-  --color-success-600: #17803f;
-  --color-success-700: #146534;
+  --color-violet-400: #a68ce0;
+  --color-violet-500: #8a6cd1;
+  --color-violet-600: #6f52b3;
 
-  --color-warning-50: #fdf7ed;
-  --color-warning-100: #f8e9cd;
-  --color-warning-500: #c2790f;
-  --color-warning-600: #a3620a;
-  --color-warning-700: #854d08;
+  /* PRIMITIVE — Semantic hues, fixed by documentation. */
+  --color-success-50: #eefaf3;
+  --color-success-100: #d1f0dd;
+  --color-success-500: #22a35c;
+  --color-success-600: #188046;
+  --color-success-700: #146538;
 
-  /* Error red is deliberately distinct from severity red, so a validation error
-     can never be misread as a clinical finding. */
+  --color-warning-50: #fdf6ea;
+  --color-warning-100: #f6e5c3;
+  --color-warning-500: #c9820f;
+  --color-warning-600: #a86a0a;
+  --color-warning-700: #855308;
+
+  /* Error red is deliberately distinct from severity red, so a validation
+     error can never be misread as a clinical finding. */
   --color-danger-50: #fdf1f1;
   --color-danger-100: #f9dcdb;
   --color-danger-500: #d0342c;
   --color-danger-600: #b02a24;
   --color-danger-700: #8f221d;
 
-  --color-info-50: #eff5fd;
-  --color-info-100: #d8e6fa;
-  --color-info-500: #1f6bc2;
-  --color-info-600: #1a58a3;
-  --color-info-700: #164985;
+  --color-info-50: #eef5fd;
+  --color-info-100: #d6e7fb;
+  --color-info-500: #2372c9;
+  --color-info-600: #1c5da8;
+  --color-info-700: #184c89;
 
-  /* PRIMITIVE — Disease severity. Light to dark red [00 §6.7].
-     Reserved exclusively for disease severity on the Body. Literal values only.
+  /* PRIMITIVE — Disease severity. Light to dark red. UNCHANGED VALUES —
+     preserved exactly across the rebuild; see design/theme.ts and
+     lib/status.ts. Reserved exclusively for disease severity on the Body.
      Level 0 is deliberately off the red scale so healthy organs remain
-     visually distinguishable [09.6 §7]. */
+     visually distinguishable. */
   --color-severity-0: #dde1e7;
   --color-severity-1: #f6b8b3;
   --color-severity-2: #ed8e86;
@@ -89,13 +98,17 @@
   --color-severity-5: #841a13;
 
   /* ================================================================
-     TYPOGRAPHY — one family throughout [04 §8].
+     TYPOGRAPHY — one family throughout.
      Hierarchy from size, weight and space; never from boxes or borders.
      ================================================================ */
   --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
     Helvetica, Arial, sans-serif;
+  /* Reserved for the largest headlines only (display/title levels below) — a
+     distinct display face is what separates a considered typographic system
+     from "one font, bolded". Body and clinical text stay on Inter throughout;
+     legibility at small sizes matters more there than character. */
+  --font-display: "Bricolage Grotesque", "Inter", ui-sans-serif, system-ui, sans-serif;
 
-  /* Restrained ramp. Clinical values never render below --text-body. */
   --text-display: 3.25rem;
   --text-display--line-height: 1.04;
   --text-display--letter-spacing: -0.03em;
@@ -129,30 +142,18 @@
   --text-micro--letter-spacing: 0.04em;
   --text-micro--font-weight: 600;
 
-  /* CINEMATIC RAMP — the Entry only [04 §14].
-     The Entry must "feel premium" and "be memorable", which needs a scale the
-     clinical ramp deliberately refuses. Two extremes and nothing between them:
-     an enormous statement, and a tiny edge label. That contrast — not decoration
-     — is what makes a composition read as designed rather than assembled.
-     Unavailable inside the application, where [04 §28] holds: usability is never
-     sacrificed for visual effect.
-
-     The statement itself has no fixed step. It is sized fluidly against the
-     viewport so it meets the frame edge at every width, which a fixed step
-     cannot do. Only the quiet half of the contrast is a token. */
   --text-edge: 0.625rem;
   --text-edge--line-height: 1.2;
   --text-edge--letter-spacing: 0.22em;
   --text-edge--font-weight: 500;
 
   /* ================================================================
-     SPACING — 4px base [blueprint 03 §4]. One scale for margin,
-     padding and gap. Negative space is a design element [04 §10].
+     SPACING — 4px base. One scale for margin, padding and gap.
      ================================================================ */
   --spacing: 0.25rem;
 
   /* ================================================================
-     BORDER RADIUS — soft but precise. An instrument, not a toy.
+     BORDER RADIUS — soft but precise.
      ================================================================ */
   --radius-xs: 0.25rem;
   --radius-sm: 0.375rem;
@@ -163,28 +164,35 @@
   --radius-full: 9999px;
 
   /* ================================================================
-     ELEVATION — four levels, matching the four depth levels, so
-     elevation and depth always mean the same thing [blueprint 03 §1.3].
+     ELEVATION — used only by content that stays outside the 3D volume
+     (the rare flat overlay). Cards floating IN the scene get their depth
+     from the scene itself, not from a CSS shadow.
      ================================================================ */
-  --shadow-raised: 0 1px 2px rgba(10, 13, 20, 0.04), 0 1px 6px rgba(10, 13, 20, 0.05);
-  --shadow-lifted: 0 2px 6px rgba(10, 13, 20, 0.06), 0 6px 16px rgba(10, 13, 20, 0.07);
-  --shadow-focus: 0 8px 30px rgba(10, 13, 20, 0.14), 0 2px 8px rgba(10, 13, 20, 0.08);
-  --shadow-overlay: 0 16px 48px rgba(10, 13, 20, 0.2), 0 4px 12px rgba(10, 13, 20, 0.1);
+  --shadow-raised: 0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 1px 3px rgba(0, 0, 0, 0.5);
+  --shadow-lifted: 0 1px 0 rgba(255, 255, 255, 0.05) inset, 0 6px 18px rgba(0, 0, 0, 0.55);
+  --shadow-focus: 0 1px 0 rgba(255, 255, 255, 0.06) inset, 0 12px 36px rgba(0, 0, 0, 0.62);
+  --shadow-overlay: 0 1px 0 rgba(255, 255, 255, 0.07) inset, 0 20px 56px rgba(0, 0, 0, 0.7);
 }
 
 /* ==================================================================
    SEMANTIC LAYER — what components actually consume.
-   Renaming a primitive must never require touching a component.
    ================================================================== */
 :root {
-  /* Surfaces */
+  /* Surfaces. Two kinds now: a flat surface (write-surfaces — forms,
+     dialogs, the rare content that stays outside the 3D volume) and a
+     glass surface (the material every SpatialCard is made of). */
   --surface-base: var(--color-neutral-50);
   --surface-raised: var(--color-neutral-0);
   --surface-sunken: var(--color-neutral-100);
   --surface-inverse: var(--color-neutral-900);
-  --surface-scrim: rgba(10, 13, 20, 0.42);
+  --surface-scrim: rgba(6, 10, 18, 0.5);
 
-  /* Text — weight, not color, is the primary emphasis mechanism [blueprint 03 §3.3] */
+  /* Glass — the material of a card floating in the scene. Composited over
+     whatever the camera sees behind it, so it is always translucent. */
+  --glass-surface: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(20, 30, 45, 0.14);
+  --glass-blur: 18px;
+
   --text-primary: var(--color-neutral-900);
   --text-body-color: var(--color-neutral-800);
   --text-muted: var(--color-neutral-500);
@@ -192,31 +200,31 @@
   --text-on-inverse: var(--color-neutral-0);
   --text-on-accent: var(--color-neutral-0);
 
-  /* Borders — the last resort for grouping, after space and weight [blueprint 03 §4.3] */
   --border-subtle: var(--color-neutral-150);
   --border-default: var(--color-neutral-200);
   --border-strong: var(--color-neutral-300);
 
-  /* Accent — actionable or active */
-  --accent: var(--color-brand-700);
-  --accent-hover: var(--color-brand-800);
-  --accent-active: var(--color-brand-900);
+  --accent: var(--color-brand-600);
+  --accent-hover: var(--color-brand-700);
+  --accent-active: var(--color-brand-800);
   --accent-subtle: var(--color-brand-50);
   --accent-border: var(--color-brand-200);
+  --accent-secondary: var(--color-violet-500);
 
-  /* Focus ring — never removed, 3:1 minimum [00 §16.3] */
   --focus-ring: var(--color-brand-500);
 
-  /* The Body's volume.
-     The one dark surface inside an otherwise light application. The severity
-     scale is red; red against a light clinical surface loses most of its
-     separation between adjacent steps, while against this it holds all six
-     [00 §6.7]. The dark area is bounded by the viewport and nothing outside it
-     changes. */
-  --body-volume: #07131f;
+  /* The scene volume. Every space is now this volume — not one dark
+     surface among many light ones. */
+  --scene-void: #05080d;
+  --scene-fog: #05080d;
+  --scene-fog-near: 2.2;
+  --scene-fog-far: 9;
 
-  /* Status — each carries surface, border and foreground so contrast
-     is guaranteed in every context. Never the sole signal [00 §16.2]. */
+  /* TRANSITIONAL — `features/body/BodyView.tsx` (not yet migrated; that's
+     Phase 3) still reads this directly. Same value as --scene-void; retire
+     this name once Phase 3 folds the Body into the persistent shell. */
+  --body-volume: #05080d;
+
   --status-success-surface: var(--color-success-50);
   --status-success-border: var(--color-success-100);
   --status-success-text: var(--color-success-700);
@@ -238,103 +246,70 @@
   --status-neutral-text: var(--color-neutral-700);
 
   /* ================================================================
-     MOTION — durations sit inside the documented 180-420ms envelope [04 §6].
+     MOTION — durations, unchanged from before the rebuild. A clinician
+     waiting on information must never wait on an animation, camera moves
+     included.
      ================================================================ */
-  --motion-quick: 180ms;      /* local feedback: hover, control state */
-  --motion-reveal: 260ms;     /* content revealing on approach, Signals arriving */
-  --motion-spatial: 380ms;    /* depth change, Focus open and close */
+  --motion-quick: 180ms;
+  --motion-reveal: 260ms;
+  --motion-spatial: 380ms;
 
-  /* Calm and confident. No bounce, no elastic, no overshoot [04 §6]. */
   --motion-ease-enter: cubic-bezier(0.16, 1, 0.3, 1);
   --motion-ease-exit: cubic-bezier(0.7, 0, 0.84, 0);
   --motion-ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
 
-  /* CINEMATIC ENVELOPE — the Entry only [04 §14].
-     The application's envelope tops out at 380ms because a clinician waiting on
-     information must never wait on an animation. The Entry carries no clinical
-     information, and a cinematic introduction needs time to be cinematic. These
-     durations are therefore permitted at Depth 0 and nowhere else; enforced by
-     tools/check-architecture.mjs. */
-  --cinema-settle: 900ms;   /* a layer arriving */
-  --cinema-draw: 1100ms;    /* a stroke being drawn */
-  --cinema-withdraw: 1700ms; /* the camera pulling back */
-
-  /* ================================================================
-     CINEMATIC SURFACE — the Entry only [04 §14].
-     A single light source in darkness, which is what makes the reference
-     compositions read as photographed rather than drawn.
-     ================================================================ */
+  /* TRANSITIONAL — the Entry (Depth 0) has not been migrated into the
+     spatial shell yet (that's Phase 1); `components/cinematic/` and
+     `spaces/entry/EntrySpace.tsx` still consume these directly. Kept
+     as-is, unbroken, until Phase 1 folds the Entry into one continuous
+     scene and these retire along with the cinematic/clinical split. */
+  --cinema-settle: 900ms;
+  --cinema-draw: 1100ms;
+  --cinema-withdraw: 1700ms;
   --cinema-void: #05080c;
   --cinema-veil: rgba(5, 8, 12, 0.72);
   --cinema-ink: #e8f2f6;
   --cinema-glow: rgba(47, 122, 151, 0.16);
   --cinema-line: rgba(232, 242, 246, 0.12);
   --cinema-line-strong: rgba(232, 242, 246, 0.32);
-
-  /* Film grain. Breaks up flat gradients, which is the difference between a
-     surface that looks lit and one that looks like a CSS gradient. */
   --cinema-grain-opacity: 0.055;
 }
 
 /* ==================================================================
-   DARK — the same environment, lit differently.
-
-   A documented user preference [09.10 §8], and the theme that makes the
-   platform continuous: the Entry is a lit volume in darkness and the Body is a
-   lit volume in darkness, so a bright clinical surface between them reads as a
-   different product bolted on.
-
-   ONLY the semantic layer is redefined. Every component consumes semantic
-   tokens, so nothing else in the codebase changes — which is the entire reason
-   the two-layer token system exists.
-
-   THE SEVERITY SCALE IS NOT REDEFINED. It is fixed by documentation — lighter
-   is lower severity, darker is higher [00 §6.7] — it is shared with three.js,
-   and it is checked for equality across three files on every build. A theme
-   that quietly restyled it would mean the same finding rendering as two
-   different colours depending on a display preference, which is precisely the
-   class of defect the invariant exists to prevent. Severity is legible here
-   because it always carries its label as well [00 §16.2], and because the
-   swatch is delineated against dark by the ring below.
+   DARK — the default appearance, and the only one the 3D volume itself
+   is lit for. Light stays available for the flat write-surfaces
+   (Field/Input/dialogs) since those never enter the scene.
    ================================================================== */
 :root[data-theme='dark'] {
-  /* Surfaces: a dark blue-grey, never pure black. Pure black against white
-     text is the highest-contrast pairing there is and the harshest to read for
-     any length of time — and clinical text is read at length.
-     Deepened at the product owner's request, 4 August 2026, to sit closer to
-     the Body's own volume (--body-volume) and the Entry's (--cinema-void), so
-     the darkness reads as one deliberate register rather than three shades of
-     "dark enough". */
-  --surface-base: #070a0f;
-  --surface-raised: #0d141b;
+  --surface-base: #070b11;
+  --surface-raised: #0d141d;
   --surface-sunken: #050810;
   --surface-inverse: var(--color-neutral-50);
-  --surface-scrim: rgba(2, 4, 7, 0.68);
+  --surface-scrim: rgba(2, 4, 8, 0.66);
 
-  /* Text: off-white rather than white, for the same reason. */
-  --text-primary: #e8eef4;
-  --text-body-color: #d3dde6;
+  --glass-surface: rgba(13, 20, 30, 0.62);
+  --glass-border: rgba(140, 180, 210, 0.16);
+
+  --text-primary: #e9eef4;
+  --text-body-color: #d4dde6;
   --text-muted: #93a4b3;
   --text-subtle: #6f8090;
   --text-on-inverse: var(--color-neutral-900);
-  --text-on-accent: #040d14;
+  --text-on-accent: #04141c;
 
-  --border-subtle: #1c2833;
-  --border-default: #26343f;
-  --border-strong: #3a4a57;
+  --border-subtle: #1b2733;
+  --border-default: #263441;
+  --border-strong: #3a4c5c;
 
-  /* Accent lightens. The brand blue used on light surfaces falls below
-     readable contrast on a dark one. */
-  --accent: #6fbcdc;
-  --accent-hover: #8bcbe6;
-  --accent-active: #a5d8ee;
-  --accent-subtle: #10222c;
-  --accent-border: #214354;
+  --accent: #74c6e8;
+  --accent-hover: #8fd3ee;
+  --accent-active: #a9def3;
+  --accent-subtle: #0f2530;
+  --accent-border: #204656;
+  --accent-secondary: #a68ce0;
 
-  --focus-ring: #7fd0ee;
+  --focus-ring: #83d6f0;
 
-  /* Status: dark surfaces, light text. Each pairing is chosen so the text
-     clears 4.5:1 against its own surface, not against the page. */
   --status-success-surface: #0d2118;
   --status-success-border: #1b3a2a;
   --status-success-text: #6ddaa0;
@@ -355,9 +330,6 @@
   --status-neutral-border: #263341;
   --status-neutral-text: #b6c4d0;
 
-  /* Elevation cannot be carried by shadow on a dark surface — a darker shadow
-     against a dark background is invisible. Depth is carried by surface
-     lightness instead, plus a hairline top edge catching the light. */
   --shadow-raised: 0 1px 0 rgba(255, 255, 255, 0.035) inset, 0 1px 3px rgba(0, 0, 0, 0.5);
   --shadow-lifted: 0 1px 0 rgba(255, 255, 255, 0.045) inset, 0 6px 18px rgba(0, 0, 0, 0.55);
   --shadow-focus: 0 1px 0 rgba(255, 255, 255, 0.05) inset, 0 12px 36px rgba(0, 0, 0, 0.62);
@@ -365,11 +337,9 @@
 }
 
 /*
- * Severity swatches on dark.
- *
- * The scale runs to a very dark red at the top of the range, which loses its
- * edge against a dark surface. A light ring restores the boundary without
- * altering a single severity value.
+ * Severity swatches on dark. The scale runs to a very dark red at the top
+ * of the range, which loses its edge against a dark surface. A light ring
+ * restores the boundary without altering a single severity value.
  */
 :root[data-theme='dark'] .severity-swatch {
   --severity-ring: rgba(255, 255, 255, 0.28);
@@ -380,19 +350,16 @@
 }
 
 /*
- * Reduced motion is honored at the token level, so every consumer inherits it
- * without opting in. Presentation changes; information and functionality do not
- * [00 §11.9].
+ * Reduced motion is honored at the token level, so every consumer inherits
+ * it without opting in. Presentation changes; information and
+ * functionality do not. Camera moves collapse to instant cuts the same way
+ * a CSS transition collapses to 0ms.
  */
 @media (prefers-reduced-motion: reduce) {
   :root {
     --motion-quick: 0ms;
     --motion-reveal: 0ms;
     --motion-spatial: 0ms;
-
-    /* The cinematic envelope collapses too. The Entry's composition — the
-       statement, the figure, the layering — survives intact; only the time
-       spent arriving at it is removed [00 §11.9]. */
     --cinema-settle: 0ms;
     --cinema-draw: 0ms;
     --cinema-withdraw: 0ms;

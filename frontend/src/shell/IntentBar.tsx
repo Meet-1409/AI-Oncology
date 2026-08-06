@@ -71,9 +71,11 @@ export function IntentBar() {
   // Patients are only fetched for oncologists; a patient searches their own
   // records only [09.1 §13].
   const { data } = usePatients()
-  const patients = role === 'oncologist' ? (data?.items ?? []) : []
+  const items = data?.items
 
   const destinations = useMemo<Destination[]>(() => {
+    const patients = role === 'oncologist' ? (items ?? []) : []
+
     const base: Destination[] = [
       { id: 'home', label: 'Home', detail: 'Your arrival space', icon: Home, to: paths.home },
       { id: 'account', label: 'Account', detail: 'Profile, security, preferences', icon: Settings2, to: paths.account },
@@ -98,7 +100,7 @@ export function IntentBar() {
           (entry.detail ?? '').toLowerCase().includes(q),
       )
       .slice(0, 8)
-  }, [patients, query])
+  }, [role, items, query])
 
   // Global shortcut.
   useEffect(() => {

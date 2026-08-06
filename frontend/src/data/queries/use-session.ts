@@ -31,16 +31,18 @@ export function useSession() {
 
 /**
  * Establishes a session. Credentials are never handled here; the backend performs
- * authentication and returns the identity this records.
+ * authentication and returns the identity this records. The email is passed
+ * through only so the mock backend can derive a display name — it is never
+ * verified here, and no password is ever sent anywhere [02 §3].
  */
 export function useSignIn() {
   const setSession = useSessionStore((s) => s.setSession)
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async ({ role, patientId }: { role: UserRole; patientId?: string }) => {
+    mutationFn: async ({ role, email }: { role: UserRole; email: string }) => {
       const session = await getAdapter().read('/session', sessionSchema, {
-        params: { role, patientId },
+        params: { role, email },
       })
       return session
     },

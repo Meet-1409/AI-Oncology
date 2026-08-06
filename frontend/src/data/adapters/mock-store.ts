@@ -13,12 +13,14 @@ import {
   intelligenceForPatient,
   notes as seedNotes,
   notifications as seedNotifications,
-  oncologist,
-  patients,
+  patients as seedPatients,
   reports as seedReports,
+  synthesizeOncologist,
+  synthesizePatient,
   tasks as seedTasks,
   timelineEvents as seedTimeline,
 } from '@/data/mock-data'
+import type { PatientRecord } from '@/types'
 
 /**
  * Mutable in-memory store behind the mock adapter.
@@ -30,31 +32,88 @@ import {
  *
  * Visibility rules are applied here because the backend enforces them [02 §7].
  * The query layer applies them a second time as defence in depth.
+ *
+ * There is no seeded patient roster. `state.patients` starts empty and gains
+ * exactly one entry the moment someone actually signs in as a patient — a
+ * fresh, empty record, not a pre-written case history. See mock-data.ts.
  */
+
+/** Every session in this demo shares one oncologist account. */
+export const DEMO_ONCOLOGIST_ID = 'demo-oncologist'
 
 let sequence = 5000
 const nextId = (prefix: string) => `${prefix}${(sequence += 1)}`
 const today = () => new Date().toISOString().slice(0, 10)
 
+/**
+ * A real backend persists what it's given. This mock backend is otherwise
+ * just an in-memory module — everything in `state` would vanish on a page
+ * reload, which for a signed-in patient's own record would mean signing in
+ * once, then losing "their" record the moment the tab refreshes. localStorage
+ * is the honest stand-in for that persistence, not a workaround for it.
+ */
+const PERSIST_KEY = 'ao.mock-store.v1'
+
+interface PersistedShape {
+  patients: PatientRecord[]
+  oncologistIdentity: ReturnType<typeof synthesizeOncologist> | null
+}
+
+function loadPersisted(): PersistedShape | null {
+  if (typeof localStorage === 'undefined') return null
+  try {
+    const raw = localStorage.getItem(PERSIST_KEY)
+    return raw ? (JSON.parse(raw) as PersistedShape) : null
+  } catch {
+    return null
+  }
+}
+
+function savePersisted(): void {
+  if (typeof localStorage === 'undefined') return
+  const shape: PersistedShape = {
+    patients: state.patients,
+    oncologistIdentity: state.oncologistIdentity,
+  }
+  try {
+    localStorage.setItem(PERSIST_KEY, JSON.stringify(shape))
+  } catch {
+    // Storage full or unavailable — the session still works for this page
+    // load, it just won't survive a reload. Not worth failing the request.
+  }
+}
+
+const persisted = loadPersisted()
+
 const state = {
+  patients: persisted?.patients ?? ([...seedPatients] as PatientRecord[]),
   reports: [...seedReports],
   timeline: [...seedTimeline],
   tasks: [...seedTasks],
   notes: [...seedNotes],
   notifications: [...seedNotifications],
+  // Set once at sign-in and reused for every subsequent /session read — the
+  // identity established when someone actually signs in must not be lost
+  // the moment a query re-fetches without the original email to hand.
+  oncologistIdentity: persisted?.oncologistIdentity ?? null,
 }
 
 function requirePatient(patientId: string) {
-  const patient = patients.find((p) => p.id === patientId)
+  const patient = state.patients.find((p) => p.id === patientId)
   if (!patient) {
+    console.error(
+      '[mock-store] requirePatient miss:',
+      patientId,
+      'known ids:',
+      state.patients.map((p) => p.id),
+    )
     throw new ApiFailure({ kind: 'not_found', message: 'That patient could not be found.' })
   }
   return patient
 }
 
 /** Patients never receive private notes or internal clinical detail [09.5 §19]. */
-function timelineFor(patientId: string, role: UserRole): TimelineEvent[] {
-  const events = state.timeline.filter((e) => e.patientId === patientId)
+export function filterTimelineForRole(events: TimelineEvent[], role: UserRole): TimelineEvent[] {
   const visible =
     role === 'patient'
       ? events.filter((e) => e.visibility === 'patient' || e.visibility === 'both')
@@ -62,9 +121,22 @@ function timelineFor(patientId: string, role: UserRole): TimelineEvent[] {
   return [...visible].sort((a, b) => b.date.localeCompare(a.date))
 }
 
+export function filterNotesForRole(notes: Note[], role: UserRole): Note[] {
+  return role === 'patient' ? notes.filter((n) => n.type === 'patient') : notes
+}
+
+function timelineFor(patientId: string, role: UserRole): TimelineEvent[] {
+  return filterTimelineForRole(
+    state.timeline.filter((e) => e.patientId === patientId),
+    role,
+  )
+}
+
 function notesFor(patientId: string, role: UserRole): Note[] {
-  const all = state.notes.filter((n) => n.patientId === patientId)
-  return role === 'patient' ? all.filter((n) => n.type === 'patient') : all
+  return filterNotesForRole(
+    state.notes.filter((n) => n.patientId === patientId),
+    role,
+  )
 }
 
 function addTimelineEvent(event: Omit<TimelineEvent, 'id'>): void {
@@ -109,7 +181,7 @@ function createReport(patientId: string, body: UploadBody): Report {
   })
 
   addNotification({
-    userId: oncologist.id,
+    userId: DEMO_ONCOLOGIST_ID,
     category: 'report-uploaded',
     title: 'New report uploaded',
     message: `${report.name} was uploaded and is being processed.`,
@@ -136,7 +208,7 @@ function createReport(patientId: string, body: UploadBody): Report {
         : r,
     )
     addNotification({
-      userId: oncologist.id,
+      userId: DEMO_ONCOLOGIST_ID,
       category: 'ai-processed',
       title: 'Analysis complete',
       message: `Findings for ${report.name} are ready for review.`,
@@ -175,7 +247,7 @@ function completeTask(taskId: string, reportId?: string): PatientTask {
   })
 
   addNotification({
-    userId: oncologist.id,
+    userId: DEMO_ONCOLOGIST_ID,
     category: 'task-completed',
     title: 'Task completed',
     message: `${task.title} was completed.`,
@@ -283,21 +355,32 @@ function handle(path: string, params?: Params, body?: unknown): unknown {
   const role = (params?.role as UserRole) ?? 'oncologist'
   const segments = path.split('/').filter(Boolean)
 
-  // /session
+  // /session — no seeded identity to look up. A patient signing in for the
+  // first time gets a fresh, empty record created here, not a pre-written
+  // one; signing back in with the same id returns that same record.
   if (path === '/session') {
     const patientId = params?.patientId as string | undefined
+    const email = (params?.email as string | undefined) ?? 'you@example.com'
     if (role === 'patient') {
-      const patient = requirePatient(patientId ?? patients[0]!.id)
-      return { role: 'patient' as const, user: patient }
+      const existing = patientId ? state.patients.find((p) => p.id === patientId) : undefined
+      if (existing) return { role: 'patient' as const, user: existing }
+      const created = synthesizePatient(nextId('patient'), email)
+      state.patients = [...state.patients, created]
+      savePersisted()
+      return { role: 'patient' as const, user: created }
     }
-    return { role: 'oncologist' as const, user: oncologist }
+    if (params?.email || !state.oncologistIdentity) {
+      state.oncologistIdentity = synthesizeOncologist(email)
+      savePersisted()
+    }
+    return { role: 'oncologist' as const, user: state.oncologistIdentity }
   }
 
-  // /patients
+  // /patients — every patient who has ever signed in, in this session.
   if (path === '/patients') {
     return {
-      items: patients.filter((p) => oncologist.patientIds.includes(p.id)),
-      page: { cursor: null, hasMore: false, total: patients.length },
+      items: state.patients,
+      page: { cursor: null, hasMore: false, total: state.patients.length },
     }
   }
 
@@ -345,7 +428,7 @@ function handle(path: string, params?: Params, body?: unknown): unknown {
 
   // /signals
   if (path === '/signals') {
-    const userId = (params?.userId as string) ?? oncologist.id
+    const userId = (params?.userId as string) ?? DEMO_ONCOLOGIST_ID
     return {
       items: state.notifications
         .filter((n) => n.userId === userId)

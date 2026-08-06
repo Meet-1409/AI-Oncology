@@ -8,6 +8,8 @@
 
 **Updated again 4 August 2026, later that evening** — a darker theme, a real skin-like Body shell (the point-cloud "dots" are gone), and a two-column Practice Space with a demo Digital Twin. See §2.3.
 
+**Updated 6 August 2026** — no invented clinical data anywhere, separate patient/doctor sign-in, and real sculpted anatomy (Z-Anatomy, CC BY-SA 4.0) installed and rendering. See §2.4. **A substantially higher visual bar has been set for the work still ahead — read `HANDOVER_FOR_CHATGPT.md` Part 2 before designing anything.**
+
 ---
 
 ## 1. Read this first
@@ -33,7 +35,7 @@ Three things will save you the most time.
 | Entry (landing) and authentication UI | Complete |
 | Home Space / Practice Space / Patient Home Space | Complete |
 | Patient Space with Contextual Orbit | Complete |
-| The Body (Digital Twin) — 3D and structured | Complete, with a model-atlas path |
+| The Body (Digital Twin) — 3D and structured | Complete, with real sculpted anatomy installed |
 | Journey, Evidence, Understanding, Actions, Guidance | Complete |
 | Signals, Account, Intent Bar (⌘K) | Complete |
 | Data layer — zod contracts, adapter, mock store | Complete, backend-ready |
@@ -41,7 +43,9 @@ Three things will save you the most time.
 
 ### Outstanding
 
-- **An anatomical model atlas.** See section 7. The loading path is built and tested; the asset has not been licensed or installed — this needs a product-owner decision on source/licence, not an engineering one.
+- **The premium visual rebuild.** The product owner has set a far higher design bar than the application currently meets — see §2.4 and `HANDOVER_FOR_CHATGPT.md` Part 2. Entry, Auth, the dashboards, per-screen atmosphere and a systematic microinteraction pass are all still to do.
+- **Female anatomy.** The installed atlas is male-only; a properly-licensed female body and organ set still needs sourcing. See §2.4.
+- **In-app attribution.** CC BY-SA 4.0 requires the credit to be visible to users, not only in the repository. The Account space is the intended place and it is not yet built. See `ATTRIBUTIONS.md`.
 - **Real-device audit.** See section 2.1 below — a real-browser/DOM-level pass is done; hardware has not been touched.
 - **Backend integration.** See section 9.
 
@@ -80,6 +84,30 @@ Three more direct product-owner requests, done together:
 - **Darker theme.** `--surface-base`/`--surface-raised`/`--surface-sunken` in `design/tokens.css` are deepened — closer to the Body's own `--body-volume` and the Entry's `--cinema-void`, so the whole application, the Body and the Entry now read as one dark register instead of three different shades of "dark enough." Only the dark theme's semantic values changed; nothing else needed touching, which is the entire reason the token system is two layers.
 - **The Body's shell is a real skin surface, not a point cloud.** The previous shell was a nearly-invisible glass mesh (11% opacity) plus a scattered layer of points — the "dots" the product owner was reacting to. The points layer is gone. The shell itself is now warm-toned (`anatomyPalette.skin`, `design/theme.ts`) and substantially more opaque (0.42–0.48, up from 0.11–0.16), lit properly by the scene rather than sitting below the threshold where lighting mattered. It still stops short of fully opaque on purpose — organ severity, drawn opaque underneath, has to keep reading through it; §6.3/§7's "the shell cannot hide an organ" property is untouched. This also makes a *future* skin-level finding renderable at all, which a near-invisible outline structurally couldn't carry — no such finding is built yet, same as the tumor note in §2.2.
 - **Practice Space is now two columns.** The oncologist's post-login screen (`spaces/home/PracticeSpace.tsx`) puts the patient list on the left and, on the right, the "Find a patient" search above a small Digital Twin preview (`features/body/DemoBodyPreview.tsx`, new). The search narrows the same list beside it rather than being a second, disconnected control. The preview is intentionally not real clinical data: it is built from an *empty* snapshot list through the same `useBodyViewModel`, so every organ resolves to a real, defined "no findings recorded" state rather than an invented one `[00 §5.8]` — it says as much in its caption. Stacks to a single column below the `lg` breakpoint, list first.
+
+### 2.4 Completed since 2.3 — honest data, two-role sign-in, and real sculpted anatomy
+
+The product owner raised the bar substantially in this round: no invented clinical data at all, separate patient and doctor entry points, a visible theme toggle, distinctive typography, and an anatomical model that "replicates a real human completely… not shapes joined together." They also asked to be able to stop supervising — bugs are to be found and fixed without another prompt. The full brief, in their own words, is preserved in `HANDOVER_FOR_CHATGPT.md` Part 2; it governs the work still outstanding.
+
+**Every seeded patient is gone.** `mock-data.ts` no longer ships fabricated people. `synthesizePatient()` / `synthesizeOncologist()` build an identity from the email actually submitted at sign-in, and `mock-store.ts` now persists state to `localStorage` under `ao.mock-store.v1`. That persistence was a real architectural gap, not a nicety: without it the in-memory store reset on every reload and a signed-in patient's own record vanished underneath them. Empty states across Practice Space, Patient Home and Patient Space now say plainly that nothing is invented, and every unrecorded clinical field renders **"Not yet recorded"** rather than a blank cell or a value computed from zeros.
+
+**Two separate sign-in paths.** `AuthSpace` is now role selection (*I'm a patient* / *I'm a doctor*) followed by credentials. The old "choose a fake patient record from a dropdown" affordance is gone entirely.
+
+**Real sculpted anatomy is installed** — the single largest visual change in the project so far. Fourteen organs and the external body surface, extracted from **Z-Anatomy** (CC BY-SA 4.0), decimated from ≈991k to ≈42k triangles so they render in real time on a patient's own device. The pipeline is reproducible and committed as `tools/extract-organs.mjs` and `tools/extract-body.mjs`; no application code changed, because `model.ts`'s registration mechanism already did the coordinate fitting and name matching. Three defects were found and fixed by looking at rendered pixels rather than at code:
+
+- Non-anatomical helper geometry bundled in the source export — hair strands, eyelashes, the viewer's cross-section planes — was being baked into the body surface.
+- Needle-thin triangles at the seams between adjacent authored surface patches were catching the shell's fresnel rim light and reading as stray glowing lines radiating off the silhouette. They are now dropped by shape (area against longest edge), because anatomically real geometry is never that thin relative to its size.
+- meshoptimizer shrinks the *index* list but leaves the source vertex buffer intact, so a 96%-reduced mesh was still shipping 100% of its vertices. Compacting recovered ~11 MB.
+
+**Licensing is decided but not finished.** CC BY-SA 4.0 permits commercial use; it is also copyleft, and it requires attribution to be **visible to users**, which is not yet implemented. `ATTRIBUTIONS.md` at the repository root records the terms and the open question.
+
+**Other fixes in this round:**
+- **Zoom now travels toward the cursor** (`zoomToCursor` on the Body's OrbitControls). Dollying to a fixed centre meant examining a shoulder required zooming past it and panning back — the anatomy the user aimed at slid out of frame exactly as they approached it.
+- A `NaN yrs` in the Patient Space header, and an empty stage chip, for a patient with nothing recorded yet.
+- Two pre-existing `exhaustive-deps` errors that were failing `npm run verify` at the lint step: the Body's mount-only colour effect (folded into the first `useFrame` tick, where the material is actually guaranteed to exist and emissive stays in step), and the Intent Bar memoizing on an array literal rebuilt every render.
+- **Verification is now visual.** `tools/shot.mjs` drives a real headless Chromium: it signs in, captures actual pixels, and reports console errors and layout overflow. The in-editor browser preview reports its tab as hidden, which suspends `requestAnimationFrame` and makes it unable to composite frames — this tool exists because of that limitation and is how everything above was confirmed.
+- Bricolage Grotesque paired with Inter for display type; a visible light/dark toggle in the shell.
+- Dead code removed: `spaces/entry/CancerStatement.tsx`, unreferenced since before this round.
 
 ### Never started, by instruction
 
@@ -269,7 +297,7 @@ Each organ has its own colour, from the new `organPalette` in `design/theme.ts` 
 
 **The tumor is not built.** It is intentionally out of scope for the frontend: a real finding's shape will come from the backend, and the intended technique — many overlapping spherical blobs merged closely enough to read as one uneven mass — is documented, not implemented, in `features/body/README.md`.
 
-**2. A sculpted atlas (`model.ts`)** — used automatically when installed. **Not yet installed.**
+**2. A sculpted atlas (`model.ts`)** — used automatically when installed. **Installed, 6 August 2026: Z-Anatomy, CC BY-SA 4.0.** See §2.4 and `ATTRIBUTIONS.md`. The generated geometry above remains the per-organ fallback and is still load-bearing.
 
 ### Installing an atlas
 
@@ -422,11 +450,12 @@ Things that have already cost time, or will.
 
 In rough order of value:
 
-1. **License and install an anatomical atlas.** The largest single visual improvement available, and the path is built and tested. Section 7. Needs a product-owner licensing decision, not just engineering time.
-2. **Confirm the Body's WebGL canvas sizing on a real device or with real screenshot tooling.** Flagged in 2.1, not fixed — the accessible fallback works, so this is a visual-fidelity check, not a blocker.
-3. **Audit on real hardware.** The DOM/browser-level responsive and accessibility pass is done (2.1); actual devices — a tablet in particular, `[04 §24]` — have not been touched.
-4. **Add Playwright** for the integration/E2E layer named in BLUEPRINT `05 §9` (A8) — component-level coverage exists now; nothing exercises full documented workflows end to end yet.
-5. **Backend integration** when endpoints exist. Section 10.
+1. **The premium visual rebuild.** This is now the main body of outstanding work and the owner's stated priority: Entry as a genuine cinematic hero, sign-in that feels like entering a system rather than submitting a form, dashboards designed to the stated bar, a Digital Twin that breathes and responds, per-screen atmosphere, and a systematic microinteraction pass over every control state. Read `HANDOVER_FOR_CHATGPT.md` Part 2 first — it carries the brief verbatim, including the constraint that overrides all of it: *if forced to choose between beauty and usability, choose usability.*
+2. **Source a female body and organ set.** The installed atlas is male-only, so half of real patients currently fall back to the generated figure. Needs a properly-licensed source, registered in the same coordinate space.
+3. **Make the licence attribution visible in-app**, in the Account space. This is a condition of CC BY-SA 4.0, not a nicety. `ATTRIBUTIONS.md`.
+4. **Audit on real hardware.** The DOM/browser-level responsive and accessibility pass is done (2.1); actual devices — a tablet in particular, `[04 §24]` — have not been touched. Note that `tools/shot.mjs` now gives real rendered pixels at any viewport, which covers much of what was previously unverifiable.
+5. **Add Playwright test coverage** for the integration/E2E layer named in BLUEPRINT `05 §9` (A8). Playwright is already a dev dependency of the screenshot tool; nothing exercises full documented workflows end to end yet.
+6. **Backend integration** when endpoints exist. Section 10.
 
 ---
 

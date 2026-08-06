@@ -257,6 +257,27 @@ function shapeLimb(sections: Section[], form: BodyForm, follows: 'shoulder' | 'h
 }
 
 /**
+ * Scales a limb's girth without moving it — `centreA`/`centreB` (position)
+ * are left untouched, only the cross-section itself grows or shrinks.
+ *
+ * The rim-lit shell (`BodyScene.tsx`'s fresnel material) reads narrow
+ * cylinders very differently from the wide torso: a thin limb presents a
+ * grazing angle across almost its whole visible surface, so it reads as a
+ * uniformly glowing outline rather than a solid volume, even when its
+ * cross-section is anatomically proportioned relative to the trunk. Real
+ * limbs are also simply thicker than a first pass tends to land on. Both are
+ * addressed here rather than by re-deriving every landmark number by hand.
+ */
+function thicken(sections: Section[], factor: number): Section[] {
+  return sections.map((section) => ({
+    ...section,
+    halfWidth: section.halfWidth * factor,
+    halfDepth: section.halfDepth * factor,
+    ...(section.backDepth === undefined ? {} : { backDepth: section.backDepth * factor }),
+  }))
+}
+
+/**
  * Arm, deltoid to wrist.
  *
  * Carries the shoulder cap itself, starting inside the trapezius. Modelling the
@@ -742,20 +763,20 @@ export function buildFigureGeometry(form: BodyForm = 'neutral'): THREE.BufferGeo
     ...([1, -1] as const).flatMap((side) => {
       const pose = armPose(side)
       return [
-        loft(shapeLimb(arm(side), form, 'shoulder'), {
+        loft(shapeLimb(thicken(arm(side), 1.38), form, 'shoulder'), {
           axis: 'y',
           segments: 28,
           rings: 48,
           transform: pose,
         }),
-        loft(shapeLimb(hand(side), form, 'shoulder'), {
+        loft(shapeLimb(thicken(hand(side), 1.15), form, 'shoulder'), {
           axis: 'y',
           segments: 24,
           rings: 28,
           transform: pose,
         }),
-        loft(shapeLimb(leg(side), form, 'hip'), { axis: 'y', segments: 32, rings: 60 }),
-        loft(shapeLimb(foot(side), form, 'hip'), { axis: 'z', segments: 24, rings: 28 }),
+        loft(shapeLimb(thicken(leg(side), 1.3), form, 'hip'), { axis: 'y', segments: 32, rings: 60 }),
+        loft(shapeLimb(thicken(foot(side), 1.15), form, 'hip'), { axis: 'z', segments: 24, rings: 28 }),
       ]
     }),
   ]

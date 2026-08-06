@@ -196,11 +196,11 @@ export default function PatientSpace() {
             <Text as="h1" level="title" tone="primary">
               {patient.name}
             </Text>
-            <StatusIndicator tone="info">{patient.stage}</StatusIndicator>
+            {patient.stage && <StatusIndicator tone="info">{patient.stage}</StatusIndicator>}
           </div>
           <Text level="secondary" tone="muted" className="mt-1">
-            {patient.patientCode} · {calculateAge(patient.dob)} yrs · {patient.gender} ·{' '}
-            {patient.primaryCancer}
+            {patient.patientCode} · {patient.dob ? `${calculateAge(patient.dob)} yrs` : 'Age not yet recorded'} ·{' '}
+            {patient.gender} · {patient.primaryCancer || 'Primary cancer not yet recorded'}
           </Text>
           <Text level="caption" tone="subtle" className="mt-1">
             {patient.currentTreatment}

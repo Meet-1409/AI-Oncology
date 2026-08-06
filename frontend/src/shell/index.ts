@@ -6,6 +6,7 @@
 
 export { AppShell } from './AppShell'
 export type { AppShellProps } from './AppShell'
+export { ThemeToggle } from './ThemeToggle'
 export { useDepthSync } from './use-depth'
 export { useSpaceArrival } from './use-space-arrival'
 export { useContinuousReturn } from './use-continuous-return'

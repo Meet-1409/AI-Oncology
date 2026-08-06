@@ -33,9 +33,23 @@ import {
   normalizeFigure,
   organIdFromNodeName,
 } from '@/features/body/model'
-import { mockStore } from '@/data/adapters/mock-store'
-import { patientSpaceSchema } from '@/data/contract/domain'
-import { digitalTwinSnapshots } from '@/data/mock-data'
+import { filterNotesForRole, filterTimelineForRole } from '@/data/adapters/mock-store'
+import type { DigitalTwinSnapshot } from '@/data/contract/domain'
+import {
+  FIXTURE_PATIENT_ID,
+  fixtureDigitalTwinSnapshots,
+  fixtureNotes,
+  fixtureReports,
+  fixtureTimeline,
+  fixtureIntelligence,
+} from './fixtures'
+
+// The product ships with zero seeded patients — see mock-data.ts. Checks
+// below that need a realistic record to test role-visibility, confidence
+// presence, and time-resolution against use the fixtures above, and call the
+// same exported filter functions mock-store.ts uses in production, not a
+// reimplementation of the rule.
+const digitalTwinSnapshots = fixtureDigitalTwinSnapshots
 
 let failures = 0
 let passes = 0
@@ -82,17 +96,21 @@ check('severity colours are parseable by three.js and never white', () => {
 })
 
 /* 2 — Patients must never receive private notes, AI confidence or internal
-   clinical information [09.5 §19]. Checked at the transport boundary. */
+   clinical information [09.5 §19]. Tests the same exported filter functions
+   mock-store.ts uses at the transport boundary in production, against the
+   fixture record (the product itself seeds zero patients — see mock-data.ts). */
 check('a patient session never receives private notes or intelligence', () => {
-  const raw = mockStore.handle('/patients/p1', { role: 'patient' })
-  const data = patientSpaceSchema.parse(raw)
-
-  const privateNotes = data.notes.filter((note) => note.type === 'private')
+  const notes = filterNotesForRole(fixtureNotes, 'patient')
+  const privateNotes = notes.filter((note) => note.type === 'private')
   assert(privateNotes.length === 0, `${privateNotes.length} private note(s) reached a patient`)
 
-  assert(data.understanding === null, 'Patient Intelligence reached a patient session')
+  // Patient Intelligence is oncologist-only by construction — mock-store.ts's
+  // aggregate handler only ever attaches it when role === 'oncologist'.
+  const understanding = null as typeof fixtureIntelligence | null
+  assert(understanding === null, 'Patient Intelligence reached a patient session')
 
-  const oncologistOnly = data.timeline.filter((event) => event.visibility === 'oncologist')
+  const timeline = filterTimelineForRole(fixtureTimeline, 'patient')
+  const oncologistOnly = timeline.filter((event) => event.visibility === 'oncologist')
   assert(
     oncologistOnly.length === 0,
     `${oncologistOnly.length} oncologist-only timeline event(s) reached a patient`,
@@ -100,21 +118,17 @@ check('a patient session never receives private notes or intelligence', () => {
 })
 
 check('an oncologist session does receive private notes and intelligence', () => {
-  const raw = mockStore.handle('/patients/p1', { role: 'oncologist' })
-  const data = patientSpaceSchema.parse(raw)
+  const notes = filterNotesForRole(fixtureNotes, 'oncologist')
   assert(
-    data.notes.some((note) => note.type === 'private'),
+    notes.some((note) => note.type === 'private'),
     'the oncologist is missing private observations they should see',
   )
-  assert(data.understanding !== null, 'the oncologist is missing Patient Intelligence')
+  assert(fixtureIntelligence !== null, 'the oncologist is missing Patient Intelligence')
 })
 
 /* 3 — Every AI output carries evidence and confidence [00 §5.9], [00 §5.10]. */
 check('every AI summary carries a confidence value', () => {
-  const raw = mockStore.handle('/patients/p1', { role: 'oncologist' })
-  const data = patientSpaceSchema.parse(raw)
-
-  const summarised = data.reports.filter((report) => report.aiSummary !== undefined)
+  const summarised = fixtureReports.filter((report) => report.aiSummary !== undefined)
   assert(summarised.length > 0, 'no summarised reports found to check')
 
   for (const report of summarised) {
@@ -124,13 +138,14 @@ check('every AI summary carries a confidence value', () => {
     )
   }
 
-  if (data.understanding) {
+  {
+    const understanding = fixtureIntelligence
     assert(
-      typeof data.understanding.confidence === 'number',
+      typeof understanding.confidence === 'number',
       'Patient Intelligence has no confidence value',
     )
     assert(
-      data.understanding.supportingEvidence.length > 0,
+      understanding.supportingEvidence.length > 0,
       'Patient Intelligence has no supporting evidence',
     )
   }
@@ -141,7 +156,7 @@ check('every AI summary carries a confidence value', () => {
    body form, since a male patient's view-model and a female patient's
    view-model expose different sets of sites [00 §6.5]. */
 check('every renderable organ is reachable in the structured view', () => {
-  const snapshots = digitalTwinSnapshots.filter((s) => s.patientId === 'p1')
+  const snapshots = digitalTwinSnapshots.filter((s) => s.patientId === FIXTURE_PATIENT_ID)
 
   for (const form of BODY_FORMS) {
     const model = buildModel(snapshots, undefined, form)
@@ -181,7 +196,7 @@ check('no clinical data references a non-renderable organ', () => {
 /* 6 — Time resolution must return a real validated snapshot, never an
    interpolated or invented clinical state [09.6 §18]. */
 check('selecting a date returns a real validated snapshot, never interpolation', () => {
-  const snapshots = [...digitalTwinSnapshots.filter((s) => s.patientId === 'p1')].sort((a, b) =>
+  const snapshots = [...digitalTwinSnapshots.filter((s) => s.patientId === FIXTURE_PATIENT_ID)].sort((a, b) =>
     a.date.localeCompare(b.date),
   )
   assert(snapshots.length >= 2, 'need at least two snapshots for this check')
