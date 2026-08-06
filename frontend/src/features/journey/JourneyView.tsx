@@ -169,10 +169,18 @@ export function JourneyView({
         />
       ) : (
         <ol className="relative space-y-1 pl-1">
-          {/* The continuous path itself. */}
+          {/* The continuous path itself — and it DRAWS.
+              A timeline that is simply present states that events exist. One
+              that draws downward states that they happened in an order, which
+              is the entire point of this view and the one thing a list cannot
+              say. Scales from the top on the GPU, so its cost is the same
+              whether there are three events or three hundred. */}
           <span
             aria-hidden
-            className="absolute bottom-3 left-[22px] top-3 w-px bg-[var(--border-default)]"
+            className={cn(
+              'absolute bottom-3 left-[22px] top-3 w-px origin-top bg-[var(--border-default)]',
+              'motion-safe:animate-[journey-draw_var(--motion-spatial)_var(--motion-ease-enter)]',
+            )}
           />
 
           {visible.map((event) => {

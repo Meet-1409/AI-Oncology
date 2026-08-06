@@ -323,3 +323,12 @@
     .ao-press:active { transform: none; }
   }
 }
+
+@layer components {
+  /* The Journey's spine, drawing downward on arrival. Transform only, so a
+     timeline of any length costs one composited layer. */
+  @keyframes journey-draw {
+    from { transform: scaleY(0); }
+    to   { transform: scaleY(1); }
+  }
+}

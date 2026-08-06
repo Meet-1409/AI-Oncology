@@ -178,7 +178,11 @@ export default function PracticeSpace() {
                 No patient matches “{query.trim()}”.
               </Text>
             ) : (
-              <ul className="mt-2 flex flex-col">
+              // Re-keyed on the query so the narrowed list re-enters rather
+              // than snapping. Filtering is the one moment this screen has
+              // motion to spare, and a list that reassembles makes the search
+              // feel like it did something.
+              <ul key={query.trim()} className="mt-2 flex flex-col">
                 {visible.map((patient, index) => (
                   <li key={patient.id}>
                     <PatientRow patient={patient} index={index} />
