@@ -2,7 +2,8 @@ import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Activity, AlertCircle, ArrowLeft, ArrowRight, Stethoscope, UserRound } from 'lucide-react'
-import { Control, Field, Icon, Input, Surface, Text } from '@/components/primitives'
+import { Control, Field, Icon, Input, Text } from '@/components/primitives'
+import { DemoBodyPreview } from '@/features/body'
 import { useSignIn } from '@/data/queries'
 import { paths } from '@/routes/paths'
 import type { UserRole } from '@/types'
@@ -15,6 +16,13 @@ import { cn } from '@/lib/utils'
  * backend, which performs authentication and authorization [02 §3], [02 §6]. This
  * space records the returned identity and descends into the correct Home Space
  * [03 §4].
+ *
+ * ONE CONTINUOUS SPACE, not a split screen. This used to be a white marketing
+ * panel beside a dark form — which in the dark theme put a full-height white
+ * slab on screen, and in either theme read as a template. Arriving here from the
+ * Entry now feels like moving further into the same room: the figure the visitor
+ * just watched assemble out of points is standing here in solid form, and the
+ * two ways in are set beside it.
  *
  * Two distinct entry points, not a role dropdown — a patient and a doctor are
  * choosing between two different products they'll each use for years, and that
@@ -35,53 +43,51 @@ const ROLE_COPY: Record<UserRole, { title: string; description: string; icon: ty
   },
 }
 
-function RoleCard({
-  role,
-  onSelect,
-}: {
-  role: UserRole
-  onSelect: (role: UserRole) => void
-}) {
+/**
+ * A way in, not a card.
+ *
+ * Same language as the patient roster: a full-width row, a hairline that draws
+ * itself on approach, no fill and no lift. Two boxes side by side is what every
+ * sign-in screen does; this reads as two doors in one wall.
+ */
+function RoleRow({ role, onSelect }: { role: UserRole; onSelect: (role: UserRole) => void }) {
   const copy = ROLE_COPY[role]
   return (
     <button
       type="button"
       onClick={() => onSelect(role)}
       className={cn(
-        'group relative flex flex-1 flex-col items-start gap-4 overflow-hidden rounded-2xl p-8 text-left',
-        'border border-[var(--border-subtle)] bg-[var(--surface-raised)]',
-        'transition-[transform,border-color,box-shadow] duration-300 ease-out',
-        'hover:-translate-y-1 hover:border-[var(--accent-border)] hover:shadow-lifted',
-        'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--focus-ring)]',
-        'motion-reduce:hover:translate-y-0',
+        'group relative flex w-full items-center gap-5 border-b border-[var(--border-subtle)] py-6 text-left',
+        'transition-colors duration-[var(--motion-quick)]',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]',
       )}
     >
       <span
         aria-hidden
         className={cn(
-          'flex size-12 items-center justify-center rounded-xl',
-          'bg-[var(--accent-subtle)] text-[var(--accent)]',
-          'transition-transform duration-300 ease-out group-hover:scale-110',
+          'pointer-events-none absolute inset-x-0 bottom-[-1px] h-px origin-left scale-x-0',
+          'bg-[var(--text-primary)] transition-transform duration-[var(--motion-reveal)]',
+          'ease-[var(--motion-ease-enter)] group-hover:scale-x-100 group-focus-visible:scale-x-100',
         )}
-      >
-        <Icon icon={copy.icon} size="md" />
-      </span>
-      <div>
-        <Text as="h2" level="heading" tone="primary">
+      />
+      <Icon icon={copy.icon} size="md" className="shrink-0 text-[var(--text-muted)]" />
+      <span className="min-w-0 flex-1">
+        <Text as="span" level="heading" tone="primary" className="block font-display">
           {copy.title}
         </Text>
-        <Text level="secondary" tone="muted" className="mt-1.5 max-w-[26ch]">
+        <Text as="span" level="caption" tone="muted" className="mt-1 block max-w-[38ch]">
           {copy.description}
         </Text>
-      </div>
-      <span className="mt-auto flex items-center gap-1.5 text-secondary font-medium text-[var(--accent)]">
-        Continue
-        <Icon
-          icon={ArrowRight}
-          size="xs"
-          className="transition-transform duration-300 ease-out group-hover:translate-x-1"
-        />
       </span>
+      <Icon
+        icon={ArrowRight}
+        size="sm"
+        className={cn(
+          'shrink-0 text-[var(--text-subtle)]',
+          'transition-transform duration-[var(--motion-reveal)] ease-[var(--motion-ease-enter)]',
+          'group-hover:translate-x-1',
+        )}
+      />
     </button>
   )
 }
@@ -114,143 +120,145 @@ export default function AuthSpace() {
   }
 
   return (
-    <main className="grid min-h-svh lg:grid-cols-2">
-      <aside className="relative hidden flex-col justify-between bg-[var(--surface-inverse)] p-12 lg:flex">
-        <Link to={paths.entry} className="flex items-center gap-2.5">
-          <span className="flex size-8 items-center justify-center rounded-lg bg-white/10">
-            <Icon icon={Activity} size="sm" className="text-[var(--text-on-inverse)]" />
+    <main className="relative isolate flex min-h-svh flex-col bg-[var(--surface-base)]">
+      {/* The same lit volume the rest of the application stands in. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 -z-10"
+        style={{ backgroundImage: 'var(--atmosphere)' }}
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 -z-10"
+        style={{ backgroundImage: 'var(--atmosphere-floor)' }}
+      />
+
+      {/* The figure, standing in the room rather than illustrating a panel. */}
+      <div
+        className={cn(
+          'pointer-events-none absolute inset-y-0 right-0 hidden w-[46%] lg:block',
+          'lg:[mask-image:linear-gradient(to_right,transparent,black_22%)]',
+        )}
+      >
+        <DemoBodyPreview className="pointer-events-auto h-full w-full" />
+      </div>
+
+      <div className="relative z-10 mx-auto flex w-full max-w-6xl flex-1 flex-col px-4 py-10 sm:px-6 sm:py-14">
+        <Link to={paths.entry} className="flex items-center gap-2.5 no-underline">
+          <span className="flex size-8 items-center justify-center rounded-lg bg-[var(--accent)]">
+            <Icon icon={Activity} size="sm" className="text-[var(--text-on-accent)]" />
           </span>
-          <Text as="span" level="subheading" tone="onInverse">
+          <Text as="span" level="subheading" tone="primary">
             AI Oncology
           </Text>
         </Link>
 
-        <div>
-          <Text level="title" tone="onInverse" measure="comfortable">
-            One organized view of a patient's entire cancer journey.
-          </Text>
-          <Text level="secondary" tone="onInverse" className="mt-4 opacity-60">
-            Patient Intelligence Platform
-          </Text>
-        </div>
+        <div className="flex flex-1 items-center">
+          <div className="w-full lg:max-w-[48%]">
+            {!role ? (
+              <>
+                <Text as="p" level="micro" tone="subtle" className="uppercase">
+                  Patient Intelligence Platform
+                </Text>
+                <Text as="h1" level="display" tone="primary" className="mt-3 font-display">
+                  Sign in
+                </Text>
+                <Text level="body" tone="muted" className="mt-4 max-w-[40ch]">
+                  Two ways in, because a patient and an oncologist are here for
+                  two different things.
+                </Text>
 
-        <Text level="caption" tone="onInverse" className="opacity-40">
-          Assists the oncologist. Never replaces clinical judgement.
-        </Text>
-      </aside>
-
-      <div className="flex items-center justify-center px-6 py-16">
-        <div className={cn('w-full transition-[max-width] duration-300', role ? 'max-w-sm' : 'max-w-2xl')}>
-          <Link to={paths.entry} className="mb-10 flex items-center gap-2.5 lg:hidden">
-            <span className="flex size-8 items-center justify-center rounded-lg bg-[var(--accent)]">
-              <Icon icon={Activity} size="sm" className="text-[var(--text-on-accent)]" />
-            </span>
-            <Text as="span" level="subheading" tone="primary">
-              AI Oncology
-            </Text>
-          </Link>
-
-          {!role ? (
-            <>
-              <Text as="h1" level="title" tone="primary">
-                Sign in
-              </Text>
-              <Text level="secondary" tone="muted" className="mt-2">
-                Continue to your space.
-              </Text>
-
-              <div className="mt-8 flex flex-col gap-4 sm:flex-row">
-                <RoleCard role="patient" onSelect={setRole} />
-                <RoleCard role="oncologist" onSelect={setRole} />
-              </div>
-            </>
-          ) : (
-            <>
-              <button
-                type="button"
-                onClick={() => {
-                  setRole(null)
-                  setError(null)
-                }}
-                className="mb-6 flex items-center gap-1.5 text-secondary text-[var(--text-subtle)] transition-colors hover:text-[var(--text-primary)]"
-              >
-                <Icon icon={ArrowLeft} size="xs" />
-                Choose a different account type
-              </button>
-
-              <Text as="h1" level="title" tone="primary">
-                {ROLE_COPY[role].title}
-              </Text>
-              <Text level="secondary" tone="muted" className="mt-2">
-                Continue to your space.
-              </Text>
-
-              <form onSubmit={handleSubmit} className="mt-8 space-y-5" noValidate>
-                <Field label="Email address" required>
-                  {({ id, invalid }) => (
-                    <Input
-                      id={id}
-                      type="email"
-                      autoComplete="username"
-                      value={email}
-                      aria-invalid={invalid}
-                      onChange={(event) => setEmail(event.target.value)}
-                      placeholder="you@example.com"
-                      autoFocus
-                    />
+                <div className="mt-10">
+                  <RoleRow role="patient" onSelect={setRole} />
+                  <RoleRow role="oncologist" onSelect={setRole} />
+                </div>
+              </>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setRole(null)
+                    setError(null)
+                  }}
+                  className={cn(
+                    'flex items-center gap-1.5 text-secondary text-[var(--text-subtle)]',
+                    'transition-colors hover:text-[var(--text-primary)]',
                   )}
-                </Field>
+                >
+                  <Icon icon={ArrowLeft} size="xs" />
+                  Choose a different account type
+                </button>
 
-                <Field label="Password" required>
-                  {({ id, invalid }) => (
-                    <Input
-                      id={id}
-                      type="password"
-                      autoComplete="current-password"
-                      value={password}
-                      aria-invalid={invalid}
-                      onChange={(event) => setPassword(event.target.value)}
-                      placeholder="••••••••"
-                    />
-                  )}
-                </Field>
+                <Text as="h1" level="display" tone="primary" className="mt-6 font-display">
+                  {ROLE_COPY[role].title}
+                </Text>
 
-                {error && (
-                  <div
-                    role="alert"
-                    className={cn(
-                      'flex items-start gap-2 rounded-md px-3 py-2.5',
-                      'bg-[var(--status-danger-surface)] text-[var(--status-danger-text)]',
+                <form onSubmit={handleSubmit} className="mt-8 max-w-sm space-y-5" noValidate>
+                  <Field label="Email address" required>
+                    {({ id, invalid }) => (
+                      <Input
+                        id={id}
+                        type="email"
+                        autoComplete="username"
+                        value={email}
+                        aria-invalid={invalid}
+                        onChange={(event) => setEmail(event.target.value)}
+                        placeholder="you@example.com"
+                        autoFocus
+                      />
                     )}
-                  >
-                    <Icon icon={AlertCircle} size="sm" className="mt-0.5 shrink-0" />
-                    <Text as="span" level="caption" tone="danger">
-                      {error}
-                    </Text>
-                  </div>
-                )}
+                  </Field>
 
-                <Control type="submit" intent="primary" size="lg" block disabled={signIn.isPending}>
-                  {signIn.isPending ? 'Signing in…' : 'Sign in'}
-                  {!signIn.isPending && <Icon icon={ArrowRight} size="sm" />}
-                </Control>
-              </form>
-            </>
-          )}
+                  <Field label="Password" required>
+                    {({ id, invalid }) => (
+                      <Input
+                        id={id}
+                        type="password"
+                        autoComplete="current-password"
+                        value={password}
+                        aria-invalid={invalid}
+                        onChange={(event) => setPassword(event.target.value)}
+                        placeholder="••••••••"
+                      />
+                    )}
+                  </Field>
 
-          <Surface elevation="sunken" radius="lg" inset="sm" className="mt-8">
-            <Text level="caption" tone="muted">
+                  {error && (
+                    <div
+                      role="alert"
+                      className={cn(
+                        'flex items-start gap-2 rounded-md px-3 py-2.5',
+                        'bg-[var(--status-danger-surface)] text-[var(--status-danger-text)]',
+                      )}
+                    >
+                      <Icon icon={AlertCircle} size="sm" className="mt-0.5 shrink-0" />
+                      <Text as="span" level="caption" tone="danger">
+                        {error}
+                      </Text>
+                    </div>
+                  )}
+
+                  <Control type="submit" intent="primary" size="lg" block disabled={signIn.isPending}>
+                    {signIn.isPending ? 'Signing in…' : 'Sign in'}
+                    {!signIn.isPending && <Icon icon={ArrowRight} size="sm" />}
+                  </Control>
+                </form>
+              </>
+            )}
+
+            <Text level="caption" tone="subtle" className="mt-10 max-w-[52ch]">
               Authentication is performed by the backend. This interface collects
-              credentials and records the identity it returns; it never verifies them
-              itself.
+              credentials and records the identity it returns; it never verifies
+              them itself.
             </Text>
-          </Surface>
 
-          <Text level="caption" tone="subtle" className="mt-6 text-center">
-            <Link to={paths.entry} className="underline underline-offset-4">
-              Return to the introduction
-            </Link>
-          </Text>
+            <Text level="caption" tone="subtle" className="mt-4">
+              <Link to={paths.entry} className="underline underline-offset-4">
+                Return to the introduction
+              </Link>
+            </Text>
+          </div>
         </div>
       </div>
     </main>
