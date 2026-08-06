@@ -51,7 +51,7 @@ async function newPage(theme, width, height) {
   return { context, page };
 }
 
-async function settle(page, ms = 1800) {
+async function settle(page, ms = 2200) {
   await page.waitForTimeout(ms);
 }
 
@@ -104,7 +104,7 @@ for (const theme of THEMES) {
     {
       const { context, page } = await newPage(theme, vp.width, vp.height);
       await page.goto(BASE, { waitUntil: 'networkidle' });
-      await settle(page, 2600);
+      await settle(page, 6000);
       await shot(page, `01-entry-${sfx}`, `entry ${sfx}`);
 
       await page.goto(`${BASE}/enter`, { waitUntil: 'networkidle' });
@@ -135,7 +135,7 @@ for (const theme of THEMES) {
       await signIn(page, 'patient', 'patient@example.com');
       await page.evaluate(() => localStorage.removeItem('ao.session.v1'));
       await signIn(page, 'oncologist', 'doctor@example.com');
-      await settle(page, 2600);
+      await settle(page, 6000);
       await shot(page, `20-practice-${sfx}`, `practice ${sfx}`);
 
       await page.goto(`${BASE}/account`, { waitUntil: 'networkidle' });

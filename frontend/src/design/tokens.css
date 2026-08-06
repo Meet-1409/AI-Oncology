@@ -204,14 +204,21 @@
   --border-default: var(--color-neutral-200);
   --border-strong: var(--color-neutral-300);
 
-  --accent: var(--color-brand-600);
-  --accent-hover: var(--color-brand-700);
-  --accent-active: var(--color-brand-800);
-  --accent-subtle: var(--color-brand-50);
-  --accent-border: var(--color-brand-200);
-  --accent-secondary: var(--color-violet-500);
+  /* MONOCHROME BY DECISION.
+     Colour in this product means disease and nothing else. A blue primary
+     button competes with a finding for the eye, and on a screen where the
+     only red is a tumour, every other saturated pixel is noise. The accent
+     therefore carries WEIGHT, not hue — near-black on light, bone on dark.
+     The severity scale below is the only saturated thing the interface
+     is permitted to draw. */
+  --accent: var(--color-neutral-900);
+  --accent-hover: var(--color-neutral-800);
+  --accent-active: var(--color-neutral-700);
+  --accent-subtle: var(--color-neutral-100);
+  --accent-border: var(--color-neutral-200);
+  --accent-secondary: var(--color-neutral-600);
 
-  --focus-ring: var(--color-brand-500);
+  --focus-ring: var(--color-neutral-700);
 
   /* The scene volume. Every space is now this volume — not one dark
      surface among many light ones. */
@@ -219,6 +226,26 @@
   --scene-fog: #05080d;
   --scene-fog-near: 2.2;
   --scene-fog-far: 9;
+
+  /* ATMOSPHERE.
+     The space behind content is not a fill — it is a lit room. One soft
+     source above, falling off with distance, so things sit IN depth rather
+     than on top of a rectangle. This is most of the difference between the
+     reference sites and a dark dashboard, and it costs one gradient.
+
+     Light theme is daylight: a high window, cool and clean, with the floor
+     of the frame settling into shadow. */
+  --atmosphere: radial-gradient(
+    120% 95% at 50% 0%,
+    rgba(255, 255, 255, 0.95) 0%,
+    rgba(233, 238, 245, 0.55) 38%,
+    rgba(214, 222, 233, 0) 72%
+  );
+  --atmosphere-floor: linear-gradient(
+    to bottom,
+    rgba(196, 206, 220, 0) 55%,
+    rgba(178, 190, 207, 0.34) 100%
+  );
 
   /* TRANSITIONAL — `features/body/BodyView.tsx` (not yet migrated; that's
      Phase 3) still reads this directly. Same value as --scene-void; retire
@@ -287,6 +314,20 @@
   --surface-inverse: var(--color-neutral-50);
   --surface-scrim: rgba(2, 4, 8, 0.66);
 
+  /* Dark is a lit volume rather than a room: one cool source high and behind,
+     everything else falling away into the void. */
+  --atmosphere: radial-gradient(
+    118% 92% at 50% 4%,
+    rgba(150, 186, 220, 0.14) 0%,
+    rgba(96, 126, 158, 0.055) 32%,
+    rgba(5, 8, 13, 0) 66%
+  );
+  --atmosphere-floor: linear-gradient(
+    to bottom,
+    rgba(3, 5, 9, 0) 52%,
+    rgba(2, 3, 6, 0.62) 100%
+  );
+
   --glass-surface: rgba(13, 20, 30, 0.62);
   --glass-border: rgba(140, 180, 210, 0.16);
 
@@ -295,20 +336,23 @@
   --text-muted: #93a4b3;
   --text-subtle: #6f8090;
   --text-on-inverse: var(--color-neutral-900);
-  --text-on-accent: #04141c;
+  --text-on-accent: #0b0f14;
 
   --border-subtle: #1b2733;
   --border-default: #263441;
   --border-strong: #3a4c5c;
 
-  --accent: #74c6e8;
-  --accent-hover: #8fd3ee;
-  --accent-active: #a9def3;
-  --accent-subtle: #0f2530;
-  --accent-border: #204656;
-  --accent-secondary: #a68ce0;
+  /* Bone, not blue. See the light theme's note — the accent carries weight,
+     never hue. Very slightly warm so it reads as lit rather than as grey,
+     which also puts it in a different family from the cool severity reds. */
+  --accent: #ece6dd;
+  --accent-hover: #f6f1ea;
+  --accent-active: #fffcf7;
+  --accent-subtle: #1a1f26;
+  --accent-border: #2b323b;
+  --accent-secondary: #a9b3bd;
 
-  --focus-ring: #83d6f0;
+  --focus-ring: #d8d2c8;
 
   --status-success-surface: #0d2118;
   --status-success-border: #1b3a2a;

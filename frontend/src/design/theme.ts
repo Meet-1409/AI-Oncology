@@ -52,52 +52,74 @@ export const severityScale: Readonly<Record<SeverityLevel, string>> = {
  */
 export const anatomyPalette = {
   /** Fallback for any organ not listed in organPalette below. */
-  organ: '#7fb3cc',
-  bone: '#a9c7d8',
-  lymph: '#8fbdd4',
-  /** Base tint of the body shell — warm and matte, so it reads as skin. */
-  skin: '#c99a76',
+  organ: '#9aa3ab',
+  /**
+   * Bone. Kept in the same warm family as the shell rather than the cool grey
+   * it used to be — against an alabaster body a cool cylinder stopped reading
+   * as skeleton and started reading as a length of pipe threaded through the
+   * arm. Matching the temperature puts it back inside the body.
+   */
+  bone: '#c4bcb2',
+  lymph: '#a49c93',
+  /**
+   * Base tint of the body shell — alabaster, not flesh.
+   *
+   * This used to be a warm tan, and a tan body is a coloured body: it competed
+   * with the severity scale for the eye and made the whole screen read orange.
+   * Colour in this product means disease, so a healthy body is carved from
+   * stone. Kept a touch warm rather than neutral grey so it still reads as lit
+   * and alive, and so it stays in a different hue family from the cool-leaning
+   * severity reds.
+   */
+  skin: '#cfc7bd',
   /** Fresnel rim, which is what makes the silhouette read at all. */
-  rim: '#ffd9b0',
+  rim: '#f2ece3',
   /** The volume the figure stands in. */
   volume: '#07131f',
 } as const
 
 /**
- * One healthy colour per organ, so organ identity is legible even before any
- * disease is recorded — previously every organ shared the single flat
- * `anatomyPalette.organ`, so nothing distinguished a liver from a kidney but
- * position.
+ * One healthy VALUE per organ — not one healthy colour.
  *
- * Deliberately never red, in any hue: `severityScale` (below) is the ONLY red
- * in the Body, so severity is unambiguous the moment it appears. Severity
- * still overrides this palette entirely once an organ has any recorded
+ * This palette used to be a full spectrum: a green stomach, a violet spleen, a
+ * gold heart. It made organ identity legible, and it also made a healthy body
+ * look like a bag of sweets, with a dozen saturated hues for the severity red
+ * to compete against. In this product colour means disease and nothing else,
+ * so healthy anatomy is rendered in greys and told apart by LIGHTNESS instead:
+ * the organs you look at most sit lightest, the deep background structures sit
+ * darkest, and the ordering is stable enough to learn.
+ *
+ * The hues that remain are barely-there temperature shifts — a few points of
+ * saturation, enough to keep neighbouring organs from merging into one another
+ * where they overlap, far too little to read as "coloured".
+ *
+ * Severity still overrides this palette entirely once an organ has any recorded
  * involvement — `colorFor()` in BodyScene.tsx reaches for `severityScale` first
- * and this palette only as the healthy-state fallback — so there is no risk of
- * the two ever mixing on one organ.
+ * and this palette only as the healthy-state fallback — so the first genuinely
+ * saturated thing on the screen is always a finding.
  */
 export const organPalette: Record<OrganId, string> = {
-  brain: '#9b8fd4',
-  thyroid: '#6fc2c9',
-  'left-lung': '#6fa2d9',
-  'right-lung': '#6fa2d9',
-  heart: '#d1a34a',
-  'left-breast': '#b07fb0',
-  'right-breast': '#b07fb0',
-  liver: '#9c8a4f',
-  stomach: '#74bf7a',
-  pancreas: '#a8c15a',
-  spleen: '#8a6fc4',
-  'left-kidney': '#5fb3a8',
-  'right-kidney': '#5fb3a8',
-  colon: '#c9b06a',
-  bladder: '#6f8fc9',
-  prostate: '#7a6fc9',
-  uterus: '#af6fbf',
-  'left-ovary': '#c9955f',
-  'right-ovary': '#c9955f',
-  'lymph-nodes': '#8fbdd4',
-  bones: '#a9c7d8',
+  brain: '#c3c7cd',
+  thyroid: '#aab2b8',
+  'left-lung': '#b4bcc4',
+  'right-lung': '#b4bcc4',
+  heart: '#c8c2bc',
+  'left-breast': '#bdb8b8',
+  'right-breast': '#bdb8b8',
+  liver: '#a49f97',
+  stomach: '#aeb3ad',
+  pancreas: '#b7b9ae',
+  spleen: '#9d9aa2',
+  'left-kidney': '#a7aeae',
+  'right-kidney': '#a7aeae',
+  colon: '#b0aca2',
+  bladder: '#a5abb4',
+  prostate: '#9fa0aa',
+  uterus: '#aca4ac',
+  'left-ovary': '#b3aca4',
+  'right-ovary': '#b3aca4',
+  'lymph-nodes': '#a49c93',
+  bones: '#c4bcb2',
 } as const
 
 /**

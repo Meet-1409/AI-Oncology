@@ -437,6 +437,26 @@ function Anatomy({
 /** Roughly the figure's centre of mass — where the camera orbits by default. */
 const ORBIT_TARGET: [number, number, number] = [0, 0.45, 0]
 
+/**
+ * Two framings, because the Body is asked to do two different jobs.
+ *
+ * `figure` is the portrait: the whole standing body, held at a respectful
+ * distance, the way you would look at a person. It is the product's identity
+ * and belongs anywhere the Body is the subject of the screen.
+ *
+ * `detail` moves in on the trunk, where every organ that matters actually is.
+ * It is the working view — close enough to select something.
+ */
+const FRAMING = {
+  // Far enough that the whole 1.82m figure clears the frame with air above the
+  // crown and below the feet — a portrait cropped at the shins reads as a
+  // mistake, not as a composition.
+  figure: { position: [0.62, 0.44, 3.15] as [number, number, number], fov: 36 },
+  detail: { position: [0.85, 0.5, 1.3] as [number, number, number], fov: 38 },
+} as const
+
+export type BodyFraming = keyof typeof FRAMING
+
 export interface BodySceneProps {
   model: BodyViewModel
   selectedOrgan: string | null
@@ -446,6 +466,8 @@ export interface BodySceneProps {
   form: BodyForm
   /** Exposes the camera reset so the surrounding controls can drive it [09.6 §8]. */
   resetSignal: number
+  /** Portrait of the whole figure, or the working view of the trunk. */
+  framing?: BodyFraming
 }
 
 export function BodyScene({
@@ -455,6 +477,7 @@ export function BodyScene({
   tier,
   form,
   resetSignal,
+  framing = 'detail',
 }: BodySceneProps) {
   const controls = useRef<React.ComponentRef<typeof OrbitControls>>(null)
   const reduced = useReducedMotion()
@@ -463,9 +486,11 @@ export function BodyScene({
     controls.current?.reset()
   }, [resetSignal])
 
+  const view = FRAMING[framing]
+
   return (
     <Canvas
-      camera={{ position: [0.85, 0.5, 1.3], fov: 38 }}
+      camera={{ position: view.position, fov: view.fov }}
       dpr={[1, maxPixelRatio(tier)]}
       // Renders on demand rather than continuously, so a static scene costs
       // nothing and the frame budget is spent only on real interaction.
@@ -507,7 +532,7 @@ export function BodyScene({
         enableDamping={!reduced}
         dampingFactor={0.075}
         minDistance={0.65}
-        maxDistance={3}
+        maxDistance={4}
         // Clamped so the anatomy is never viewed from a disorienting angle.
         minPolarAngle={Math.PI * 0.15}
         maxPolarAngle={Math.PI * 0.85}

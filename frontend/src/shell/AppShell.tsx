@@ -54,7 +54,22 @@ export function AppShell({ identity, signals, intent, context }: AppShellProps) 
   const depth = useEnvironmentStore((s) => s.depth)
 
   return (
-    <div className="flex min-h-svh flex-col bg-[var(--surface-base)]">
+    <div className="relative isolate flex min-h-svh flex-col bg-[var(--surface-base)]">
+      {/* The lit volume every space sits inside. One soft source high in the
+          frame falling off into the floor — the body, the panels and the type
+          are all lit by the same room, which is what stops this reading as
+          cards on a flat fill. Fixed, so it never scrolls with content: the
+          light source does not move because the page does. */}
+      <div
+        aria-hidden
+        className="pointer-events-none fixed inset-0 -z-10"
+        style={{ backgroundImage: 'var(--atmosphere)' }}
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none fixed inset-0 -z-10"
+        style={{ backgroundImage: 'var(--atmosphere-floor)' }}
+      />
       {/* Skip link: keyboard users must not traverse the persistent regions to
           reach content on every navigation [00 §16.1]. */}
       <a

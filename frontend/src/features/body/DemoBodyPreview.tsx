@@ -72,6 +72,7 @@ export function DemoBodyPreview({ className }: { className?: string }) {
               tier={tier}
               form="neutral"
               resetSignal={0}
+              framing="figure"
             />
           </Reveal>
         </Suspense>
