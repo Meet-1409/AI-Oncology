@@ -41,6 +41,7 @@ function AnimatedPart({
   onSelect,
   label,
   beats = false,
+  receded = false,
 }: {
   geometry: ReactNode
   position: readonly [number, number, number]
@@ -53,6 +54,8 @@ function AnimatedPart({
   label?: string
   /** Only the heart. Drives the systolic contraction below. */
   beats?: boolean
+  /** Something else is selected; step back so it can be read alone. */
+  receded?: boolean
 }) {
   const material = useRef<THREE.MeshStandardMaterial>(null)
   const mesh = useRef<THREE.Mesh>(null)
@@ -100,18 +103,29 @@ function AnimatedPart({
       mat.color.set(target)
       mat.emissive.set(emissive)
       mat.emissiveIntensity = selected ? 0.4 : 0
+      mat.transparent = true
+      mat.opacity = receded ? 0.22 : 1
       return
     }
     if (reduced) {
       mat.color.set(target)
       mat.emissive.set(emissive)
       mat.emissiveIntensity = selected ? 0.4 : 0
+      mat.transparent = receded
+      mat.opacity = receded ? 0.22 : 1
       return
     }
     const t = Math.min(1, delta * cameraDamping.severityLerp)
     mat.color.lerp(target, t)
     mat.emissive.lerp(emissive, t)
     mat.emissiveIntensity = THREE.MathUtils.lerp(mat.emissiveIntensity, selected ? 0.4 : 0, t)
+
+    // Receding is OPACITY ONLY. Colour on this body means severity [00 §6.7],
+    // so an organ that steps back must never do it by changing hue — a dimmed
+    // red would read as a milder finding.
+    const targetOpacity = receded ? 0.22 : 1
+    if (!mat.transparent && targetOpacity < 1) mat.transparent = true
+    mat.opacity = THREE.MathUtils.lerp(mat.opacity, targetOpacity, t)
   })
 
   return (
@@ -227,11 +241,15 @@ const BREATH_GLSL = /* glsl */ `
 function BodyShell({
   tier,
   geometry,
+  emphasis,
 }: {
   tier: RenderTier
   geometry: THREE.BufferGeometry
+  emphasis?: 'skin' | 'organs' | null
 }) {
   const reduced = useReducedMotion()
+
+  const baseOpacity = tier === 'reduced' ? 0.66 : 0.6
 
   const skin = useMemo(() => {
     const material = new THREE.MeshStandardMaterial({
@@ -295,7 +313,7 @@ function BodyShell({
 
   useEffect(() => () => skin.dispose(), [skin])
 
-  useFrame((state) => {
+  useFrame((state, delta) => {
     // ~13 breaths per minute — a resting adult rate. Sine rather than a
     // sawtooth: inhalation and exhalation are close enough in length at rest
     // that the asymmetry is not what sells it, and a smooth curve never ticks.
@@ -304,6 +322,14 @@ function BodyShell({
       | { uniforms: Record<string, { value: number }> }
       | undefined
     if (shader?.uniforms['uBreath']) shader.uniforms['uBreath'].value = phase
+
+    // The shell answers what the interface is talking about: it thins so the
+    // organs read through, or settles back. Eased rather than switched, so it
+    // reads as the body responding rather than as a value being set.
+    const target = emphasis === 'organs' ? baseOpacity * 0.45 : baseOpacity
+    skin.opacity = reduced
+      ? target
+      : THREE.MathUtils.lerp(skin.opacity, target, Math.min(1, delta * 6))
   })
 
   return (
@@ -320,21 +346,50 @@ function BodyShell({
   )
 }
 
+/**
+ * A slow idle turn.
+ *
+ * Wrapping rather than rotating the Anatomy group directly, so the rotation
+ * lives outside anything that reads organ positions — a figure that turns must
+ * not move where the anatomy believes itself to be.
+ */
+function IdleTurn({ active, children }: { active: boolean; children: ReactNode }) {
+  const group = useRef<THREE.Group>(null)
+  const reduced = useReducedMotion()
+  useFrame((_, delta) => {
+    if (!group.current) return
+    if (!active || reduced) return
+    // ~9 seconds per revolution. Slow enough to read as presence rather than
+    // as a carousel.
+    group.current.rotation.y += delta * 0.11
+  })
+  return <group ref={group}>{children}</group>
+}
+
 function Anatomy({
   model,
   selectedOrgan,
   onSelectOrgan,
   tier,
   form,
+  emphasis,
 }: {
   model: BodyViewModel
   selectedOrgan: string | null
   onSelectOrgan: (organId: string) => void
   tier: RenderTier
   form: BodyForm
+  emphasis?: 'skin' | 'organs' | null
 }) {
   const colorFor = (severity: SeverityLevel, fallback: string) =>
     severity > 0 ? severityScale[severity] : fallback
+
+  // When one organ is selected the others recede rather than disappear — an
+  // organ that vanishes takes its spatial context with it, and "where is this
+  // relative to everything else" is most of what the Body is for. Opacity
+  // only: colour on this body means severity, so dimming may never touch it.
+  const recede = (organId: string) =>
+    selectedOrgan !== null && selectedOrgan !== organId
 
   // Generated geometry immediately; a sculpted atlas replaces it if installed.
   const meshes = useBodyMeshes(form)
@@ -344,7 +399,16 @@ function Anatomy({
 
   return (
     <group position={[0, -0.1, 0]}>
-      <BodyShell tier={tier} geometry={meshes.figure} />
+      {/* THE ORGAN CLICK.
+          Selecting an organ dissolves the body AROUND it: the shell thins so
+          the selected organ becomes the only fully-read thing in the frame.
+          This is the same mechanism as the sign-in preview, driven by
+          selection instead of by hover — one behaviour, not two. */}
+      <BodyShell
+        tier={tier}
+        geometry={meshes.figure}
+        emphasis={selectedOrgan ? 'organs' : emphasis}
+      />
 
       {BONES.map((bone) => (
         <AnimatedPart
@@ -354,6 +418,7 @@ function Anatomy({
           rotation={bone.arm ? [0, 0, armPoseAngle(bone.arm)] : undefined}
           color={colorFor(bones?.severity ?? 0, anatomyPalette.bone)}
           selected={selectedOrgan === 'bones'}
+          receded={recede('bones')}
           roughness={0.7}
           onSelect={() => onSelectOrgan('bones')}
           label="Bones"
@@ -367,6 +432,7 @@ function Anatomy({
           position={position}
           color={colorFor(lymph?.severity ?? 0, anatomyPalette.lymph)}
           selected={selectedOrgan === 'lymph-nodes'}
+          receded={recede('lymph-nodes')}
           onSelect={() => onSelectOrgan('lymph-nodes')}
           label="Lymph Nodes"
         />
@@ -397,6 +463,7 @@ function Anatomy({
             }
             color={colorFor(state?.severity ?? 0, organPalette[organ.id] ?? anatomyPalette.organ)}
             selected={selectedOrgan === organ.id}
+            receded={recede(organ.id)}
             onSelect={() => onSelectOrgan(organ.id)}
             label={organ.label}
             beats={organ.id === 'heart'}
@@ -441,6 +508,67 @@ export interface BodySceneProps {
   resetSignal: number
   /** Portrait of the whole figure, or the working view of the trunk. */
   framing?: BodyFraming
+  /**
+   * A slow idle turn, for presentational surfaces only.
+   *
+   * Never on a real patient's Body: a record that rotates on its own while an
+   * oncologist is trying to read it is a toy, and it would fight the user's
+   * own orbit control for authority over the view.
+   */
+  idleSpin?: boolean
+  /**
+   * Which layer the surrounding UI is currently talking about, so the figure
+   * can answer. `skin` settles the shell back to opaque; `organs` fades it so
+   * what is inside reads through. Anything the interface says about the body
+   * should be visible ON the body.
+   */
+  emphasis?: 'skin' | 'organs' | null
+}
+
+/**
+ * The camera settles on whatever is selected.
+ *
+ * Not a cut and not a fly-through: the orbit target eases from the figure's
+ * centre toward the chosen organ, and the distance closes a little. The user
+ * keeps full control throughout — this moves where the camera is LOOKING, never
+ * takes the controls away, so an oncologist can drag at any point during the
+ * move and simply be in charge again.
+ *
+ * Deliberately does not change what is selected, only what is framed. Camera
+ * movement must never change medical information [00 §6.12].
+ */
+function SelectionCamera({
+  selectedOrgan,
+  controls,
+}: {
+  selectedOrgan: string | null
+  controls: React.RefObject<React.ComponentRef<typeof OrbitControls> | null>
+}) {
+  const reduced = useReducedMotion()
+  const desired = useMemo(() => new THREE.Vector3(...ORBIT_TARGET), [])
+
+  useMemo(() => {
+    const organ = selectedOrgan
+      ? ORGANS.find((entry) => entry.id === selectedOrgan)
+      : undefined
+    if (organ) desired.set(organ.position[0], organ.position[1], organ.position[2])
+    else desired.set(...ORBIT_TARGET)
+  }, [selectedOrgan, desired])
+
+  useFrame((_, delta) => {
+    const orbit = controls.current
+    if (!orbit) return
+    // The organ coordinates are in the figure frame; the Anatomy group is
+    // offset by -0.1 in y, so the camera has to look where the organ actually
+    // ends up rather than where the table says it is.
+    const t = reduced ? 1 : Math.min(1, delta * cameraDamping.factor)
+    orbit.target.x = THREE.MathUtils.lerp(orbit.target.x, desired.x, t)
+    orbit.target.y = THREE.MathUtils.lerp(orbit.target.y, desired.y - 0.1, t)
+    orbit.target.z = THREE.MathUtils.lerp(orbit.target.z, desired.z, t)
+    orbit.update()
+  })
+
+  return null
 }
 
 export function BodyScene({
@@ -451,6 +579,8 @@ export function BodyScene({
   form,
   resetSignal,
   framing = 'detail',
+  idleSpin = false,
+  emphasis = null,
 }: BodySceneProps) {
   const controls = useRef<React.ComponentRef<typeof OrbitControls>>(null)
   const reduced = useReducedMotion()
@@ -495,13 +625,18 @@ export function BodyScene({
       <directionalLight position={[-2.4, 0.8, -1.6]} intensity={0.5} color="#8fbede" />
       {tier === 'full' && <pointLight position={[0, 0.9, 1.6]} intensity={0.3} color="#cfeaff" />}
 
-      <Anatomy
-        model={model}
-        selectedOrgan={selectedOrgan}
-        onSelectOrgan={onSelectOrgan}
-        tier={tier}
-        form={form}
-      />
+      <IdleTurn active={idleSpin}>
+        <Anatomy
+          model={model}
+          selectedOrgan={selectedOrgan}
+          onSelectOrgan={onSelectOrgan}
+          tier={tier}
+          form={form}
+          emphasis={emphasis}
+        />
+      </IdleTurn>
+
+      <SelectionCamera selectedOrgan={selectedOrgan} controls={controls} />
 
       <OrbitControls
         ref={controls}
@@ -522,9 +657,9 @@ export function BodyScene({
         // Clamped so the anatomy is never viewed from a disorienting angle.
         minPolarAngle={Math.PI * 0.15}
         maxPolarAngle={Math.PI * 0.85}
-        // Module-level constant, not a literal: zoomToCursor moves the target
-        // itself, and a fresh array each render would keep snapping it back.
-        target={ORBIT_TARGET}
+        // No `target` prop. SelectionCamera owns the target now — passing one
+        // here would fight it every frame and snap the view back to the
+        // figure's centre the instant an organ was chosen.
       />
     </Canvas>
   )

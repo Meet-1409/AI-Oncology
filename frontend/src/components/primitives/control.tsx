@@ -32,8 +32,11 @@ const controlVariants = cva(
     'duration-[var(--motion-quick)] ease-[var(--motion-ease-standard)]',
     'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--focus-ring)]',
     'disabled:pointer-events-none disabled:opacity-45',
-    // Presses register physically without becoming playful.
-    'active:translate-y-px',
+    // Presses register physically without becoming playful. A 1px nudge was
+    // too small to feel; ao-press compresses the whole control and springs
+    // back, which is what makes a click read as contact rather than as a
+    // state change that happened to you. Fine pointers only — see index.css.
+    'ao-press',
     '[&_svg]:shrink-0',
   ],
   {

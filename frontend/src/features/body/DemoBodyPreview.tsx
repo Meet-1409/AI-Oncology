@@ -44,7 +44,15 @@ class SceneBoundary extends Component<
   }
 }
 
-export function DemoBodyPreview({ className }: { className?: string }) {
+export interface DemoBodyPreviewProps {
+  className?: string
+  /** A slow idle turn. Presentational surfaces only — never a real record. */
+  idleSpin?: boolean
+  /** Which layer the surrounding UI is talking about; the figure answers. */
+  emphasis?: 'skin' | 'organs' | null
+}
+
+export function DemoBodyPreview({ className, idleSpin, emphasis }: DemoBodyPreviewProps) {
   const [tier, setTier] = useState<RenderTier>(() => detectRenderTier())
   const model = useBodyViewModel([], { form: 'neutral' })
   const handleError = useCallback(() => setTier('none'), [])
@@ -73,6 +81,8 @@ export function DemoBodyPreview({ className }: { className?: string }) {
               form="neutral"
               resetSignal={0}
               framing="figure"
+              idleSpin={idleSpin ?? false}
+              emphasis={emphasis ?? null}
             />
           </Reveal>
         </Suspense>

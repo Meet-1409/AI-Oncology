@@ -32,7 +32,27 @@ export function EmptyState({ icon, title, description, action, className }: Empt
         className,
       )}
     >
-      <span className="flex size-11 items-center justify-center rounded-full bg-[var(--surface-sunken)]">
+      {/* The mark breathes.
+          There are seven of these across the application, and a patient with
+          nothing recorded yet sees several at once. Identical frozen blocks
+          read as an interface that has stopped working rather than one that is
+          waiting — and this is the first thing a newly diagnosed patient sees.
+          One slow pulse on the same rhythm as the Digital Twin's breath ties
+          the empty state to the product's own motif and says "ready", not
+          "broken". Stops entirely under reduced motion. */}
+      <span
+        className={cn(
+          'relative flex size-11 items-center justify-center rounded-full',
+          'bg-[var(--surface-sunken)]',
+        )}
+      >
+        <span
+          aria-hidden
+          className={cn(
+            'absolute inset-0 rounded-full border border-[var(--border-default)]',
+            'motion-safe:animate-[empty-breathe_4.6s_ease-in-out_infinite]',
+          )}
+        />
         <Icon icon={icon} size="md" className="text-[var(--text-subtle)]" />
       </span>
       <div className="space-y-1">

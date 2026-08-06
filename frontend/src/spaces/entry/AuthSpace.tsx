@@ -3,6 +3,7 @@ import type { FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Activity, AlertCircle, ArrowLeft, ArrowRight, Stethoscope, UserRound } from 'lucide-react'
 import { Control, Field, Icon, Input, Text } from '@/components/primitives'
+import { Swap } from '@/components/motion'
 import { DemoBodyPreview } from '@/features/body'
 import { useSignIn } from '@/data/queries'
 import { paths } from '@/routes/paths'
@@ -50,12 +51,25 @@ const ROLE_COPY: Record<UserRole, { title: string; description: string; icon: ty
  * itself on approach, no fill and no lift. Two boxes side by side is what every
  * sign-in screen does; this reads as two doors in one wall.
  */
-function RoleRow({ role, onSelect }: { role: UserRole; onSelect: (role: UserRole) => void }) {
+function RoleRow({
+  role,
+  onSelect,
+  onPreview,
+}: {
+  role: UserRole
+  onSelect: (role: UserRole) => void
+  /** Hovering a way in shows what it leads to, ON the figure. */
+  onPreview: (role: UserRole | null) => void
+}) {
   const copy = ROLE_COPY[role]
   return (
     <button
       type="button"
       onClick={() => onSelect(role)}
+      onPointerEnter={() => onPreview(role)}
+      onPointerLeave={() => onPreview(null)}
+      onFocus={() => onPreview(role)}
+      onBlur={() => onPreview(null)}
       className={cn(
         'group relative flex w-full items-center gap-5 border-b border-[var(--border-subtle)] py-6 text-left',
         'transition-colors duration-[var(--motion-quick)]',
@@ -100,6 +114,7 @@ export default function AuthSpace() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const [preview, setPreview] = useState<UserRole | null>(null)
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault()
@@ -140,7 +155,14 @@ export default function AuthSpace() {
           'lg:[mask-image:linear-gradient(to_right,transparent,black_22%)]',
         )}
       >
-        <DemoBodyPreview className="pointer-events-auto h-full w-full" />
+        <DemoBodyPreview
+          className="pointer-events-auto h-full w-full"
+          idleSpin
+          // A doctor is here to look inside; a patient is here to see
+          // themselves. Hovering either way in previews that on the body
+          // before the choice is made.
+          emphasis={preview === 'oncologist' ? 'organs' : preview === 'patient' ? 'skin' : null}
+        />
       </div>
 
       <div className="relative z-10 mx-auto flex w-full max-w-6xl flex-1 flex-col px-4 py-10 sm:px-6 sm:py-14">
@@ -155,6 +177,7 @@ export default function AuthSpace() {
 
         <div className="flex flex-1 items-center">
           <div className="w-full lg:max-w-[48%]">
+            <Swap swapKey={role ?? 'choose'}>
             {!role ? (
               <>
                 <Text as="p" level="micro" tone="subtle" className="uppercase">
@@ -169,8 +192,8 @@ export default function AuthSpace() {
                 </Text>
 
                 <div className="mt-10">
-                  <RoleRow role="patient" onSelect={setRole} />
-                  <RoleRow role="oncologist" onSelect={setRole} />
+                  <RoleRow role="patient" onSelect={setRole} onPreview={setPreview} />
+                  <RoleRow role="oncologist" onSelect={setRole} onPreview={setPreview} />
                 </div>
               </>
             ) : (
@@ -241,11 +264,22 @@ export default function AuthSpace() {
 
                   <Control type="submit" intent="primary" size="lg" block disabled={signIn.isPending}>
                     {signIn.isPending ? 'Signing in…' : 'Sign in'}
-                    {!signIn.isPending && <Icon icon={ArrowRight} size="sm" />}
+                    {signIn.isPending ? (
+                      <span
+                        aria-hidden
+                        className={cn(
+                          'size-4 shrink-0 rounded-full border-2 border-current border-r-transparent',
+                          'motion-safe:animate-spin',
+                        )}
+                      />
+                    ) : (
+                      <Icon icon={ArrowRight} size="sm" />
+                    )}
                   </Control>
                 </form>
               </>
             )}
+            </Swap>
 
             <Text level="caption" tone="subtle" className="mt-10 max-w-[52ch]">
               Authentication is performed by the backend. This interface collects

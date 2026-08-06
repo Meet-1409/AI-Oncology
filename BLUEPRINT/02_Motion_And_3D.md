@@ -259,3 +259,23 @@ Levers that do **not** work here: decimating the mesh further, reducing organ co
 The figures above come from headless Chromium, which uses **SwiftShader** — a pure-CPU rasteriser with no GPU at all. It is a useful *relative* instrument (the 300×150 vs 662×900 comparison above is what identified the bottleneck) and a worthless *absolute* one. Even entry-level integrated graphics has orders of magnitude more fill rate than a CPU rasteriser. Do not conclude the product is slow on real hardware from a low number here, and do not tune against it past the point where the relative comparison stops changing.
 
 The three fixes above are worth keeping regardless — they are free.
+
+---
+
+## 10. The organ click (6 August 2026)
+
+Selecting an organ used to be a colour change. It is now the product's signature moment, built from three things that already existed rather than a new system:
+
+1. **The body dissolves around it.** The shell's `emphasis` — the same mechanism the sign-in hover uses — is driven by selection, thinning the skin so the chosen organ is the only fully-read thing in the frame. One behaviour, two triggers, not two implementations.
+2. **The other organs recede.** To 22% opacity, not to nothing: an organ that vanishes takes its spatial context with it, and *where this is relative to everything else* is most of what the Body is for.
+3. **The camera settles on it.** `SelectionCamera` eases the orbit target from the figure's centre toward the organ's own coordinates.
+
+### 10.1 Two rules this had to obey
+
+**Receding is opacity only.** Colour on this body means severity `[00 §6.7]`. An organ dimmed by desaturating it would read as a *milder finding* — the interface would be silently restating the clinical picture. Only alpha changes.
+
+**The camera never takes control.** `SelectionCamera` moves where the camera is *looking*; it never disables the controls. Drag at any point during the move and you are simply in charge again. It also cannot change what is selected — camera movement must never change medical information `[00 §6.12]`.
+
+### 10.2 `OrbitControls` no longer takes a `target` prop
+
+It used to be pinned to `ORBIT_TARGET`. Now that the camera writes the target every frame, passing one would fight it and snap the view back to the figure's centre the instant an organ was chosen. The constant survives as the resting position `SelectionCamera` returns to when nothing is selected.

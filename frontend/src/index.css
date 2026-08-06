@@ -288,3 +288,38 @@
     .ao-scrim[data-state], .ao-panel[data-state] { animation-duration: 1ms; }
   }
 }
+
+@layer components {
+  /* The empty-state mark, breathing on the same 4.6s rhythm as the Digital
+     Twin. Scale and opacity only — both compositor properties, so seven of
+     these on one screen cost nothing. */
+  @keyframes empty-breathe {
+    0%, 100% { transform: scale(1); opacity: 0.5; }
+    50%      { transform: scale(1.08); opacity: 1; }
+  }
+
+  /* ------------------------------------------------------------------
+     Press state.
+
+     Every control in the application had a hover state and no press state,
+     so clicking felt like nothing happened until the result arrived. A
+     control that yields under the finger is the difference between an
+     interface that feels physical and one that feels like a diagram.
+
+     Applied on :active only, and only for a fine pointer — on touch there is
+     no cursor to explain the compression, and the OS already provides its
+     own feedback.
+     ------------------------------------------------------------------ */
+  @media (hover: hover) and (pointer: fine) {
+    .ao-press {
+      transition: transform var(--motion-quick) var(--motion-ease-standard);
+    }
+    .ao-press:active {
+      transform: scale(0.975);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ao-press:active { transform: none; }
+  }
+}
