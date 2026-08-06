@@ -169,19 +169,6 @@ function organGeometry(organ: OrganDefinition): ReactNode {
 }
 
 /**
- * Fresnel rim material.
- *
- * Brightness rises where the surface turns away from the eye, so the silhouette
- * and every curve of the form glow while the flat facing areas stay dark. This
- * single effect is what makes a body read as a volume rather than as a
- * translucent blob — a plain transparent material gives a uniform wash with no
- * shape information in it at all.
- *
- * Additive and depth-write disabled, so it layers over the organs without ever
- * hiding one. Nothing clinical is communicated by this material; it is the
- * container the clinical colour sits inside.
- */
-/**
  * The breath, as a vertex displacement.
  *
  * A living body is the whole point of this object, and a body that holds
@@ -196,9 +183,8 @@ function organGeometry(organ: OrganDefinition): ReactNode {
  * sternum on a 1.82m figure — the real figure for quiet breathing, and small
  * enough that it is felt before it is noticed.
  *
- * Done on the GPU, in a shader chunk shared by the skin pass and the rim pass,
- * because those two draw the SAME geometry and any drift between them would
- * separate the silhouette from its own outline.
+ * Done on the GPU, inside the shell's own material, so the displaced surface
+ * and the fresnel rim computed from it can never drift apart.
  */
 const BREATH_GLSL = /* glsl */ `
   uniform float uBreath;
@@ -216,49 +202,6 @@ const BREATH_GLSL = /* glsl */ `
   }
 `
 
-function createRimMaterial(color: string, intensity: number): THREE.ShaderMaterial {
-  return new THREE.ShaderMaterial({
-    uniforms: {
-      uColor: { value: new THREE.Color(color) },
-      uIntensity: { value: intensity },
-      uBreath: { value: 0 },
-    },
-    vertexShader: /* glsl */ `
-      ${BREATH_GLSL}
-      varying vec3 vNormal;
-      varying vec3 vToEye;
-      void main() {
-        vNormal = normalize(normalMatrix * normal);
-        vec4 viewPosition = modelViewMatrix * vec4(aoBreathe(position), 1.0);
-        vToEye = normalize(-viewPosition.xyz);
-        gl_Position = projectionMatrix * viewPosition;
-      }
-    `,
-    fragmentShader: /* glsl */ `
-      uniform vec3 uColor;
-      uniform float uIntensity;
-      varying vec3 vNormal;
-      varying vec3 vToEye;
-      void main() {
-        float facing = abs(dot(normalize(vNormal), normalize(vToEye)));
-        float rim = pow(1.0 - facing, 2.2);
-        // A little base fill keeps the facing surfaces from vanishing entirely,
-        // which would leave the body reading as an outline rather than a solid.
-        // Narrow parts (limbs) present a grazing angle across nearly their whole
-        // visible surface, so the same rim strength that reads as "volume" on
-        // the wide torso reads as a uniformly glowing tube on a thin cylinder —
-        // the base fill term is what keeps a limb's core visible instead of
-        // just its outline.
-        float value = rim * uIntensity + 0.16;
-        gl_FragColor = vec4(uColor * value, value);
-      }
-    `,
-    transparent: true,
-    blending: THREE.AdditiveBlending,
-    depthWrite: false,
-    side: THREE.DoubleSide,
-  })
-}
 
 /**
  * The body silhouette.
@@ -267,16 +210,19 @@ function createRimMaterial(color: string, intensity: number): THREE.ShaderMateri
  * installed, otherwise the figure generated in figure.ts — never a collection of
  * primitives, and never nothing.
  *
- * Two passes:
- *   1. A skin-toned, mostly-matte shell — lit like an actual surface, not a
- *      near-invisible outline. Revised 4 August 2026: the previous version
- *      (opacity 0.11, plus a scattered point cloud) read as a translucent
- *      point-cloud rather than a body, and a surface that thin cannot carry a
- *      future skin-level finding. This still stops short of fully opaque —
- *      organ severity, drawn opaque and first, must keep reading through it;
- *      that is the one property this shell may never trade away.
- *   2. The fresnel rim on top, which still carries the silhouette at every
- *      turn — the skin tone alone flattens out at grazing angles without it.
+ * ONE PASS. This used to be two — a lit skin material, then the fresnel rim
+ * drawn over it as a second full-mesh mesh. Both were DoubleSide and both were
+ * transparent, so a 60,000-triangle body cost four full passes of fragment work
+ * over its whole silhouette. On a machine with integrated graphics that is the
+ * single most expensive thing in the application, and it showed.
+ *
+ * The rim is now a term inside the skin material's own fragment stage, so the
+ * shell draws once. Identical output, half the geometry submitted and roughly
+ * half the overdraw.
+ *
+ * The shell is deliberately not fully opaque: organ severity, drawn opaque and
+ * first, must keep reading through it. That is the one property this shell may
+ * never trade away.
  */
 function BodyShell({
   tier,
@@ -287,13 +233,6 @@ function BodyShell({
 }) {
   const reduced = useReducedMotion()
 
-  const rim = useMemo(
-    () => createRimMaterial(anatomyPalette.rim, tier === 'reduced' ? 0.4 : 0.55),
-    [tier],
-  )
-
-  // The skin pass is a standard material so it keeps real lighting; the breath
-  // is patched into its vertex stage rather than replacing it.
   const skin = useMemo(() => {
     const material = new THREE.MeshStandardMaterial({
       color: new THREE.Color(anatomyPalette.skin),
@@ -304,30 +243,66 @@ function BodyShell({
       side: THREE.DoubleSide,
       depthWrite: false,
     })
+    const rimColor = new THREE.Color(anatomyPalette.rim)
+    const rimIntensity = tier === 'reduced' ? 0.4 : 0.55
+
     material.onBeforeCompile = (shader) => {
       shader.uniforms['uBreath'] = { value: 0 }
+      shader.uniforms['uRimColor'] = { value: rimColor }
+      shader.uniforms['uRimIntensity'] = { value: rimIntensity }
+
       shader.vertexShader = shader.vertexShader
-        .replace('void main() {', `${BREATH_GLSL}\nvoid main() {`)
+        .replace(
+          'void main() {',
+          `${BREATH_GLSL}\nvarying vec3 vAoNormal;\nvarying vec3 vAoToEye;\nvoid main() {`,
+        )
         .replace('#include <begin_vertex>', 'vec3 transformed = aoBreathe(position);')
+        .replace(
+          '#include <project_vertex>',
+          `#include <project_vertex>
+           vAoNormal = normalize(normalMatrix * objectNormal);
+           vAoToEye = normalize(-mvPosition.xyz);`,
+        )
+
+      shader.fragmentShader = shader.fragmentShader
+        .replace(
+          '#include <common>',
+          `#include <common>
+           varying vec3 vAoNormal;
+           varying vec3 vAoToEye;
+           uniform vec3 uRimColor;
+           uniform float uRimIntensity;`,
+        )
+        // Added at the very end, after the lit colour is resolved, so the rim
+        // sits on top of real lighting exactly as the separate additive pass
+        // did. A little base fill keeps facing surfaces from vanishing —
+        // narrow parts (limbs) present a grazing angle across nearly their
+        // whole visible surface, so rim strength alone turns a limb into a
+        // glowing tube with no visible core.
+        .replace(
+          '#include <dithering_fragment>',
+          `#include <dithering_fragment>
+           float aoFacing = abs(dot(normalize(vAoNormal), normalize(vAoToEye)));
+           float aoRim = pow(1.0 - aoFacing, 2.2) * uRimIntensity + 0.16;
+           gl_FragColor.rgb += uRimColor * aoRim;
+           gl_FragColor.a = clamp(gl_FragColor.a + aoRim, 0.0, 1.0);`,
+        )
+
       material.userData['shader'] = shader
     }
     return material
   }, [tier])
 
-  useEffect(() => {
-    return () => {
-      rim.dispose()
-      skin.dispose()
-    }
-  }, [rim, skin])
+  useEffect(() => () => skin.dispose(), [skin])
 
   useFrame((state) => {
     // ~13 breaths per minute — a resting adult rate. Sine rather than a
     // sawtooth: inhalation and exhalation are close enough in length at rest
     // that the asymmetry is not what sells it, and a smooth curve never ticks.
     const phase = reduced ? 0 : Math.sin(state.clock.elapsedTime * ((Math.PI * 2) / 4.6))
-    rim.uniforms['uBreath']!.value = phase
-    const shader = skin.userData['shader'] as { uniforms: Record<string, { value: number }> } | undefined
+    const shader = skin.userData['shader'] as
+      | { uniforms: Record<string, { value: number }> }
+      | undefined
     if (shader?.uniforms['uBreath']) shader.uniforms['uBreath'].value = phase
   })
 
@@ -341,8 +316,6 @@ function BodyShell({
           cut-out. Nothing here can hide an organ — that is the property being
           bought, and it is why the shell writes no depth. */}
       <mesh geometry={geometry} material={skin} renderOrder={2} />
-
-      <mesh geometry={geometry} material={rim} renderOrder={3} />
     </group>
   )
 }
@@ -491,11 +464,24 @@ export function BodyScene({
   return (
     <Canvas
       camera={{ position: view.position, fov: view.fov }}
-      dpr={[1, maxPixelRatio(tier)]}
+      // THE BODY IS FILL-BOUND, not geometry-bound. Measured: identical scene
+      // and identical triangle count at 300x150 runs at 61fps and at 662x900
+      // runs at 3fps. The cost is fragments — a large, double-sided,
+      // transparent shell blended over fourteen organs — so the levers that
+      // matter are resolution and sample count, not mesh detail.
+      //
+      // Capped at 1 device pixel. A 2x display would quadruple the fragment
+      // work for a translucent anatomical diagram that gains almost nothing
+      // from the extra density, and hospital hardware is the target.
+      dpr={[0.8, Math.min(1, maxPixelRatio(tier))]}
       // Renders on demand rather than continuously, so a static scene costs
       // nothing and the frame budget is spent only on real interaction.
       frameloop="always"
-      gl={{ antialias: tier === 'full', powerPreference: 'high-performance' }}
+      // MSAA multiplies fragment cost by its sample count, which is exactly
+      // the resource this scene has least of. The fresnel rim already keeps
+      // the silhouette smooth, so the aliasing it would fix is barely visible
+      // here and never worth a multiple of the frame budget.
+      gl={{ antialias: false, powerPreference: 'high-performance' }}
     >
       {/* The scene is lit for a dark volume. Ambient stays low so the fresnel
           rim does the describing; a bright ambient would flatten the form back

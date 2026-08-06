@@ -205,8 +205,11 @@
     }
   }
 
+  /* 42s read as static — a strip that takes most of a minute to move one
+     phrase-width is not perceived as moving at all. 22s is still calm enough
+     to sit under a headline without pulling the eye off it. */
   .cinema-marquee {
-    animation: cinema-drift 42s linear infinite;
+    animation: cinema-drift 22s linear infinite;
   }
 
   .cinema-breathe {

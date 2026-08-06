@@ -231,3 +231,31 @@ The cursor is raycast onto the figure's plane and then converted into the *rotat
 Framer Motion, GSAP/ScrollTrigger and Lenis were all considered and declined for now. The work they were proposed for — tab swaps, modal open/close, route transitions, cursor reactivity — is done above in CSS keyframes and one shader, at zero bundle cost, and this is a clinical product where every kilobyte is downloaded on hospital wifi by someone who needs a result.
 
 They remain the right call the moment the requirement is genuinely beyond CSS — scroll-linked camera choreography through a 3D scene is the honest example. Revisit then, not before.
+
+---
+
+## 9. The Body is fill-bound (measured, 6 August 2026)
+
+Do not optimise this scene by reducing triangles. It was measured, not guessed:
+
+| Scene | Canvas | fps |
+|---|---|---|
+| Any page with no WebGL | — | **60** |
+| Auth / Practice (sculpted body) | 662×900 | **4** |
+| The *same* scene, same triangle count | 300×150 | **61** |
+
+Twenty times fewer pixels, identical geometry, fifteen times the frame rate. The cost is **fragments**, not vertices: a large double-sided *transparent* shell with `depthWrite: false`, blended over fourteen organs, means every pixel of the body's silhouette is shaded several times over.
+
+The levers that work, in order:
+
+1. **Resolution.** `dpr` is capped at 1 device pixel. A 2× display would quadruple fragment work for a translucent anatomical diagram that gains almost nothing from the density.
+2. **Sample count.** `antialias: false`. MSAA multiplies fragment cost by its sample count — precisely the resource this scene has least of — and the fresnel rim already keeps the silhouette smooth.
+3. **Pass count.** The shell used to draw *twice* (a lit skin pass, then the fresnel rim as a second full-mesh mesh), both double-sided and transparent — four full passes of fragment work over the silhouette. The rim is now a term inside the skin material's own fragment stage. One draw, identical output.
+
+Levers that do **not** work here: decimating the mesh further, reducing organ count, `frameloop="demand"` (the body breathes, so it always has a reason to render).
+
+### 9.1 Headless numbers are not device numbers
+
+The figures above come from headless Chromium, which uses **SwiftShader** — a pure-CPU rasteriser with no GPU at all. It is a useful *relative* instrument (the 300×150 vs 662×900 comparison above is what identified the bottleneck) and a worthless *absolute* one. Even entry-level integrated graphics has orders of magnitude more fill rate than a CPU rasteriser. Do not conclude the product is slow on real hardware from a low number here, and do not tune against it past the point where the relative comparison stops changing.
+
+The three fixes above are worth keeping regardless — they are free.

@@ -26,6 +26,7 @@ const SECTIONS = [
   { id: 'preferences', label: 'Preferences' },
   { id: 'sessions', label: 'Sessions' },
   { id: 'privacy', label: 'Privacy' },
+  { id: 'about', label: 'About' },
 ] as const
 
 type SectionId = (typeof SECTIONS)[number]['id']
@@ -313,6 +314,64 @@ export default function AccountSpace() {
               ))}
             </ul>
           </Section>
+        )}
+
+        {section === 'about' && (
+          <>
+            <Section title="Anatomical models">
+              {/* REQUIRED, NOT DECORATIVE.
+                  The Digital Twin's geometry is Z-Anatomy under CC BY-SA 4.0,
+                  and that licence requires the credit to reach the USER — a
+                  file in the repository does not discharge it. This block is
+                  the product's compliance with that term. Do not remove it
+                  while those models ship. See ATTRIBUTIONS.md. */}
+              <div className="space-y-3">
+                <Text level="secondary" tone="body">
+                  The body and organs shown in the Digital Twin are derived from{' '}
+                  <a
+                    href="https://github.com/LluisV/Z-Anatomy"
+                    target="_blank"
+                    rel="noreferrer noopener"
+                    className="underline underline-offset-4 hover:text-[var(--text-primary)]"
+                  >
+                    Z-Anatomy
+                  </a>
+                  , an open-source anatomical atlas, used under the{' '}
+                  <a
+                    href="https://creativecommons.org/licenses/by-sa/4.0/"
+                    target="_blank"
+                    rel="noreferrer noopener"
+                    className="underline underline-offset-4 hover:text-[var(--text-primary)]"
+                  >
+                    Creative Commons Attribution–ShareAlike 4.0
+                  </a>{' '}
+                  licence.
+                </Text>
+                <Text level="caption" tone="muted">
+                  The geometry was simplified so it can be drawn in real time on
+                  your own device. No anatomy was re-sculpted or re-positioned.
+                  The models, and any modification of them, remain available
+                  under the same licence.
+                </Text>
+              </div>
+            </Section>
+
+            <Section title="Typefaces">
+              <Text level="secondary" tone="body">
+                Inter, Bricolage Grotesque and Instrument Serif, used under the
+                SIL Open Font License 1.1.
+              </Text>
+            </Section>
+
+            <Section title="What this product is">
+              <Text level="secondary" tone="body">
+                A Patient Intelligence Platform. It assists the oncologist and
+                never replaces clinical judgement. The Digital Twin represents
+                body structure; it is not a physical replica of any person, and
+                nothing it shows is a diagnosis.
+              </Text>
+            </Section>
+          </>
         )}
       </Swap>
     </div>

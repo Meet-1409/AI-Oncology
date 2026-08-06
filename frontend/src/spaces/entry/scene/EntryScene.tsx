@@ -3,6 +3,7 @@ import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 import { useReducedMotion } from '@/components/motion'
 import { detectRenderTier, maxPixelRatio } from '@/lib/capability'
+import type { RenderTier } from '@/lib/capability'
 import { buildAnatomyField, sampleAnatomyField } from './anatomy-field'
 import type { FieldGeometry } from './anatomy-field'
 
@@ -24,6 +25,20 @@ import type { FieldGeometry } from './anatomy-field'
 interface SceneProps {
   /** 0 at the top of the document, 1 at the end of the cinematic section. */
   progressRef: React.RefObject<number>
+}
+
+/**
+ * How many points the field is worth on this machine.
+ *
+ * This runs on hospital desktops with integrated graphics, not on the machine
+ * it was written on. Point count is the single biggest lever on the Entry's
+ * cost, so it is tied to the same capability probe everything else uses rather
+ * than being one number chosen once and hoped for.
+ */
+const POINT_BUDGET: Record<'full' | 'reduced' | 'none', number> = {
+  full: 12000,
+  reduced: 5000,
+  none: 0,
 }
 
 /**
@@ -52,6 +67,10 @@ function createPointMaterial(color: string, size: number, opacity: number): THRE
       uReach: { value: 0.42 },
       uPush: { value: 0.16 },
       uTime: { value: 0 },
+      // Perspective size attenuation, in PIXELS per world unit at unit depth.
+      // Driven from the real canvas height and camera FOV each frame — see the
+      // note in the vertex shader for why a hardcoded constant was a defect.
+      uAttenuation: { value: 1000 },
     },
     vertexShader: /* glsl */ `
       attribute float aScale;
@@ -60,6 +79,7 @@ function createPointMaterial(color: string, size: number, opacity: number): THRE
       uniform float uReach;
       uniform float uPush;
       uniform float uTime;
+      uniform float uAttenuation;
       varying float vGlow;
 
       void main() {
@@ -82,8 +102,22 @@ function createPointMaterial(color: string, size: number, opacity: number): THRE
         vGlow = influence;
 
         vec4 mv = modelViewMatrix * vec4(p, 1.0);
-        // Size attenuation, plus a slight swell under the cursor.
-        gl_PointSize = uSize * aScale * (1.0 + influence * 1.6) * (300.0 / -mv.z);
+
+        // Perspective size attenuation.
+        //
+        // This multiplier is NOT a free-choice constant. It converts a world
+        // size into pixels and must come from the canvas height and the
+        // camera's field of view. A guessed value of 300.0 here made every
+        // point ~240px wide instead of ~3px: 24,000 giant additive quads
+        // stacked into a solid white blob over the wordmark, and the fill-rate
+        // cost alone was enough to drop a machine with integrated graphics to a
+        // crawl. Both symptoms, one bad number.
+        //
+        // Clamped as a hard backstop. Whatever the viewport, a point in this
+        // field is a speck; nothing here should ever be allowed to become a
+        // screen-filling sprite again.
+        float size = uSize * aScale * (1.0 + influence * 1.6) * (uAttenuation / -mv.z);
+        gl_PointSize = clamp(size, 1.0, 4.0);
         gl_Position = projectionMatrix * mv;
       }
     `,
@@ -95,10 +129,14 @@ function createPointMaterial(color: string, size: number, opacity: number): THRE
       void main() {
         // Round points with a soft edge — a square point reads as a pixel
         // artifact at this density, not as a particle.
+        //
+        // The falloff is TIGHT on purpose. These sprites are 2-4px; a wide
+        // smoothstep spends most of that on fade, so the figure washed out to
+        // almost nothing. Only the outermost ring softens.
         vec2 c = gl_PointCoord - vec2(0.5);
         float r = length(c);
         if (r > 0.5) discard;
-        float edge = 1.0 - smoothstep(0.34, 0.5, r);
+        float edge = 1.0 - smoothstep(0.42, 0.5, r);
         gl_FragColor = vec4(uColor * (1.0 + vGlow * 1.5), uOpacity * edge);
       }
     `,
@@ -109,7 +147,7 @@ function createPointMaterial(color: string, size: number, opacity: number): THRE
 }
 
 /** The body, as points. */
-function AnatomyPoints({ progressRef }: SceneProps) {
+function AnatomyPoints({ progressRef, tier }: SceneProps & { tier: RenderTier }) {
   const reduced = useReducedMotion()
   const group = useRef<THREE.Group>(null)
   const bodyRef = useRef<THREE.Points>(null)
@@ -123,13 +161,13 @@ function AnatomyPoints({ progressRef }: SceneProps) {
 
   useEffect(() => {
     let alive = true
-    void sampleAnatomyField().then((result) => {
+    void sampleAnatomyField(POINT_BUDGET[tier]).then((result) => {
       if (alive && result) setSampled(result)
     })
     return () => {
       alive = false
     }
-  }, [])
+  }, [tier])
 
   const field = sampled ?? generated
 
@@ -153,7 +191,10 @@ function AnatomyPoints({ progressRef }: SceneProps) {
     }
   }, [bodyGeometry, organGeometry])
 
-  const bodyMaterial = useMemo(() => createPointMaterial('#8fb6c7', 2.4, 0.62), [])
+  // World units, converted to pixels by uAttenuation and then clamped. Tuned
+  // against the rendered frame, not derived — the sprite's alpha falloff and
+  // additive blending both affect how large a point needs to be to read.
+  const bodyMaterial = useMemo(() => createPointMaterial('#8fb6c7', 0.012, 0.8), [])
   useEffect(() => () => bodyMaterial.dispose(), [bodyMaterial])
 
   // Where the cursor is, in the figure's own space. Kept in refs so pointer
@@ -226,6 +267,16 @@ function AnatomyPoints({ progressRef }: SceneProps) {
     const u = bodyMaterial.uniforms
     u['uPointer']!.value.copy(smoothed.current)
     u['uTime']!.value = state.clock.elapsedTime
+
+    // Pixels per world unit at unit depth, from the ACTUAL drawing buffer and
+    // the camera's current field of view. Recomputed every frame because both
+    // change — on resize, on a different display density, on any device that
+    // is not the one this was written on.
+    const camera = state.camera as THREE.PerspectiveCamera
+    if (camera.isPerspectiveCamera) {
+      const height = state.size.height * state.viewport.dpr
+      u['uAttenuation']!.value = height / (2 * Math.tan((camera.fov * Math.PI) / 360))
+    }
   })
 
   return (
@@ -349,7 +400,7 @@ export function EntryScene({ progressRef }: SceneProps) {
       style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}
     >
       <CameraRig progressRef={progressRef} />
-      <AnatomyPoints progressRef={progressRef} />
+      <AnatomyPoints progressRef={progressRef} tier={tier} />
       {tier === 'full' && <Atmosphere />}
     </Canvas>
   )
