@@ -11,7 +11,7 @@ import {
 import type { IconComponent } from '@/components/primitives'
 import { Control, Icon, StatusIndicator, Text } from '@/components/primitives'
 import { ErrorState, LoadingSurface, TabRail } from '@/components/patterns'
-import { Reveal } from '@/components/motion'
+import { Swap } from '@/components/motion'
 import { BodyView } from '@/features/body'
 import { JourneyView } from '@/features/journey'
 import { EvidenceView, UploadComposer } from '@/features/evidence'
@@ -259,7 +259,7 @@ export default function PatientSpace() {
           {visibleOrbit.find((entry) => entry.id === orbit)?.plain}
         </Text>
 
-        <Reveal key={orbit}>
+        <Swap swapKey={orbit}>
         {orbit === 'information' && <PatientOverview patient={patient} />}
 
         {orbit === 'journey' && (
@@ -309,7 +309,7 @@ export default function PatientSpace() {
             onCreateNote={isOncologist ? () => setNoteOpen(true) : undefined}
           />
         )}
-        </Reveal>
+        </Swap>
       </section>
 
       {/* Focus layers — Depth 3, above this space, never replacing it [04 §4]. */}

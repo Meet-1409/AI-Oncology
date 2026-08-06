@@ -3,7 +3,7 @@ import { Laptop, Monitor, Smartphone } from 'lucide-react'
 import type { IconComponent } from '@/components/primitives'
 import { Control, Field, Icon, Input, Select, StatusIndicator, Surface, Text } from '@/components/primitives'
 import { LoadingSurface, TabRail } from '@/components/patterns'
-import { Reveal } from '@/components/motion'
+import { Reveal, Swap } from '@/components/motion'
 import { useSession } from '@/data/queries'
 import { usePreferencesStore } from '@/state/preferences-store'
 import type { DateFormat, TimeFormat } from '@/state/preferences-store'
@@ -134,7 +134,7 @@ export default function AccountSpace() {
         aria-label="Account sections"
       />
 
-      <Reveal key={section} className="mt-6 space-y-5">
+      <Swap swapKey={section} className="mt-6 space-y-5">
         {section === 'profile' && (
           <Section title="Your details">
             <div className="space-y-4">
@@ -314,7 +314,7 @@ export default function AccountSpace() {
             </ul>
           </Section>
         )}
-      </Reveal>
+      </Swap>
     </div>
   )
 }

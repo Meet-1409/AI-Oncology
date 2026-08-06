@@ -173,7 +173,7 @@ export function IntentBar() {
         <div
           className={cn(
             'fixed inset-0 z-[70] flex items-start justify-center px-4 pt-[12vh]',
-            'bg-[var(--surface-scrim)] transition-opacity duration-[var(--motion-reveal)]',
+            'bg-[var(--surface-scrim)] backdrop-blur-[3px] transition-[opacity,backdrop-filter] duration-[var(--motion-reveal)]',
             'ease-[var(--motion-ease-standard)] motion-reduce:transition-none',
             shown ? 'opacity-100' : 'opacity-0',
           )}

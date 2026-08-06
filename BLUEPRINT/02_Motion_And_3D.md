@@ -201,3 +201,33 @@ useBodyViewModel()  →  { organs[], severities, evidence, assessment,
 Because both consume the same view-model, they cannot drift. Every organ, severity, label and piece of evidence available in 3D is present in the structured renderer, with identical selection behaviour and identical URL state. Selection, time and comparison all work identically.
 
 This design is what makes "screen reader users must be able to reach every piece of information available to sighted users" `[00 §16.5]` achievable without maintaining two parallel implementations.
+
+---
+
+## 7. Why motion kept "not working"
+
+**Added 6 August 2026.** Three separate surfaces were reported as having no animation. All three had animation code. All three had the same root cause in different clothing:
+
+> **A CSS transition cannot animate a mount.** An element rendered directly into its final state on its first paint has nothing to transition *from*.
+
+- `Reveal` already solved this by mounting one frame short of its target and catching up (see its own comment). Correct.
+- **Tab panels did not.** `<Reveal key={tab}>` replays an *entrance*, but by the time React re-renders the outgoing panel is already gone — so a tab change was a hard cut with a fade tacked on the end. Fixed by `components/motion/swap.tsx`, which holds the outgoing content for one short exit beat before bringing the new content in.
+- **Focus layers and dialogs did not, in both directions.** Radix unmounts a closed dialog immediately *unless it detects a running CSS animation* — it waits on `animationend`, not `transitionend`. Keyed off transitions, the open had nothing to animate from and the close was never given time to play. Fixed with real `@keyframes` (`.ao-scrim` / `.ao-panel` in `index.css`).
+
+**Rule for anything that mounts or unmounts: use `@keyframes`, not `transition`.** Transitions are correct only for state changes on an element that is already on screen (hover, focus, a value updating).
+
+### 7.1 Why `Swap` is sequential, not a cross-fade
+
+Overlapping two panels requires absolute positioning, which collapses the container height and makes the page jump. Sequential is also the honest reading — the content *replaced* the previous content, it did not blend into it. And clinical panels must never appear momentarily superimposed: two sets of values on screen at once, however briefly, is a misread risk no amount of polish is worth.
+
+### 7.2 The Entry's point field is a custom shader, not `pointsMaterial`
+
+`pointsMaterial` cannot react to anything. The field now uses a `ShaderMaterial` that takes the cursor in the figure's own local space and pushes each point away from it with a smooth radial falloff, so moving the mouse parts the cloud and it closes again behind. Displacement is per-vertex on the GPU — doing it in JavaScript would mean touching 24,000 positions per frame on the main thread, which is the difference between physical and stuttering.
+
+The cursor is raycast onto the figure's plane and then converted into the *rotating group's* local space. Skipping that conversion makes the parting slide across the body as it turns, instead of staying under the pointer.
+
+## 8. Dependencies deliberately not added
+
+Framer Motion, GSAP/ScrollTrigger and Lenis were all considered and declined for now. The work they were proposed for — tab swaps, modal open/close, route transitions, cursor reactivity — is done above in CSS keyframes and one shader, at zero bundle cost, and this is a clinical product where every kilobyte is downloaded on hospital wifi by someone who needs a result.
+
+They remain the right call the moment the requirement is genuinely beyond CSS — scroll-linked camera choreography through a 3D scene is the honest example. Revisit then, not before.

@@ -50,24 +50,20 @@ export function FocusLayer({
             not disappear [04 §4]. */}
         <Dialog.Overlay
           className={cn(
-            'fixed inset-0 z-40 bg-[var(--surface-scrim)]',
-            'transition-opacity duration-[var(--motion-spatial)] ease-[var(--motion-ease-enter)]',
-            'data-[state=open]:opacity-100 data-[state=closed]:opacity-0',
+            'ao-scrim fixed inset-0 z-40 bg-[var(--surface-scrim)] backdrop-blur-[3px]',
           )}
         />
         <Dialog.Content
           className={cn(
-            'fixed inset-x-0 bottom-0 z-50 flex max-h-[92vh] flex-col',
+            'ao-panel fixed inset-x-0 bottom-0 z-50 flex max-h-[92vh] flex-col',
             'rounded-t-2xl bg-[var(--surface-raised)] shadow-focus',
             // On larger viewports Focus is a centred layer; on mobile it is a
             // full-width sheet, with the parent still behind [blueprint 04 §4.2].
+            // Centring lives in the keyframes (see index.css) — a translate
+            // utility here would be overwritten by the animation's transform.
             'sm:inset-auto sm:left-1/2 sm:top-1/2 sm:max-h-[86vh] sm:w-[min(46rem,92vw)]',
-            'sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-2xl',
-            'transition-[opacity,transform] duration-[var(--motion-spatial)]',
-            'ease-[var(--motion-ease-enter)] will-change-[transform,opacity]',
-            'data-[state=closed]:opacity-0 data-[state=open]:opacity-100',
-            'data-[state=closed]:translate-y-2 sm:data-[state=closed]:translate-y-[calc(-50%+0.5rem)]',
-            'sm:data-[state=open]:-translate-y-1/2',
+            'sm:rounded-2xl',
+            'will-change-[transform,opacity]',
             className,
           )}
         >

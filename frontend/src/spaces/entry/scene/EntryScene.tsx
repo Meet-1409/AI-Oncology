@@ -26,6 +26,88 @@ interface SceneProps {
   progressRef: React.RefObject<number>
 }
 
+/**
+ * The point material.
+ *
+ * A plain pointsMaterial cannot react to anything — every point is drawn at a
+ * fixed size at a fixed place. This one takes the cursor in world space and
+ * pushes each point AWAY from it with a smooth radial falloff, so moving the
+ * mouse across the figure parts the cloud like a hand through smoke and it
+ * closes again behind you.
+ *
+ * Displacement is computed per vertex on the GPU. Doing it in JavaScript would
+ * mean touching 24,000 positions every frame on the main thread, which is the
+ * difference between an effect that feels physical and one that stutters.
+ *
+ * Points also brighten and swell slightly as the cursor nears, so the response
+ * reads as attention rather than as a hole being punched in the body.
+ */
+function createPointMaterial(color: string, size: number, opacity: number): THREE.ShaderMaterial {
+  return new THREE.ShaderMaterial({
+    uniforms: {
+      uColor: { value: new THREE.Color(color) },
+      uSize: { value: size },
+      uOpacity: { value: opacity },
+      uPointer: { value: new THREE.Vector3(0, 0, 999) },
+      uReach: { value: 0.42 },
+      uPush: { value: 0.16 },
+      uTime: { value: 0 },
+    },
+    vertexShader: /* glsl */ `
+      attribute float aScale;
+      uniform float uSize;
+      uniform vec3 uPointer;
+      uniform float uReach;
+      uniform float uPush;
+      uniform float uTime;
+      varying float vGlow;
+
+      void main() {
+        vec3 p = position;
+
+        // Distance to the cursor, measured in the figure's own space.
+        vec3 away = p - uPointer;
+        float d = length(away);
+        // 1 at the cursor, 0 at the edge of its reach. smoothstep rather than a
+        // linear ramp so there is no visible boundary where the effect stops.
+        float influence = 1.0 - smoothstep(0.0, uReach, d);
+        p += normalize(away + vec3(0.0001)) * influence * uPush;
+
+        // A slow, tiny per-point drift so the cloud is never perfectly still
+        // even when nothing is moving. Seeded from position, so it is stable.
+        float seed = p.x * 37.0 + p.y * 71.0 + p.z * 13.0;
+        p.x += sin(uTime * 0.5 + seed) * 0.0016;
+        p.y += cos(uTime * 0.42 + seed) * 0.0016;
+
+        vGlow = influence;
+
+        vec4 mv = modelViewMatrix * vec4(p, 1.0);
+        // Size attenuation, plus a slight swell under the cursor.
+        gl_PointSize = uSize * aScale * (1.0 + influence * 1.6) * (300.0 / -mv.z);
+        gl_Position = projectionMatrix * mv;
+      }
+    `,
+    fragmentShader: /* glsl */ `
+      uniform vec3 uColor;
+      uniform float uOpacity;
+      varying float vGlow;
+
+      void main() {
+        // Round points with a soft edge — a square point reads as a pixel
+        // artifact at this density, not as a particle.
+        vec2 c = gl_PointCoord - vec2(0.5);
+        float r = length(c);
+        if (r > 0.5) discard;
+        float edge = 1.0 - smoothstep(0.34, 0.5, r);
+        gl_FragColor = vec4(uColor * (1.0 + vGlow * 1.5), uOpacity * edge);
+      }
+    `,
+    transparent: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+  })
+}
+
 /** The body, as points. */
 function AnatomyPoints({ progressRef }: SceneProps) {
   const reduced = useReducedMotion()
@@ -71,6 +153,41 @@ function AnatomyPoints({ progressRef }: SceneProps) {
     }
   }, [bodyGeometry, organGeometry])
 
+  const bodyMaterial = useMemo(() => createPointMaterial('#8fb6c7', 2.4, 0.62), [])
+  useEffect(() => () => bodyMaterial.dispose(), [bodyMaterial])
+
+  // Where the cursor is, in the figure's own space. Kept in refs so pointer
+  // movement never triggers a React render — at 24,000 points that would be
+  // the difference between smooth and unusable.
+  const pointerNdc = useRef(new THREE.Vector2(0, 0))
+  const pointerActive = useRef(false)
+  const pointerWorld = useRef(new THREE.Vector3(0, 0, 999))
+  const smoothed = useRef(new THREE.Vector3(0, 0, 999))
+  const raycaster = useMemo(() => new THREE.Raycaster(), [])
+  // The cursor is projected onto the plane the figure stands in, so "near the
+  // cursor" means near it on screen, at the figure's depth.
+  const plane = useMemo(() => new THREE.Plane(new THREE.Vector3(0, 0, 1), 0), [])
+
+  useEffect(() => {
+    if (reduced) return
+    function onMove(event: PointerEvent) {
+      pointerNdc.current.set(
+        (event.clientX / window.innerWidth) * 2 - 1,
+        -(event.clientY / window.innerHeight) * 2 + 1,
+      )
+      pointerActive.current = true
+    }
+    function onLeave() {
+      pointerActive.current = false
+    }
+    window.addEventListener('pointermove', onMove)
+    window.addEventListener('pointerleave', onLeave)
+    return () => {
+      window.removeEventListener('pointermove', onMove)
+      window.removeEventListener('pointerleave', onLeave)
+    }
+  }, [reduced])
+
   useFrame((state, delta) => {
     if (!group.current) return
     const progress = progressRef.current ?? 0
@@ -90,21 +207,30 @@ function AnatomyPoints({ progressRef }: SceneProps) {
     // The field opens outward as the visitor descends, as though moving inside it.
     const expansion = 1 + progress * 0.22
     group.current.scale.setScalar(expansion)
+
+    // Project the cursor into the scene, then into the ROTATING group's local
+    // space — the cloud is turning, so a world-space cursor would slide across
+    // the body as it spins instead of staying under the pointer.
+    if (pointerActive.current) {
+      raycaster.setFromCamera(pointerNdc.current, state.camera)
+      if (raycaster.ray.intersectPlane(plane, pointerWorld.current)) {
+        group.current.worldToLocal(pointerWorld.current)
+      }
+    } else {
+      pointerWorld.current.set(0, 0, 999)
+    }
+
+    // Damped, so the parting follows the cursor rather than snapping to it.
+    smoothed.current.lerp(pointerWorld.current, Math.min(1, delta * 9))
+
+    const u = bodyMaterial.uniforms
+    u['uPointer']!.value.copy(smoothed.current)
+    u['uTime']!.value = state.clock.elapsedTime
   })
 
   return (
     <group ref={group}>
-      <points ref={bodyRef} geometry={bodyGeometry}>
-        <pointsMaterial
-          size={0.0075}
-          sizeAttenuation
-          color="#8fb6c7"
-          transparent
-          opacity={0.62}
-          depthWrite={false}
-          blending={THREE.AdditiveBlending}
-        />
-      </points>
+      <points ref={bodyRef} geometry={bodyGeometry} material={bodyMaterial} />
 
       {/* Organ landmarks, marginally warmer and brighter. */}
       <points ref={organRef} geometry={organGeometry}>

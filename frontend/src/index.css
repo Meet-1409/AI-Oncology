@@ -220,3 +220,68 @@
     }
   }
 }
+
+@layer components {
+  /* ------------------------------------------------------------------
+     Focus layers and the Intent Bar — real open/close animation.
+
+     These used CSS TRANSITIONS keyed off Radix's data-state. A transition
+     cannot animate a mount (there is no previous value to move from), and
+     Radix unmounts a closed dialog immediately unless it detects a running
+     ANIMATION — so neither direction ever played and both read as a hard pop.
+     Keyframes fix both halves at once: Radix's Presence waits for
+     `animationend` before unmounting, which is what buys the exit.
+
+     Positioning is baked into the keyframes rather than left to utility
+     classes, because the centred variant animates the same `transform`
+     property that centres it — a scale utility would simply overwrite the
+     translate and drop the dialog into the corner.
+     ------------------------------------------------------------------ */
+  @keyframes ao-scrim-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+  @keyframes ao-scrim-out {
+    from { opacity: 1; }
+    to   { opacity: 0; }
+  }
+
+  /* Mobile: a sheet rising from the bottom edge. */
+  @keyframes ao-panel-in {
+    from { opacity: 0; transform: translateY(12px) scale(0.99); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  @keyframes ao-panel-out {
+    from { opacity: 1; transform: translateY(0) scale(1); }
+    to   { opacity: 0; transform: translateY(12px) scale(0.99); }
+  }
+
+  @media (min-width: 640px) {
+    /* Desktop: a centred panel arriving from slightly behind the screen. */
+    @keyframes ao-panel-in {
+      from { opacity: 0; transform: translate(-50%, -50%) scale(0.965); }
+      to   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    }
+    @keyframes ao-panel-out {
+      from { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+      to   { opacity: 0; transform: translate(-50%, -50%) scale(0.985); }
+    }
+  }
+
+  .ao-scrim[data-state='open']  { animation: ao-scrim-in var(--motion-reveal) var(--motion-ease-enter); }
+  .ao-scrim[data-state='closed'] { animation: ao-scrim-out var(--motion-quick) var(--motion-ease-exit); }
+
+  .ao-panel[data-state='open'] {
+    animation: ao-panel-in var(--motion-spatial) var(--motion-ease-enter);
+  }
+  .ao-panel[data-state='closed'] {
+    animation: ao-panel-out var(--motion-quick) var(--motion-ease-exit);
+  }
+
+  /* Reduced motion: the dialog still opens and closes, it simply does not
+     travel. Kept as a zero-length animation rather than removed, so Radix
+     still gets its animationend and still unmounts. */
+  @media (prefers-reduced-motion: reduce) {
+    .ao-scrim[data-state], .ao-panel[data-state] { animation-duration: 1ms; }
+  }
+}
