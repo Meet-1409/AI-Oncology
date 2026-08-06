@@ -290,8 +290,26 @@ export default function EntrySpace() {
       <div
         aria-hidden
         className={cn(
-          'pointer-events-none fixed inset-0 z-20',
+          // h-svh, NOT inset-0. SpaceTransition puts a transform on an ancestor,
+          // and a transformed ancestor makes `fixed` resolve against ITSELF
+          // rather than the viewport — so inset-0 stretched this to the full
+          // 5499px scroll height of the document. The camera's aspect ratio was
+          // computed from that, which shrank the figure to a scatter of specks
+          // and is why the Entry never read as a body.
+          'pointer-events-none fixed inset-x-0 top-0 h-svh z-20',
           'transition-opacity duration-[var(--motion-spatial)] ease-[var(--motion-ease-standard)]',
+          // The figure owns the upper frame, where the wordmark is and where
+          // the word cutting across the body is the whole point. Below that sit
+          // the sentence and the two actions, and screen blending ADDS light —
+          // so an un-faded figure behind them lifts the background toward the
+          // text colour and quietly eats the contrast. The body fades out
+          // before it reaches them. Legibility outranks the composition.
+          //
+          // The fade lands higher on a narrow screen: a tall viewport puts the
+          // copy much closer to the figure's middle, so the desktop stop leaves
+          // the paragraph sitting on the chest.
+          '[mask-image:linear-gradient(to_bottom,black_0%,black_30%,rgba(0,0,0,0.16)_46%,transparent_58%)]',
+          'md:[mask-image:linear-gradient(to_bottom,black_0%,black_52%,rgba(0,0,0,0.22)_68%,transparent_78%)]',
           pastHero ? 'opacity-0' : 'opacity-100',
         )}
         style={{ mixBlendMode: 'screen' }}

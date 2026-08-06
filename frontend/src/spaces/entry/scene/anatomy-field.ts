@@ -71,6 +71,77 @@ const ORGAN_SITES: readonly (readonly [number, number, number])[] = [
   [0, 0.3, 0.03],
 ]
 
+/**
+ * Samples the field from the REAL sculpted body instead of the ellipsoids.
+ *
+ * The Entry's whole claim is "the body, as data", and it was previously making
+ * that claim with a cloud sampled inside a dozen overlapping ellipsoids — which
+ * reads as scattered dust, not as a person, because it is not a person. The
+ * Digital Twin already loads a sculpted human; the Entry now samples that exact
+ * mesh, so the figure on the landing page and the figure inside the product are
+ * the same object seen two ways. That is what makes an identity cohere.
+ *
+ * Surface-sampled by triangle area, so density is even across the body rather
+ * than clumping wherever the mesh happens to be finely tessellated.
+ *
+ * Returns null when the model is unavailable for any reason; the caller keeps
+ * the generated field, exactly as the Body keeps its generated geometry.
+ */
+export async function sampleAnatomyField(pointCount = 24000): Promise<FieldGeometry | null> {
+  try {
+    const [{ default: THREE }, { MeshSurfaceSampler }, { loadBody }] = await Promise.all([
+      import('three').then((m) => ({ default: m })),
+      import('three/addons/math/MeshSurfaceSampler.js'),
+      import('@/features/body/model'),
+    ])
+
+    const body = await loadBody('neutral')
+    if (body.source !== 'model') return null
+
+    const mesh = new THREE.Mesh(body.geometry)
+    const sampler = new MeshSurfaceSampler(mesh).build()
+
+    const positions = new Float32Array(pointCount * 3)
+    const scales = new Float32Array(pointCount)
+    const point = new THREE.Vector3()
+    const random = createRandom(20260806)
+
+    for (let i = 0; i < pointCount; i++) {
+      sampler.sample(point)
+      positions[i * 3] = point.x
+      positions[i * 3 + 1] = point.y
+      positions[i * 3 + 2] = point.z
+      scales[i] = 0.45 + random() * 0.85
+    }
+
+    // The Body's frame stands on the floor at y = -0.51; the Entry composition
+    // is built around a figure centred on the origin, so it is recentred rather
+    // than the camera being moved to chase it.
+    for (let i = 1; i < positions.length; i += 3) positions[i] = (positions[i] ?? 0) + 0.11
+
+    // Organ landmarks stay where anatomy.ts puts them — they are the same
+    // sites the Digital Twin marks, just rendered as light here.
+    const perSite = 90
+    const organPositions = new Float32Array(ORGAN_SITES.length * perSite * 3)
+    let organIndex = 0
+    for (const site of ORGAN_SITES) {
+      for (let i = 0; i < perSite; i++, organIndex++) {
+        const u = random() * 2 - 1
+        const theta = random() * Math.PI * 2
+        const r = Math.cbrt(random()) * 0.05
+        const s = Math.sqrt(1 - u * u)
+        organPositions[organIndex * 3] = site[0] + r * s * Math.cos(theta)
+        organPositions[organIndex * 3 + 1] = site[1] + r * u
+        organPositions[organIndex * 3 + 2] = site[2] + r * s * Math.sin(theta)
+      }
+    }
+
+    return { positions, scales, organPositions }
+  } catch {
+    return null
+  }
+}
+
 export function buildAnatomyField(pointCount = 7000): FieldGeometry {
   const random = createRandom(20260802)
 

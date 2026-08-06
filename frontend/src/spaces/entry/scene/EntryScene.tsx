@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 import { useReducedMotion } from '@/components/motion'
 import { detectRenderTier, maxPixelRatio } from '@/lib/capability'
-import { buildAnatomyField } from './anatomy-field'
+import { buildAnatomyField, sampleAnatomyField } from './anatomy-field'
+import type { FieldGeometry } from './anatomy-field'
 
 /**
  * The Entry scene.
@@ -32,7 +33,23 @@ function AnatomyPoints({ progressRef }: SceneProps) {
   const bodyRef = useRef<THREE.Points>(null)
   const organRef = useRef<THREE.Points>(null)
 
-  const field = useMemo(() => buildAnatomyField(7000), [])
+  // The generated field draws immediately so there is never an empty frame;
+  // the sculpted body replaces it the moment it has been sampled. Same
+  // never-nothing rule the Digital Twin follows.
+  const generated = useMemo(() => buildAnatomyField(7000), [])
+  const [sampled, setSampled] = useState<FieldGeometry | null>(null)
+
+  useEffect(() => {
+    let alive = true
+    void sampleAnatomyField().then((result) => {
+      if (alive && result) setSampled(result)
+    })
+    return () => {
+      alive = false
+    }
+  }, [])
+
+  const field = sampled ?? generated
 
   const bodyGeometry = useMemo(() => {
     const geometry = new THREE.BufferGeometry()
