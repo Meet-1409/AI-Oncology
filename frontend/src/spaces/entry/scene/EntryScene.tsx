@@ -214,7 +214,13 @@ export function EntryScene({ progressRef }: SceneProps) {
       camera={{ position: [0, 0.92, 3.4], fov: 42 }}
       dpr={[1, maxPixelRatio(tier)]}
       gl={{ antialias: tier === 'full', alpha: true, powerPreference: 'high-performance' }}
-      style={{ position: 'absolute', inset: 0 }}
+      // pointerEvents MUST be none here, not only on the wrapper.
+      // react-three-fiber sets `pointer-events: auto` on its own container, so
+      // a `pointer-events-none` parent does not stop it — the canvas then sits
+      // over the hero and silently eats the click on Sign in. The Entry's
+      // figure is decoration and is never interactive, so it should never be a
+      // hit target at all.
+      style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}
     >
       <CameraRig progressRef={progressRef} />
       <AnatomyPoints progressRef={progressRef} />

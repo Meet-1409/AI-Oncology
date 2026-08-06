@@ -8,7 +8,6 @@ import { useEnvironmentStore } from '@/state/environment-store'
 import { useDepthSync } from './use-depth'
 import { useContinuousReturn } from './use-continuous-return'
 import { useSpaceArrival } from './use-space-arrival'
-import { ThemeToggle } from './ThemeToggle'
 
 /**
  * The application shell — the permanent structure of the environment.
@@ -113,7 +112,6 @@ export function AppShell({ identity, signals, intent, context }: AppShellProps) 
         {context}
         <div className="flex-1" />
         {intent}
-        <ThemeToggle />
         {signals}
         {identity}
       </div>

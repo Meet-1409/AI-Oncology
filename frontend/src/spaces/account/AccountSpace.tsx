@@ -6,7 +6,7 @@ import { LoadingSurface, TabRail } from '@/components/patterns'
 import { Reveal } from '@/components/motion'
 import { useSession } from '@/data/queries'
 import { usePreferencesStore } from '@/state/preferences-store'
-import type { DateFormat, ThemePreference, TimeFormat } from '@/state/preferences-store'
+import type { DateFormat, TimeFormat } from '@/state/preferences-store'
 
 /**
  * Account — Depth 1, beside Home Space rather than beneath it, because it belongs
@@ -204,23 +204,11 @@ export default function AccountSpace() {
 
         {section === 'preferences' && (
           <Section title="Preferences">
+            {/* No theme control. The product is one lit room — see
+                design/use-theme.ts. An appearance setting that offered a
+                choice the application no longer honours would be worse than
+                no setting at all. */}
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="Theme">
-                {({ id }) => (
-                  <Select
-                    id={id}
-                    options={[
-                      { value: 'light', label: 'Light' },
-                      { value: 'dark', label: 'Dark' },
-                      { value: 'system', label: 'Match my system' },
-                    ]}
-                    value={preferences.theme}
-                    onChange={(event) =>
-                      preferences.setTheme(event.target.value as ThemePreference)
-                    }
-                  />
-                )}
-              </Field>
               <Field label="Language">
                 {({ id }) => (
                   <Select

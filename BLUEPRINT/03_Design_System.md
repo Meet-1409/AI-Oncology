@@ -210,3 +210,48 @@ The figure is presented rim-lit in a dark volume rather than as flesh. Partly so
 `severityMeaning()` in `lib/status.ts` describes **position on a documented scale and nothing more**. It does not estimate size, spread or outlook. Doing so would be the interface inventing a clinical claim the underlying data never made, which `[00 §5]` forbids — and it would be most dangerous precisely where it would be most reassuring.
 
 Guarded by a patient-safety test: every level must carry a distinct plain sentence, of at least four words, that is not merely a repeat of the clinical label.
+
+---
+
+## 7. Colour means disease
+
+**Added 6 August 2026.** The single rule the visual language now runs on:
+
+> Colour means disease. A healthy body is monochrome. The only saturated thing on screen is a finding.
+
+This makes the identity and the clinical safety invariant the *same* rule rather than two constraints negotiating with each other. An oncologist sees where a problem is before reading a word, because it is the only coloured thing in the frame; a patient with nothing recorded sees a calm, colourless, whole body.
+
+What it forces, concretely:
+
+- **The accent carries weight, not hue** — near-black on light, bone on dark. There is no brand blue. A blue primary button competes with a finding for the eye.
+- **The body shell is alabaster, not flesh.** A warm tan is a coloured body: it made the whole screen read orange and sat in the same hue family as the severity scale.
+- **Organs are distinguished by lightness, not hue.** `organPalette` was a full spectrum — a green stomach, a violet spleen, a gold heart. Organ identity was legible and a healthy body looked like a bag of sweets. It is now greys ordered by value, with a few points of residual saturation only so neighbouring organs don't merge where they overlap.
+- **Patient rows carry no avatar colour.** Beside a cancer patient's name, and beside the severity scale, an identity swatch is both noise and a genuine misread waiting to happen.
+
+`severityScale` still overrides everything, exactly as before, so the first genuinely saturated pixel on any screen is always a finding.
+
+## 8. One theme
+
+**Added 6 August 2026.** The light theme was removed at the product owner's direction. The product is a lit body in a dark volume — the Entry, the Digital Twin and every space between them are the same room seen from different distances, and a light mode made that room a different room halfway through. `useTheme()` now pins `data-theme="dark"`; the toggle and the Account appearance control are gone.
+
+The token layer keeps its light values. They are what the flat write-surfaces were built against and what a future high-contrast or print mode would start from. Nothing reads them today.
+
+## 9. Atmosphere, not background
+
+Every space sits inside a lit volume rather than on a flat fill: one soft source high in the frame falling off into the floor (`--atmosphere`, `--atmosphere-floor`, applied in `AppShell`). Fixed rather than scrolling — the light source does not move because the page does. This is most of the difference between the reference compositions and a dark dashboard, and it costs one gradient.
+
+## 10. Typefaces
+
+| Token | Face | Used for |
+|---|---|---|
+| `--font-sans` | Inter | All body and clinical text |
+| `--font-display` | Bricolage Grotesque | Display and title levels |
+| `--font-editorial` | Instrument Serif | The Entry wordmark, and nothing else |
+
+The editorial serif exists for one word. A high-contrast serif against a clinical instrument is the tonal argument of the product in one typeface: the word *Cancer* belongs to the person, not to the software, and a heavy grotesque set it in the software's voice.
+
+### 10.1 The tailwind-merge trap
+
+`cn()` in `lib/utils.ts` **must** declare the custom type scale to `extendTailwindMerge`. tailwind-merge resolves conflicts by group and cannot tell `text-display` (a font size) from `text-[var(--text-primary)]` (a colour) — both are spelled `text-*`. Left to guess it files the entire scale under "text colour", and any element carrying both a size and a tone has its **size silently deleted** by the later colour class. Every heading does, since `Text` composes `level` and `tone`.
+
+The symptom is a 3.25rem display heading rendering at the 16px inherited default, everywhere, with the classes present in the source and absent from the DOM. Shipped undetected for weeks. Do not remove that configuration.

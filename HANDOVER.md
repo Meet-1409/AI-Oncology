@@ -8,7 +8,7 @@
 
 **Updated again 4 August 2026, later that evening** — a darker theme, a real skin-like Body shell (the point-cloud "dots" are gone), and a two-column Practice Space with a demo Digital Twin. See §2.3.
 
-**Updated 6 August 2026** — no invented clinical data anywhere, separate patient/doctor sign-in, and real sculpted anatomy (Z-Anatomy, CC BY-SA 4.0) installed and rendering. See §2.4. **A substantially higher visual bar has been set for the work still ahead — read `HANDOVER_FOR_CHATGPT.md` Part 2 before designing anything.**
+**Updated 6 August 2026 — the art-direction pass.** Real sculpted anatomy installed, honest (zero-invented) data, one committed visual rule ("colour means disease"), a single theme, and the Entry reduced to one frame. **Several long-standing defects were found by screenshotting rather than by reading code — read §2.4, it is the most useful section in this file.**
 
 ---
 
@@ -39,11 +39,11 @@ Three things will save you the most time.
 | Journey, Evidence, Understanding, Actions, Guidance | Complete |
 | Signals, Account, Intent Bar (⌘K) | Complete |
 | Data layer — zod contracts, adapter, mock store | Complete, backend-ready |
-| Light and dark themes | Complete |
+| Appearance | One theme (dark), by decision — BLUEPRINT `03 §8` |
 
 ### Outstanding
 
-- **The premium visual rebuild.** The product owner has set a far higher design bar than the application currently meets — see §2.4 and `HANDOVER_FOR_CHATGPT.md` Part 2. Entry, Auth, the dashboards, per-screen atmosphere and a systematic microinteraction pass are all still to do.
+- **The premium visual rebuild — partly done.** Entry, Auth and Practice Space have been restaged around the body and the colour rule (§2.4). Still to do: the organ-click moment, the Patient Space tabs, per-screen atmosphere, and a systematic microinteraction pass. `ART_DIRECTION.md` is the brief.
 - **Female anatomy.** The installed atlas is male-only; a properly-licensed female body and organ set still needs sourcing. See §2.4.
 - **In-app attribution.** CC BY-SA 4.0 requires the credit to be visible to users, not only in the repository. The Account space is the intended place and it is not yet built. See `ATTRIBUTIONS.md`.
 - **Real-device audit.** See section 2.1 below — a real-browser/DOM-level pass is done; hardware has not been touched.
@@ -87,7 +87,7 @@ Three more direct product-owner requests, done together:
 
 ### 2.4 Completed since 2.3 — honest data, two-role sign-in, and real sculpted anatomy
 
-The product owner raised the bar substantially in this round: no invented clinical data at all, separate patient and doctor entry points, a visible theme toggle, distinctive typography, and an anatomical model that "replicates a real human completely… not shapes joined together." They also asked to be able to stop supervising — bugs are to be found and fixed without another prompt. The full brief, in their own words, is preserved in `HANDOVER_FOR_CHATGPT.md` Part 2; it governs the work still outstanding.
+The product owner raised the bar substantially in this round: no invented clinical data at all, separate patient and doctor entry points, distinct sign-in paths, distinctive typography, and an anatomical model that "replicates a real human completely… not shapes joined together." They also asked to be able to stop supervising — bugs are to be found and fixed without another prompt. The full brief, in their own words, is preserved in `HANDOVER_FOR_CHATGPT.md` Part 2; it governs the work still outstanding.
 
 **Every seeded patient is gone.** `mock-data.ts` no longer ships fabricated people. `synthesizePatient()` / `synthesizeOncologist()` build an identity from the email actually submitted at sign-in, and `mock-store.ts` now persists state to `localStorage` under `ao.mock-store.v1`. That persistence was a real architectural gap, not a nicety: without it the in-memory store reset on every reload and a signed-in patient's own record vanished underneath them. Empty states across Practice Space, Patient Home and Patient Space now say plainly that nothing is invented, and every unrecorded clinical field renders **"Not yet recorded"** rather than a blank cell or a value computed from zeros.
 
@@ -108,6 +108,42 @@ The product owner raised the bar substantially in this round: no invented clinic
 - **Verification is now visual.** `tools/shot.mjs` drives a real headless Chromium: it signs in, captures actual pixels, and reports console errors and layout overflow. The in-editor browser preview reports its tab as hidden, which suspends `requestAnimationFrame` and makes it unable to composite frames — this tool exists because of that limitation and is how everything above was confirmed.
 - Bricolage Grotesque paired with Inter for display type; a visible light/dark toggle in the shell.
 - Dead code removed: `spaces/entry/CancerStatement.tsx`, unreferenced since before this round.
+
+### 2.4 Completed 6 August 2026 — the art-direction pass
+
+The product owner's direction was blunt and correct: the application was "technically correct, emotionally forgettable" and looked like a dashboard. Everything below serves fixing that, plus the defects found on the way.
+
+**Real anatomy is installed.** `frontend/public/models/` now carries `body-male.glb`, `body-neutral.glb` and `organs.glb`, extracted from **Z-Anatomy (CC BY-SA 4.0)** — see `ATTRIBUTIONS.md`. 14 organs, decimated from 995,895 to 42,030 triangles; the body shell from 136,086 to ~60,000. The extraction scripts are `frontend/extract-organs.mjs` and `frontend/extract-body.mjs`, kept in-tree so the pipeline is reproducible. **The ShareAlike obligation is real and unresolved for a commercial product** — see §13.
+
+**No invented clinical data anywhere.** `mock-data.ts` ships zero seeded patients. Identities are synthesized from the email submitted at first sign-in and persisted to `localStorage` (`ao.mock-store.v1`). Empty states say so plainly instead of showing plausible fiction.
+
+**Colour means disease** — the one rule the visual language now runs on. BLUEPRINT `03 §7` is the durable description. In short: the accent carries weight not hue (there is no brand blue), the body is alabaster rather than flesh, organs are told apart by lightness rather than colour, and the severity scale is the only saturated thing the interface may draw.
+
+**One theme.** The light theme was removed at the product owner's direction — this reverses the earlier "add dark and light mode" instruction. `useTheme()` pins dark; the toggle and the Account appearance control are gone. Light token values remain in `tokens.css` and are currently unread. BLUEPRINT `03 §8`.
+
+**The Entry is one frame.** The 300svh scroll section and the About/Features/How-It-Works/Contact stations were removed at the product owner's direction. What remains is the arrival: the struck word, the figure behind it, one sentence, one way in, and the drifting strip. The wordmark is set in **Instrument Serif** — the word belongs to the person, not the software.
+
+**The body is the screen.** Practice Space and Auth both stage the figure full height in the room, unboxed, with content beside it rather than in cards around it.
+
+**The body is alive.** A breath (vertex displacement, gaussian-weighted on the sternum, ~13/min, ~5mm) and a heart that contracts at 60bpm. Scale only, never colour — a beating heart may not borrow the severity scale. Both collapse under `prefers-reduced-motion`.
+
+#### Defects found by screenshotting, not by reading code
+
+These are the reason `frontend/tools/sweep.mjs` exists. It captures every screen at desktop and mobile with console and overflow reporting. **Run it after any visual change.**
+
+1. **Every heading in the application rendered at 16px.** `tailwind-merge` cannot distinguish `text-display` (a font size) from `text-[var(--text-primary)]` (a colour) — both are spelled `text-*` — so it filed the whole type scale under "text colour" and the later colour class silently deleted the size. Every heading carries both. Fixed by declaring the scale in `cn()`; see BLUEPRINT `03 §10.1`. **Do not remove that configuration.**
+2. **The Entry's canvas was 1440x5499.** `SpaceTransition` puts a transform on an ancestor, and a transformed ancestor makes `position: fixed` resolve against *itself* rather than the viewport. The camera's aspect came from the full document scroll height, which shrank the figure to specks. This is very likely the same root cause as the "canvas stuck at its default size" note in §2.1.
+3. **The Entry's Sign in button was unclickable.** react-three-fiber sets `pointer-events: auto` on its own container, so the `pointer-events-none` wrapper did not stop it and the canvas covered the hero action. The scene now sets `pointerEvents: 'none'` on the Canvas itself.
+4. **Practice Space collapsed the moment it had a patient.** The populated branch was a bare `<ul>` with no cards, no Digital Twin and — critically — no link, so an oncologist could not open a patient from their own dashboard at all.
+5. **Auth rendered a full-height white slab in dark mode**, because the marketing panel was painted with `--surface-inverse`, and "inverse" in a dark theme is light.
+6. **The sweep tool itself reported false passes.** It set the theme via OS `colorScheme`, which the app deliberately ignores, so four "light" runs were really dark runs — and passed.
+7. **Sculpted models were being screenshotted mid-swap.** The tool waited 2.5s; the glb fetch, parse, bake and GPU upload take longer, so it captured the generated fallback and called it fine.
+
+#### Still open from this pass
+
+- **Female anatomy.** The Z-Anatomy set used is male-only, so female patients fall back to the generated figure. Explicitly requested; not started.
+- **The organ-click moment.** Still a colour change. It should be the signature interaction — camera settles on the organ, the body dissolves around it, evidence arrives. See `ART_DIRECTION.md` §5.
+- **In-app attribution.** CC BY-SA requires attribution visible to users; `ATTRIBUTIONS.md` exists but the Account space does not yet show it.
 
 ### Never started, by instruction
 
@@ -450,7 +486,9 @@ Things that have already cost time, or will.
 
 In rough order of value:
 
-1. **The premium visual rebuild.** This is now the main body of outstanding work and the owner's stated priority: Entry as a genuine cinematic hero, sign-in that feels like entering a system rather than submitting a form, dashboards designed to the stated bar, a Digital Twin that breathes and responds, per-screen atmosphere, and a systematic microinteraction pass over every control state. Read `HANDOVER_FOR_CHATGPT.md` Part 2 first — it carries the brief verbatim, including the constraint that overrides all of it: *if forced to choose between beauty and usability, choose usability.*
+1. **The organ-click moment.** The single most important interaction in the product and still only a colour change. It should be: the camera settles on the organ, the body dissolves around it, and its evidence arrives beside it — one continuous move. `ART_DIRECTION.md` §4.4 and §5.
+2. **The rest of the visual pass.** Entry, Auth and Practice Space are restaged (§2.4); the Patient Space tabs, per-screen atmosphere and a systematic microinteraction pass over every control state are not. `ART_DIRECTION.md` is the brief; `HANDOVER_FOR_CHATGPT.md` Part 2 carries the owner's wording verbatim, including the constraint that overrides all of it: *if forced to choose between beauty and usability, choose usability.*
+3. **Female anatomy.** The installed atlas is male-only. Explicitly requested, not started.
 2. **Source a female body and organ set.** The installed atlas is male-only, so half of real patients currently fall back to the generated figure. Needs a properly-licensed source, registered in the same coordinate space.
 3. **Make the licence attribution visible in-app**, in the Account space. This is a condition of CC BY-SA 4.0, not a nicety. `ATTRIBUTIONS.md`.
 4. **Audit on real hardware.** The DOM/browser-level responsive and accessibility pass is done (2.1); actual devices — a tablet in particular, `[04 §24]` — have not been touched. Note that `tools/shot.mjs` now gives real rendered pixels at any viewport, which covers much of what was previously unverifiable.

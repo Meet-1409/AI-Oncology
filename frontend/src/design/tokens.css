@@ -108,6 +108,11 @@
      from "one font, bolded". Body and clinical text stay on Inter throughout;
      legibility at small sizes matters more there than character. */
   --font-display: "Bricolage Grotesque", "Inter", ui-sans-serif, system-ui, sans-serif;
+  /* The Entry's wordmark only. A high-contrast editorial serif against a
+     clinical instrument is the whole tonal argument of this product in one
+     typeface: the word CANCER belongs to the person, not to the software, and
+     a grotesque set it in the software's voice. Used exactly once. */
+  --font-editorial: "Instrument Serif", "Iowan Old Style", Georgia, "Times New Roman", serif;
 
   --text-display: 3.25rem;
   --text-display--line-height: 1.04;

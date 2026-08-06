@@ -90,7 +90,9 @@ async function signIn(page, role, email) {
   await page.waitForLoadState('networkidle');
 }
 
-const THEMES = ['dark', 'light'];
+// One theme by decision — see design/use-theme.ts. Sweeping a light pass now
+// would screenshot the same dark render twice and call it coverage.
+const THEMES = ['dark'];
 const VIEWPORTS = [
   { label: 'desktop', width: 1440, height: 900 },
   { label: 'mobile', width: 390, height: 844 },
