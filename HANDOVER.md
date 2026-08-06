@@ -43,8 +43,8 @@ Three things will save you the most time.
 
 ### Outstanding
 
-- **The premium visual rebuild — partly done.** Entry, Auth and Practice Space have been restaged around the body and the colour rule (§2.4). Still to do: the organ-click moment, the Patient Space tabs, per-screen atmosphere, and a systematic microinteraction pass. `ART_DIRECTION.md` is the brief.
-- **Female anatomy.** The installed atlas is male-only; a properly-licensed female body and organ set still needs sourcing. See §2.4.
+- **The premium visual rebuild — largely done.** Entry, Auth and Practice Space restaged around the body and the colour rule; the organ-click moment, tab swaps, modal open/close, empty-state motion and control press states all built (§2.4, §2.5). Still to do: per-screen atmosphere, the Journey timeline drawing itself in, and cursor-magnetic controls. `ART_DIRECTION.md` is the brief.
+- **Female anatomy — derived, not sourced.** No openly-licensed female atlas exists (BodyParts3D, Z-Anatomy and Open3DModel are all male-only). `body-female.glb` is the male mesh reshaped by `figure.ts`'s own `FORM_RATIOS.female`. Replace it when a real one ships. See `ATTRIBUTIONS.md`.
 - ~~**In-app attribution.**~~ **Done 6 August 2026** — Account → About. Do not remove it while these models ship.
 - **Real-device audit.** See section 2.1 below — a real-browser/DOM-level pass is done; hardware has not been touched.
 - **Backend integration.** See section 9.
