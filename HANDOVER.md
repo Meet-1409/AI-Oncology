@@ -45,7 +45,7 @@ Three things will save you the most time.
 
 - **The premium visual rebuild — partly done.** Entry, Auth and Practice Space have been restaged around the body and the colour rule (§2.4). Still to do: the organ-click moment, the Patient Space tabs, per-screen atmosphere, and a systematic microinteraction pass. `ART_DIRECTION.md` is the brief.
 - **Female anatomy.** The installed atlas is male-only; a properly-licensed female body and organ set still needs sourcing. See §2.4.
-- **In-app attribution.** CC BY-SA 4.0 requires the credit to be visible to users, not only in the repository. The Account space is the intended place and it is not yet built. See `ATTRIBUTIONS.md`.
+- ~~**In-app attribution.**~~ **Done 6 August 2026** — Account → About. Do not remove it while these models ship.
 - **Real-device audit.** See section 2.1 below — a real-browser/DOM-level pass is done; hardware has not been touched.
 - **Backend integration.** See section 9.
 
@@ -141,7 +141,7 @@ These are the reason `frontend/tools/sweep.mjs` exists. It captures every screen
 
 #### Still open from this pass
 
-- **Female anatomy.** The Z-Anatomy set used is male-only, so female patients fall back to the generated figure. Explicitly requested; not started.
+- ~~**Female anatomy.**~~ **Done 6 August 2026, as a derivation.** Every openly-licensed atlas is male-only — BodyParts3D says so outright, Z-Anatomy inherits it, Open3DModel has female organs on its roadmap and has not shipped them. `body-female.glb` is therefore the male mesh reshaped by the multipliers already in `figure.ts` (`FORM_RATIOS.female`), so the sculpted and generated paths cannot disagree. Measured: shoulder 0.882, waist 0.900, hip 1.100 of male widths; height and arm span unchanged. **It is an adaptation of a male scan, not a female scan** — replace it when a real one exists. See `ATTRIBUTIONS.md`.
 - **The organ-click moment.** Still a colour change. It should be the signature interaction — camera settles on the organ, the body dissolves around it, evidence arrives. See `ART_DIRECTION.md` §5.
 - **In-app attribution.** CC BY-SA requires attribution visible to users; `ATTRIBUTIONS.md` exists but the Account space does not yet show it.
 

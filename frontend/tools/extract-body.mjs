@@ -26,6 +26,8 @@ const SCRATCH = process.argv[2];
 const SOURCE = process.argv[3] || 'RegionsOfBody100.glb';
 const OUT = process.argv[4] || 'body-male-extracted.glb';
 const TARGET_TRIANGLES = Number(process.argv[5] || 60000);
+// 'female' reshapes the trunk on the way through — see reshapeToFemale below.
+const FORM = process.argv[6] || 'male';
 
 await MeshoptSimplifier.ready;
 
@@ -186,6 +188,103 @@ function pruneNonAnatomical(root) {
   return toRemove.map((n) => n.name);
 }
 
+/**
+ * Derives a female body shell from the male one.
+ *
+ * WHY THIS EXISTS. Every openly-licensed anatomical atlas available is
+ * male-only — BodyParts3D, Z-Anatomy and Open3DModel alike; the last has
+ * female organs on its roadmap and has not shipped them. Without this, a female
+ * patient fell back to the crude generated figure while a male patient got the
+ * sculpted mesh, so the quality of a patient's own body depended on their sex.
+ * That is the worse outcome.
+ *
+ * WHAT IT IS AND IS NOT. This is a proportional reshape of a male scan, not a
+ * female scan. It is honest for what the Body actually claims to be — a
+ * representation of body structure, explicitly not a physical replica of any
+ * person [00 §6.4] — and it is exactly the transformation figure.ts already
+ * applies to the generated figure, using the SAME multipliers, so the sculpted
+ * and generated paths cannot disagree about what a female form looks like.
+ *
+ * The multipliers come from features/body/figure.ts FORM_RATIOS.female. The
+ * shoulder-to-hip ratio is the cue that actually reads (~1.18 male, ~1.03
+ * female); the rest is supporting detail.
+ *
+ * Vertical landmarks are in the shared figure frame — floor -0.51, crown 1.31 —
+ * and the reshape never moves a vertex vertically, so both forms keep one
+ * vertical frame and one organ coordinate set stays correct in each.
+ */
+function reshapeToFemale(geometry) {
+  const position = geometry.getAttribute('position');
+  // Landmarks are FRACTIONS OF STATURE, so they must be resolved against this
+  // mesh's own frame — not against figure.ts's. The reshape runs on raw source
+  // coordinates, before normalizeFigure maps them into the figure frame, and
+  // hardcoding the figure frame's floor of -0.51 here put every landmark half a
+  // metre below where it belonged: the hips were "reshaped" at knee height and
+  // the measured hip width came out slightly NARROWER instead of 10% wider.
+  geometry.computeBoundingBox();
+  const box = geometry.boundingBox;
+  const FLOOR = box.min.y;
+  const HEIGHT = box.max.y - box.min.y;
+  // Landmark fractions of stature, from figure.ts's own table.
+  const at = (fraction) => FLOOR + fraction * HEIGHT;
+  const SHOULDER = at(0.818);
+  const CHEST = at(0.720);
+  const WAIST = at(0.640);
+  const HIP = at(0.520);
+  const HEAD = at(0.900);
+
+  // FORM_RATIOS.female, verbatim.
+  const R = { shoulder: 0.88, chest: 1.06, waist: 0.90, hip: 1.10, head: 0.95 };
+
+  // Smooth blend between landmarks so no band edge shows as a crease.
+  function ratioAt(y) {
+    const band = (a, b, ra, rb) => {
+      const t = Math.min(1, Math.max(0, (y - a) / (b - a)));
+      const eased = t * t * (3 - 2 * t);
+      return ra + (rb - ra) * eased;
+    };
+    if (y >= HEAD) return R.head;
+    if (y >= SHOULDER) return band(SHOULDER, HEAD, R.shoulder, R.head);
+    if (y >= CHEST) return band(CHEST, SHOULDER, R.chest, R.shoulder);
+    if (y >= WAIST) return band(WAIST, CHEST, R.waist, R.chest);
+    if (y >= HIP) return band(HIP, WAIST, R.hip, R.waist);
+    // Below the hips the legs taper back toward neutral rather than staying
+    // flared, which would read as a costume rather than a body.
+    return band(FLOOR, HIP, 1.0, R.hip);
+  }
+
+  // The reshape is the TRUNK's, and the arms hang beside it. Scaling purely by
+  // distance from the body axis pushed the hands outward at hip level — the
+  // female form came out with a WIDER arm span than the male one, which is
+  // both wrong and the opposite of the narrower-shouldered silhouette
+  // intended. So the effect falls off with radius: full strength through the
+  // trunk, nothing at all by the time it reaches a limb.
+  const TRUNK = 0.30;
+  const LIMB = 0.42;
+
+  for (let i = 0; i < position.count; i++) {
+    const x = position.getX(i);
+    const y = position.getY(i);
+    const z = position.getZ(i);
+    const radius = Math.hypot(x, z);
+    const falloff =
+      radius <= TRUNK ? 1 : radius >= LIMB ? 0 : 1 - (radius - TRUNK) / (LIMB - TRUNK);
+    const eased = falloff * falloff * (3 - 2 * falloff);
+    const r = 1 + (ratioAt(y) - 1) * eased;
+    // Radial about the body's own vertical axis; y is never touched, so the
+    // shared vertical frame and every organ coordinate stay valid.
+    position.setXYZ(i, x * r, y, z * r);
+  }
+  position.needsUpdate = true;
+  // Deliberately NOT recomputing normals here. mergeVertices welds on position
+  // AND normal, so freshly computed per-face normals stop coincident seam
+  // vertices from merging — meshopt then finds no shared edges to collapse and
+  // the decimation silently does nothing (113,927 triangles out of a 60,000
+  // target, observed). simplify() recomputes normals after decimating anyway,
+  // which is the better source for them.
+  return geometry;
+}
+
 async function main() {
   console.log('Loading', SOURCE, '...');
   const scene = await loadGLB(`${SCRATCH}/${SOURCE}`);
@@ -204,6 +303,11 @@ async function main() {
   console.log('Raw triangles:', result.triCount);
   console.log('Bounding box size (x,y,z):', size.x.toFixed(3), size.y.toFixed(3), size.z.toFixed(3));
   console.log('Bounding box min/max Y:', box.min.y.toFixed(3), box.max.y.toFixed(3));
+
+  if (FORM === 'female') {
+    console.log('Reshaping trunk to the female form (figure.ts FORM_RATIOS)...');
+    reshapeToFemale(result.geometry);
+  }
 
   console.log('Simplifying to', TARGET_TRIANGLES, 'triangles...');
   const simplified = simplify(result.geometry, TARGET_TRIANGLES);
