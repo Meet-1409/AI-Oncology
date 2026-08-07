@@ -246,6 +246,17 @@ function BodyShell({
   tier: RenderTier
   geometry: THREE.BufferGeometry
   emphasis?: 'skin' | 'organs' | null
+  /**
+   * Hide anatomy that is still drawn as crude primitives.
+   *
+   * Bones are cylinders and lymph nodes are small spheres. Inside a real
+   * patient's Body they are selectable structures that carry severity, so they
+   * earn their place even while they wait for sculpted geometry. On a
+   * PRESENTATIONAL body — sign-in, an empty practice — they carry no clinical
+   * meaning at all and, against an alabaster figure, read as grey lumps stuck
+   * to the skin. Organs with no sculpted mesh are dropped for the same reason.
+   */
+  sculptedOnly?: boolean
 }) {
   const reduced = useReducedMotion()
 
@@ -302,8 +313,14 @@ function BodyShell({
           `#include <dithering_fragment>
            float aoFacing = abs(dot(normalize(vAoNormal), normalize(vAoToEye)));
            float aoRim = pow(1.0 - aoFacing, 2.2) * uRimIntensity + 0.16;
-           gl_FragColor.rgb += uRimColor * aoRim;
-           gl_FragColor.a = clamp(gl_FragColor.a + aoRim, 0.0, 1.0);`,
+           // RGB ONLY. The old two-pass version drew the rim with ADDITIVE
+           // blending, which brightens without occluding. Folding it into this
+           // pass, adding it to alpha as well made the shell markedly more
+           // opaque and it started hiding the organs underneath — the one
+           // property this shell may never trade away, because organ severity
+           // has to keep reading through it [00 §6.7]. Alpha stays exactly the
+           // material's own opacity.
+           gl_FragColor.rgb += uRimColor * aoRim;`,
         )
 
       material.userData['shader'] = shader
@@ -373,6 +390,7 @@ function Anatomy({
   tier,
   form,
   emphasis,
+  sculptedOnly = false,
 }: {
   model: BodyViewModel
   selectedOrgan: string | null
@@ -380,6 +398,17 @@ function Anatomy({
   tier: RenderTier
   form: BodyForm
   emphasis?: 'skin' | 'organs' | null
+  /**
+   * Hide anatomy that is still drawn as crude primitives.
+   *
+   * Bones are cylinders and lymph nodes are small spheres. Inside a real
+   * patient's Body they are selectable structures that carry severity, so they
+   * earn their place even while they wait for sculpted geometry. On a
+   * PRESENTATIONAL body — sign-in, an empty practice — they carry no clinical
+   * meaning at all and, against an alabaster figure, read as grey lumps stuck
+   * to the skin. Organs with no sculpted mesh are dropped for the same reason.
+   */
+  sculptedOnly?: boolean
 }) {
   const colorFor = (severity: SeverityLevel, fallback: string) =>
     severity > 0 ? severityScale[severity] : fallback
@@ -410,7 +439,7 @@ function Anatomy({
         emphasis={selectedOrgan ? 'organs' : emphasis}
       />
 
-      {BONES.map((bone) => (
+      {!sculptedOnly && BONES.map((bone) => (
         <AnimatedPart
           key={bone.key}
           geometry={<cylinderGeometry args={bone.args as [number, number, number, number]} />}
@@ -425,7 +454,7 @@ function Anatomy({
         />
       ))}
 
-      {LYMPH_NODES.map((position, index) => (
+      {!sculptedOnly && LYMPH_NODES.map((position, index) => (
         <AnimatedPart
           key={`lymph-${index}`}
           geometry={<sphereGeometry args={[0.017, 8, 8]} />}
@@ -438,7 +467,9 @@ function Anatomy({
         />
       ))}
 
-      {ORGANS.filter((organ) => organAppliesTo(organ, form)).map((organ) => {
+      {ORGANS.filter((organ) => organAppliesTo(organ, form))
+        .filter((organ) => !sculptedOnly || meshes.organs.has(organ.id))
+        .map((organ) => {
         const state = model.organAt(organ.id)
         // A sculpted mesh already carries its own position, orientation and
         // true size, registered to this body by the atlas fit. The primitive
@@ -523,6 +554,17 @@ export interface BodySceneProps {
    * should be visible ON the body.
    */
   emphasis?: 'skin' | 'organs' | null
+  /**
+   * Hide anatomy that is still drawn as crude primitives.
+   *
+   * Bones are cylinders and lymph nodes are small spheres. Inside a real
+   * patient's Body they are selectable structures that carry severity, so they
+   * earn their place even while they wait for sculpted geometry. On a
+   * PRESENTATIONAL body — sign-in, an empty practice — they carry no clinical
+   * meaning at all and, against an alabaster figure, read as grey lumps stuck
+   * to the skin. Organs with no sculpted mesh are dropped for the same reason.
+   */
+  sculptedOnly?: boolean
 }
 
 /**
@@ -581,6 +623,7 @@ export function BodyScene({
   framing = 'detail',
   idleSpin = false,
   emphasis = null,
+  sculptedOnly = false,
 }: BodySceneProps) {
   const controls = useRef<React.ComponentRef<typeof OrbitControls>>(null)
   const reduced = useReducedMotion()
@@ -633,6 +676,7 @@ export function BodyScene({
           tier={tier}
           form={form}
           emphasis={emphasis}
+          sculptedOnly={sculptedOnly}
         />
       </IdleTurn>
 

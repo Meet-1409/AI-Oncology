@@ -65,7 +65,13 @@ function createPointMaterial(color: string, size: number, opacity: number): THRE
       uOpacity: { value: opacity },
       uPointer: { value: new THREE.Vector3(0, 0, 999) },
       uReach: { value: 0.42 },
-      uPush: { value: 0.16 },
+      // 0 — the cursor no longer pushes the figure apart.
+      //
+      // It parted the cloud convincingly and it also made the body look like it
+      // was coming apart, which is the wrong thing for this word to sit inside.
+      // The uniform is kept rather than the code deleted: the mechanism is
+      // sound and may earn its place somewhere the subject is not a person.
+      uPush: { value: 0 },
       uTime: { value: 0 },
       // Perspective size attenuation, in PIXELS per world unit at unit depth.
       // Driven from the real canvas height and camera FOV each frame — see the
@@ -85,11 +91,12 @@ function createPointMaterial(color: string, size: number, opacity: number): THRE
       void main() {
         vec3 p = position;
 
-        // Distance to the cursor, measured in the figure's own space.
+        // Proximity to the cursor. With uPush at 0 this no longer displaces
+        // anything; it only lifts the points nearest the pointer very slightly
+        // in size and brightness, so the field acknowledges the cursor without
+        // the body appearing to come apart around it.
         vec3 away = p - uPointer;
         float d = length(away);
-        // 1 at the cursor, 0 at the edge of its reach. smoothstep rather than a
-        // linear ramp so there is no visible boundary where the effect stops.
         float influence = 1.0 - smoothstep(0.0, uReach, d);
         p += normalize(away + vec3(0.0001)) * influence * uPush;
 
@@ -116,7 +123,7 @@ function createPointMaterial(color: string, size: number, opacity: number): THRE
         // Clamped as a hard backstop. Whatever the viewport, a point in this
         // field is a speck; nothing here should ever be allowed to become a
         // screen-filling sprite again.
-        float size = uSize * aScale * (1.0 + influence * 1.6) * (uAttenuation / -mv.z);
+        float size = uSize * aScale * (1.0 + influence * 0.35) * (uAttenuation / -mv.z);
         gl_PointSize = clamp(size, 1.0, 4.0);
         gl_Position = projectionMatrix * mv;
       }
@@ -137,7 +144,7 @@ function createPointMaterial(color: string, size: number, opacity: number): THRE
         float r = length(c);
         if (r > 0.5) discard;
         float edge = 1.0 - smoothstep(0.42, 0.5, r);
-        gl_FragColor = vec4(uColor * (1.0 + vGlow * 1.5), uOpacity * edge);
+        gl_FragColor = vec4(uColor * (1.0 + vGlow * 0.45), uOpacity * edge);
       }
     `,
     transparent: true,

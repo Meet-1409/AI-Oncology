@@ -83,6 +83,11 @@ export function DemoBodyPreview({ className, idleSpin, emphasis }: DemoBodyPrevi
               framing="figure"
               idleSpin={idleSpin ?? false}
               emphasis={emphasis ?? null}
+              // This body illustrates; it does not carry a record. Bone
+              // cylinders and lymph-node spheres are still primitives, and
+              // against an alabaster figure they read as grey lumps stuck to
+              // the skin rather than as anatomy.
+              sculptedOnly
             />
           </Reveal>
         </Suspense>

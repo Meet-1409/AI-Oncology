@@ -21,6 +21,13 @@ import {
   timelineEvents as seedTimeline,
 } from '@/data/mock-data'
 import type { PatientRecord } from '@/types'
+import {
+  demoPatients,
+  demoReports,
+  demoSnapshots,
+  demoTimeline,
+} from '@/data/demo-data'
+import { env } from '@/config/env'
 
 /**
  * Mutable in-memory store behind the mock adapter.
@@ -85,10 +92,15 @@ function savePersisted(): void {
 
 const persisted = loadPersisted()
 
+// The three invented demonstration patients, or nothing at all. Gated on
+// VITE_DEMO_PATIENTS so a production build carries the code and shows nobody —
+// see data/demo-data.ts for why that gate exists.
+const demo = env.demoPatients
+
 const state = {
-  patients: persisted?.patients ?? ([...seedPatients] as PatientRecord[]),
-  reports: [...seedReports],
-  timeline: [...seedTimeline],
+  patients: persisted?.patients ?? ([...(demo ? demoPatients : []), ...seedPatients] as PatientRecord[]),
+  reports: [...(demo ? demoReports : []), ...seedReports],
+  timeline: [...(demo ? demoTimeline : []), ...seedTimeline],
   tasks: [...seedTasks],
   notes: [...seedNotes],
   notifications: [...seedNotifications],
@@ -397,7 +409,11 @@ function handle(path: string, params?: Params, body?: unknown): unknown {
         tasks: state.tasks.filter((t) => t.patientId === patientId),
         notes: notesFor(patientId, role),
         // All clinical dates together, so scrubbing never awaits the network [02 §11].
-        body: digitalTwinForPatient(patientId),
+        // Demo snapshots are what makes the Body worth looking at in a demo —
+        // without them every organ resolves to "no findings recorded".
+        body: demo
+          ? demoSnapshots.filter((snapshot) => snapshot.patientId === patientId)
+          : digitalTwinForPatient(patientId),
         understanding: role === 'oncologist' ? (intelligenceForPatient(patientId) ?? null) : null,
       }
     }

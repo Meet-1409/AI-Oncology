@@ -255,3 +255,23 @@ The editorial serif exists for one word. A high-contrast serif against a clinica
 `cn()` in `lib/utils.ts` **must** declare the custom type scale to `extendTailwindMerge`. tailwind-merge resolves conflicts by group and cannot tell `text-display` (a font size) from `text-[var(--text-primary)]` (a colour) — both are spelled `text-*`. Left to guess it files the entire scale under "text colour", and any element carrying both a size and a tone has its **size silently deleted** by the later colour class. Every heading does, since `Text` composes `level` and `tone`.
 
 The symptom is a 3.25rem display heading rendering at the 16px inherited default, everywhere, with the classes present in the source and absent from the DOM. Shipped undetected for weeks. Do not remove that configuration.
+
+## 11. Presentational bodies show only sculpted anatomy
+
+`BodyScene` takes `sculptedOnly`. When set, bones (cylinders), lymph nodes (small spheres) and any organ without a sculpted mesh are not drawn.
+
+Inside a real patient's Body those primitives are selectable structures that carry severity, so they earn their place while they wait for sculpted geometry. On a **presentational** body — sign-in, an empty practice — they carry no clinical meaning at all, and against an alabaster figure they read as grey lumps stuck to the skin. `DemoBodyPreview` sets it.
+
+## 12. The shell's rim adds to RGB, never to alpha
+
+The fresnel rim lives inside the skin material's fragment stage (BLUEPRINT `02 §9`), and it must add to `gl_FragColor.rgb` **only**.
+
+The original two-pass version drew the rim with additive blending, which brightens without occluding. When it was folded into the single pass, adding it to alpha as well made the shell markedly more opaque, and it began hiding the organs underneath — the one property this shell may never trade away, because organ severity has to keep reading through it `[00 §6.7]`. Alpha stays exactly the material's own opacity.
+
+## 13. Demonstration patients
+
+`data/demo-data.ts` holds three invented patients, gated behind `env.demoPatients` — **on in development, off in a production build**, overridable with `VITE_DEMO_PATIENTS`.
+
+This reverses the earlier "no invented clinical data" rule, at the product owner's explicit instruction (7 August 2026). That rule was not arbitrary — a demo record that reads as a real one is how an invented number ends up quoted back as fact — so the concession is bounded: obviously fictional names, `Demo General Hospital`, patient codes prefixed `AOP-DEMO-` so they can never be confused with synthesized real ones in a list, and every AI summary carrying a confidence.
+
+The three are deliberately different so the interface is exercised rather than decorated: newly diagnosed with one finding, mid-treatment with several organs and two dated snapshots (so moving through time visibly changes the body), and in remission with findings resolved to zero. Between them they cover the severity scale, the treatment statuses and both body forms.

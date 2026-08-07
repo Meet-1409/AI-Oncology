@@ -11,6 +11,19 @@ interface Env {
   apiBaseUrl: string
   adapter: AdapterKind
   isDevelopment: boolean
+  /**
+   * Load the three invented demonstration patients (`data/demo-data.ts`).
+   *
+   * ON in development, OFF in a production build, and `VITE_DEMO_PATIENTS`
+   * overrides either way.
+   *
+   * Invented clinical data that ships to real users is how a made-up number
+   * ends up quoted back as a fact — so it must never be the default in
+   * production. But an empty app is impossible to demonstrate or develop
+   * against, and requiring a local env file means the demo silently disappears
+   * on every fresh checkout. Dev-on / prod-off is the split that serves both.
+   */
+  demoPatients: boolean
 }
 
 function readAdapter(value: string | undefined): AdapterKind {
@@ -31,6 +44,12 @@ function readEnv(): Env {
     apiBaseUrl,
     adapter,
     isDevelopment: import.meta.env.DEV,
+    demoPatients:
+      import.meta.env.VITE_DEMO_PATIENTS === 'true'
+        ? true
+        : import.meta.env.VITE_DEMO_PATIENTS === 'false'
+          ? false
+          : import.meta.env.DEV,
   }
 }
 
