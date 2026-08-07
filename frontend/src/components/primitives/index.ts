@@ -23,3 +23,5 @@ export type { StatusIndicatorProps, StatusTone } from './status-indicator'
 
 export { Field, Input, Textarea, Select } from './field'
 export type { FieldProps, SelectProps, SelectOption } from './field'
+export { Measurement } from './measurement'
+export type { MeasurementProps } from './measurement'

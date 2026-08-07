@@ -38,9 +38,17 @@ export interface AppShellProps {
    * Depth and current Patient Case must always be identifiable [03 §23].
    */
   context?: ReactNode
+  /**
+   * State-level integrity notices — facts about the DATA, not about a screen.
+   *
+   * A separate slot from `signals` on purpose. A Signal is dismissible and
+   * belongs to the user; this belongs to the record, may not be dismissed
+   * [CLAUDE.md rule 5], and must survive every navigation.
+   */
+  notices?: ReactNode
 }
 
-export function AppShell({ identity, signals, intent, context }: AppShellProps) {
+export function AppShell({ identity, signals, intent, context, notices }: AppShellProps) {
   const location = useLocation()
 
   // Keep depth in step with the address, bind Continuous Return globally, and
@@ -119,6 +127,12 @@ export function AppShell({ identity, signals, intent, context }: AppShellProps) 
         {signals}
         {identity}
       </div>
+
+      {/* Integrity notices sit BELOW the header and ABOVE the content, sticky
+          beneath the header so they never scroll away. Above `main` rather than
+          inside it, because they are not part of any one space — they are true
+          of everything below them. */}
+      {notices && <div className="sticky top-[57px] z-20">{notices}</div>}
 
       <main id="space-content" className="flex flex-1 flex-col">
         <SpaceTransition

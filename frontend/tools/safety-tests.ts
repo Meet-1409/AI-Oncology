@@ -16,6 +16,7 @@ import {
   SEVERITY_LEVELS,
 } from '@/lib/status'
 import { severityScale } from '@/design/theme'
+import { integrityNoticesFor } from '@/lib/integrity'
 import { buildBodyViewModel } from '@/features/body/use-body-view-model'
 import { ORGANS, SELECTABLE_IDS, organAppliesTo, organLabel, selectableIdsFor } from '@/features/body/anatomy'
 import {
@@ -630,4 +631,53 @@ check('the generated human figure is a valid, closed, finite mesh', () => {
   assert(Math.abs(maxY - 1.31) < 0.03, `the figure's crown is at y=${maxY.toFixed(3)}, not 1.31`)
 
   geometry.dispose()
+})
+
+
+/*
+ * CLAUDE.md rule 5 — synthetic findings must be VISIBLE, not footnoted.
+ *
+ * A simulated measurement is indistinguishable from a real one to the person
+ * reading it. If this notice fails to be raised, invented numbers appear on
+ * screen wearing the same clothes as real ones, which is the failure the rule
+ * exists to prevent. Asserted against the pure derivation rather than the
+ * rendered component so it holds regardless of how the shell changes.
+ */
+check('synthetic findings always raise a visible integrity notice', () => {
+  const withSynthetic = integrityNoticesFor({ containsSyntheticFindings: true })
+  assert(
+    withSynthetic.some((notice) => notice.id === 'synthetic-findings'),
+    'synthetic findings did not raise the synthetic-findings notice',
+  )
+
+  // The notice has to SAY something, in both forms — an empty band is a band
+  // nobody reads.
+  for (const notice of withSynthetic) {
+    assert(notice.summary.trim().length > 12, `notice ${notice.id} has no usable summary`)
+    assert(notice.detail.trim().length > 40, `notice ${notice.id} has no usable detail`)
+  }
+
+  // And it must not cry wolf: real data raises nothing, or the warning becomes
+  // background noise that gets ignored when it matters.
+  const withoutSynthetic = integrityNoticesFor({ containsSyntheticFindings: false })
+  assert(
+    !withoutSynthetic.some((notice) => notice.id === 'synthetic-findings'),
+    'the synthetic-findings notice was raised for data that is not synthetic',
+  )
+})
+
+check('integrity notices are deduplicated and ordered by specificity', () => {
+  const both = integrityNoticesFor({
+    containsSyntheticFindings: true,
+    clinicallyValidated: false,
+  })
+  const ids = both.map((notice) => notice.id)
+
+  assert(new Set(ids).size === ids.length, 'an integrity notice was raised twice')
+  // A warning about the record in front of you outranks a standing fact about
+  // the product.
+  assert(
+    ids.indexOf('synthetic-findings') < ids.indexOf('not-clinically-validated'),
+    'notices are not ordered most-specific-first',
+  )
 })

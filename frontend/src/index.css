@@ -357,3 +357,45 @@
     );
   }
 }
+
+@layer components {
+  /* The detail's height transition. Honours the motion token, so reduced
+     motion collapses it to 0ms like everything else. */
+  .ao-integrity-detail {
+    transition: grid-template-rows var(--motion-reveal) var(--motion-ease-enter);
+  }
+}
+
+/* ==================================================================
+   PRINT.
+                                                                      
+   There were no print styles in this codebase at all, which meant a
+   printed or screenshotted page could carry a simulated finding with
+   no warning attached to it — precisely the risk CLAUDE.md rule 5
+   names. A page that leaves the screen must take its caveats with it.
+   ================================================================== */
+@media print {
+  /* Never sticky on paper, and never collapsed: the reader of a printout
+     cannot expand anything. */
+  .ao-integrity {
+    position: static !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    border-bottom: 2px solid #000000 !important;
+  }
+  .ao-integrity * {
+    color: #000000 !important;
+    opacity: 1 !important;
+  }
+  .ao-integrity-detail {
+    display: block !important;
+    grid-template-rows: 1fr !important;
+  }
+  .ao-integrity-detail > * {
+    overflow: visible !important;
+  }
+  /* The collapse control is meaningless on paper. */
+  .ao-integrity-toggle {
+    display: none !important;
+  }
+}

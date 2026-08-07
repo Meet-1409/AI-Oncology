@@ -1,11 +1,14 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { Activity, Bell, LogOut, UserRound } from 'lucide-react'
 import { Control, Icon, StatusIndicator, Text } from '@/components/primitives'
-import { FocusLayer } from '@/components/patterns'
+import { FocusLayer, IntegrityNotices } from '@/components/patterns'
 import { SignalsView } from '@/features/signals'
 import { useSession, useSignOut, useSignals } from '@/data/queries'
 import { useSessionStore } from '@/state/session-store'
+import { useIntegrityStore } from '@/state/integrity-store'
+import { integrityNoticesFor } from '@/lib/integrity'
+import { env } from '@/config/env'
 import { paths } from '@/routes/paths'
 import { AppShell } from './AppShell'
 import { IntentBar } from './IntentBar'
@@ -27,6 +30,20 @@ export function EnvironmentShell() {
 
   const [signalsOpen, setSignalsOpen] = useState(false)
   const [signOutOpen, setSignOutOpen] = useState(false)
+
+  // Raise the integrity notices this session's data warrants.
+  //
+  // Today the only source is the demo-patient flag. Under contract v2 this
+  // becomes `patientState.containsSyntheticFindings`, read per patient — the
+  // shape of the call does not change, only where the boolean comes from.
+  const raise = useIntegrityStore((s) => s.raise)
+  useEffect(() => {
+    for (const notice of integrityNoticesFor({
+      containsSyntheticFindings: env.demoPatients,
+    })) {
+      raise(notice)
+    }
+  }, [raise])
 
   if (!isAuthenticated) {
     return <Navigate to={paths.enter} replace />
@@ -89,6 +106,7 @@ export function EnvironmentShell() {
           </>
         }
         intent={<IntentBar />}
+        notices={<IntegrityNotices />}
       />
 
       {/* Signals open in place and never interrupt clinical work [04 §20]. */}

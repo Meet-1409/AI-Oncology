@@ -316,3 +316,17 @@ The original two-pass version drew the rim with additive blending, which brighte
 This reverses the earlier "no invented clinical data" rule, at the product owner's explicit instruction (7 August 2026). That rule was not arbitrary — a demo record that reads as a real one is how an invented number ends up quoted back as fact — so the concession is bounded: obviously fictional names, `Demo General Hospital`, patient codes prefixed `AOP-DEMO-` so they can never be confused with synthesized real ones in a list, and every AI summary carrying a confidence.
 
 The three are deliberately different so the interface is exercised rather than decorated: newly diagnosed with one finding, mid-treatment with several organs and two dated snapshots (so moving through time visibly changes the body), and in remission with findings resolved to zero. Between them they cover the severity scale, the treatment statuses and both body forms.
+
+## 14. The integrity band — the one inverted surface
+
+`components/patterns/integrity-notice.tsx`, mounted in `AppShell`'s new `notices` slot, sticky beneath the header.
+
+It carries **facts about the data, not about a screen**: currently "some findings shown here are simulated", shortly "this software has not been clinically validated". A Signal is dismissible and belongs to the user; this belongs to the record and may not be dismissed `[CLAUDE.md rule 5]`.
+
+**Why inverted rather than amber.** The conventional warning band is amber or red, and neither is available: `colour means disease` (§7), so a warning hue on a screen whose only red is a tumour would read as a clinical claim. Inversion gives the same salience at no cost in hue — and because nothing else in the product inverts, it cannot be mistaken for chrome or for a finding.
+
+**Why it cannot be dismissed.** There is no dismiss control — not disabled, not hidden, absent. The only affordance is collapsing to a one-line strip, which is still on screen. Full text returns on every reload, because `state/integrity-store.ts` is deliberately **not** persisted: remembering "already seen" across sessions is exactly how a warning that may never be dismissed becomes one that is permanently hidden.
+
+**The decision is a pure function.** `lib/integrity.ts` derives the notices; the component only renders them. A notice that fails to appear is a safety defect, so it has to be assertable without mounting React — `tools/safety-tests.ts` covers both that synthetic data raises it and that real data does not (a band that cries wolf is a band that gets ignored).
+
+**Print.** There were no print styles in this codebase at all, which meant a printed page could carry a simulated finding with no warning attached. `@media print` now forces the band visible, expanded and un-sticky, and hides the collapse control. A page that leaves the screen takes its caveats with it.

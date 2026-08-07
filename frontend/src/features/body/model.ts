@@ -1,6 +1,8 @@
 import * as THREE from 'three'
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
 import { buildFigureGeometry } from './figure'
+import { asAtlasGeometry } from './coordinate-space'
+import type { AtlasGeometry } from './coordinate-space'
 import type { BodyForm } from './figure'
 
 /**
@@ -87,7 +89,7 @@ export interface AtlasFit {
  * transforms. Reading their geometry without applying those transforms
  * scatters the body across the scene.
  */
-function bake(root: THREE.Object3D): THREE.BufferGeometry | null {
+function bake(root: THREE.Object3D): AtlasGeometry | null {
   root.updateMatrixWorld(true)
 
   const positions: number[] = []
@@ -126,11 +128,24 @@ function bake(root: THREE.Object3D): THREE.BufferGeometry | null {
   } else {
     geometry.computeVertexNormals()
   }
-  return geometry
+  // The ONE place the atlas-space brand is minted, and only ever from meshes
+  // read out of an atlas GLB. See coordinate-space.ts.
+  return asAtlasGeometry(geometry)
 }
 
-/** Applies an already-computed fit. Used for organs, after the body sets it. */
-export function applyFit(geometry: THREE.BufferGeometry, fit: AtlasFit): THREE.BufferGeometry {
+/**
+ * Applies an already-computed fit. Used for organs, after the body sets it.
+ *
+ * TAKES `AtlasGeometry`, NOT `BufferGeometry`. The distinction is the point:
+ * this function is a scale-and-offset, which is exactly the shape that looks
+ * like it would work for placing a lesion — and doing that would be
+ * patient-to-atlas registration performed in a browser, producing a marker
+ * confidently in the wrong organ [CLAUDE.md rule 3]. Only `bake()` mints the
+ * brand, and only from an atlas GLB, so patient-derived geometry cannot reach
+ * here without a compile error. Authored organ meshes are unaffected: they come
+ * out of the same atlas the fit was computed from.
+ */
+export function applyFit(geometry: AtlasGeometry, fit: AtlasFit): AtlasGeometry {
   geometry.translate(fit.offset.x, fit.offset.y, fit.offset.z)
   geometry.scale(fit.scale, fit.scale, fit.scale)
   geometry.translate(0, FIGURE_FRAME.floor, 0)
@@ -147,7 +162,7 @@ export function applyFit(geometry: THREE.BufferGeometry, fit: AtlasFit): THREE.B
 export function normalizeFigure(
   root: THREE.Object3D,
   rotation?: readonly [number, number, number],
-): { geometry: THREE.BufferGeometry; fit: AtlasFit } | null {
+): { geometry: AtlasGeometry; fit: AtlasFit } | null {
   if (rotation) root.rotation.set(rotation[0], rotation[1], rotation[2])
 
   const geometry = bake(root)
@@ -272,8 +287,8 @@ export function organIdFromNodeName(name: string): string {
 export async function loadOrganAtlas(
   fit: AtlasFit,
   wanted: readonly string[],
-): Promise<Map<string, THREE.BufferGeometry>> {
-  const found = new Map<string, THREE.BufferGeometry>()
+): Promise<Map<string, AtlasGeometry>> {
+  const found = new Map<string, AtlasGeometry>()
 
   const scene = await loadScene(ORGAN_ATLAS_URL, fit.rotation)
   if (!scene) return found

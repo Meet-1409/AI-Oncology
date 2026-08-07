@@ -20,9 +20,14 @@ import type {
  *   1. The names are obviously fictional and the hospital is `Demo General`.
  *   2. Patient codes are prefixed `AOP-DEMO-`, not the `AOP-` used by real
  *      synthesized records, so the two can never be confused in a list.
- *   3. Nothing here is loaded unless `VITE_DEMO_PATIENTS` is on — see
- *      `mock-store.ts`. A production build carries the code and shows nobody.
- *   4. Every AI summary carries a confidence, because a summary without one is
+ *   3. Nothing here is loaded unless `VITE_DEMO_PATIENTS` is on (defaulting to
+ *      on in development, off in a production build) — see `mock-store.ts`.
+ *   4. IT SAYS SO ON SCREEN. Loading this file raises the `synthetic-findings`
+ *      integrity notice, a band the shell carries above every space and that
+ *      cannot be dismissed — `lib/integrity.ts`, `CLAUDE.md` rule 5. That is
+ *      what makes the concession safe rather than merely documented, and it is
+ *      guarded by a test in `tools/safety-tests.ts`.
+ *   5. Every AI summary carries a confidence, because a summary without one is
  *      a claim without a caveat and the schema rightly rejects it [00 §5.10].
  *
  * The three are deliberately DIFFERENT, so the interface is exercised rather
