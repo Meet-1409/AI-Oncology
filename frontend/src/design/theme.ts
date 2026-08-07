@@ -37,6 +37,30 @@ export const severityScale: Readonly<Record<SeverityLevel, string>> = {
 }
 
 /**
+ * Organ involvement — contract v2.
+ *
+ * Replaces `severityScale`'s hand-set 0-5 dial with a coarse band DERIVED from
+ * lesion burden. Literal hex for the same reason severity is: `three.Color`
+ * cannot parse `var(--x)` — it warns and silently yields white. Kept in sync
+ * with `--color-involvement-*` in tokens.css and `INVOLVEMENT_COLOR` in
+ * lib/status.ts, enforced by tools/check-architecture.mjs.
+ *
+ * `none` and `notAssessed` are BOTH absences of colour and they are NOT the
+ * same absence. `notAssessed` additionally carries the hatch from
+ * design/texture.ts, because an organ that was never imaged is not a healthy
+ * organ and no shade of grey can say that on its own.
+ */
+export const involvementScale = {
+  none: '#dde1e7',
+  low: '#f6b8b3',
+  moderate: '#de5b50',
+  high: '#841a13',
+  notAssessed: '#9aa0a6',
+} as const
+
+export type InvolvementBand = keyof typeof involvementScale
+
+/**
  * The Body's palette.
  *
  * The figure is presented as a rim-lit form in a dark volume, not a clinical

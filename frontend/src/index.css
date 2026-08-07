@@ -332,3 +332,28 @@
     to   { transform: scaleY(1); }
   }
 }
+
+@layer components {
+  /* ------------------------------------------------------------------
+     The not-assessed hatch, in the DOM.
+
+     ONE texture, three consumers: this class (organ list + legend), the GLSL
+     helper in design/texture.ts (the Body's 3D material), and the swatch in
+     the legend component. Screen-space and identical in period, so the WebGL
+     surface and the list item beside it read as the same material rather than
+     two similar ideas.
+
+     The numbers are duplicated from design/texture.ts by necessity — a shader
+     cannot read a CSS custom property without a build step — and
+     tools/check-architecture.mjs asserts they agree on every build.
+     ------------------------------------------------------------------ */
+  .ao-hatch {
+    background-image: repeating-linear-gradient(
+      45deg,
+      currentColor 0,
+      currentColor 2px,
+      transparent 2px,
+      transparent 6px
+    );
+  }
+}

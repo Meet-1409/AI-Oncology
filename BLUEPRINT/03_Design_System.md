@@ -230,6 +230,47 @@ What it forces, concretely:
 
 `severityScale` still overrides everything, exactly as before, so the first genuinely saturated pixel on any screen is always a finding.
 
+### 7.1 Amendment, 8 August 2026 — absence of colour has two forms
+
+**The rule above is unchanged. Colour still means disease.** Contract v2 adds a distinction it did not previously have to carry: an organ that was *looked at and found clear* and an organ that was *never looked at* are both absences of colour, and they mean opposite things.
+
+Conflating them is the most dangerous rendering mistake this product can make. An organ that was never imaged is not a healthy organ `[CLAUDE.md rule 2]`, and a patient reading their own record will take silence for good news unless the interface says otherwise.
+
+So absence of colour is now carried by **surface**, not by a second hue:
+
+| Surface | Meaning | Band |
+|---|---|---|
+| **Smooth, monochrome** | Assessed, and nothing found | `none` |
+| **Textured, desaturated** | Never assessed | `not_assessed` |
+| Saturated red, smooth | A finding, by burden | `low` · `moderate` · `high` |
+
+**Why texture rather than a second colour.** Every saturated hue is spoken for by disease, so a new colour would either compete with a finding or be mistaken for one. A second *grey* reads as a lighting difference, not as a statement. Texture is orthogonal to the whole colour system — and it survives greyscale printing, every form of colour blindness, and a badly calibrated ward monitor, none of which a hue distinction does.
+
+**The involvement bands reuse the severity reds.** `low`/`moderate`/`high` are severity 1/3/5 rather than a second red scale, so the product still has exactly one clinical red, the documented lighter-is-lower rule `[00 §6.7]` still holds, and the three bands sit as far apart as the scale allows.
+
+### 7.2 The hatch is defined once
+
+`design/texture.ts` is the single definition — angle, period and line width — and it is consumed three ways:
+
+| Consumer | How |
+|---|---|
+| The Body's 3D material | `HATCH_GLSL`, a shader helper |
+| The organ list | `.ao-hatch` in `index.css` |
+| The legend (`InvolvementKey`) | the same `.ao-hatch` |
+
+**It is computed in screen space,** from `gl_FragCoord` in the shader and CSS pixels in the DOM, so the stripe has the same period in the WebGL canvas as in the list item beside it. A UV-space or world-space hatch would change period with zoom and organ size, and the two surfaces would stop reading as one material. The hatch is drawn in `currentColor`, so a single class serves every band that ever needs it.
+
+The numbers are duplicated into `tokens.css` for the same unavoidable reason the severity scale is — a shader cannot read a CSS custom property without a build step. `tools/check-architecture.mjs` asserts all three agree on every build.
+
+### 7.3 What the guardrail enforces
+
+`check-architecture.mjs` now guards involvement exactly as it guards severity, plus two rules severity never needed:
+
+- **Vocabulary completeness.** All five bands present in all three sources. A missing band does not fail loudly — it falls through to a default, and the default that matters is `not_assessed`.
+- **`none` and `not_assessed` may never hold the same value.** If they collapse, the hatch becomes the only thing distinguishing them, and a texture alone is too easy to lose to a stylesheet change.
+
+All three failure modes are negative-tested.
+
 ## 8. One theme
 
 **Added 6 August 2026.** The light theme was removed at the product owner's direction. The product is a lit body in a dark volume — the Entry, the Digital Twin and every space between them are the same room seen from different distances, and a light mode made that room a different room halfway through. `useTheme()` now pins `data-theme="dark"`; the toggle and the Account appearance control are gone.

@@ -238,6 +238,172 @@ if (mismatches.length > 0) {
 console.log('Severity scale synchronised across CSS, theme and status: OK')
 
 /*
+ * Organ involvement (contract v2) — the same invariant, the same three files.
+ *
+ * `involvement` replaces the 0-5 severity dial with a coarse band DERIVED from
+ * lesion burden, and it is duplicated for exactly the same unavoidable reason:
+ * three.Color cannot read a CSS custom property without a build step. Drift
+ * would mean an organ rendering as one band in the 3D scene and another in the
+ * list beside it.
+ *
+ * Two extra rules that severity did not need:
+ *
+ *   VOCABULARY COMPLETENESS. All five bands must be present in all three
+ *   sources. A missing band does not fail loudly — it falls through to a
+ *   default, and the default that matters here is `not_assessed`. An organ
+ *   that was never imaged silently rendering as one that was looked at and
+ *   found clear is the single most dangerous rendering mistake in v2
+ *   [CLAUDE.md rule 2].
+ *
+ *   `none` AND `not_assessed` MUST DIFFER. They are both absences of colour
+ *   and they mean opposite things. If they ever collapse to the same value the
+ *   hatch is the only thing distinguishing them, and a texture alone is too
+ *   easy to lose to a stylesheet change.
+ */
+const INVOLVEMENT_BANDS = ['none', 'low', 'moderate', 'high', 'not_assessed']
+
+/** tokens.css spells it `not-assessed`; TS spells it `notAssessed` or `not_assessed`. */
+function bandAliases(band) {
+  return [band, band.replace(/_/g, '-'), band.replace(/_(\w)/g, (_, c) => c.toUpperCase())]
+}
+
+function involvementFrom(source, pattern) {
+  const found = {}
+  for (const band of INVOLVEMENT_BANDS) {
+    for (const alias of bandAliases(band)) {
+      const match = source.match(pattern(alias))
+      if (match) {
+        found[band] = match[1].toLowerCase()
+        break
+      }
+    }
+  }
+  return found
+}
+
+const involvementCss = involvementFrom(
+  readFileSync(join(SRC, 'design', 'tokens.css'), 'utf8'),
+  // Character classes rather than \s / \b: these patterns are built in a
+  // template literal, which consumes the backslash before the RegExp ever
+  // sees it — \s silently becomes a literal "s" and every band reads as
+  // missing.
+  (alias) => new RegExp(`--color-involvement-${alias}:[ ]*(#[0-9a-fA-F]{6})`),
+)
+const involvementTheme = involvementFrom(
+  readFileSync(join(SRC, 'design', 'theme.ts'), 'utf8').match(/involvementScale[^}]*}/s)?.[0] ?? '',
+  (alias) => new RegExp(`[^a-zA-Z]${alias}:[ ]*'(#[0-9a-fA-F]{6})'`),
+)
+const involvementStatus = involvementFrom(
+  readFileSync(join(SRC, 'lib', 'status.ts'), 'utf8').match(/INVOLVEMENT_COLOR[^}]*}/s)?.[0] ?? '',
+  (alias) => new RegExp(`[^a-zA-Z]${alias}:[ ]*'(#[0-9a-fA-F]{6})'`),
+)
+
+const involvementSources = {
+  'tokens.css': involvementCss,
+  'theme.ts': involvementTheme,
+  'status.ts': involvementStatus,
+}
+
+const involvementProblems = []
+
+for (const band of INVOLVEMENT_BANDS) {
+  const seen = new Set()
+  for (const [name, scale] of Object.entries(involvementSources)) {
+    if (!scale[band]) {
+      involvementProblems.push(`  ${name} is missing the "${band}" band.`)
+      continue
+    }
+    seen.add(scale[band])
+  }
+  if (seen.size > 1) {
+    involvementProblems.push(
+      `  involvement ${band}: ` +
+        Object.entries(involvementSources)
+          .map(([name, scale]) => `${name}=${scale[band] ?? 'missing'}`)
+          .join('  '),
+    )
+  }
+}
+
+for (const [name, scale] of Object.entries(involvementSources)) {
+  if (scale.none && scale.not_assessed && scale.none === scale.not_assessed) {
+    involvementProblems.push(
+      `  ${name}: "none" and "not_assessed" are the same value (${scale.none}). ` +
+        'They mean opposite things — assessed-and-clear versus never-assessed.',
+    )
+  }
+}
+
+if (involvementProblems.length > 0) {
+  console.error('\nOrgan involvement scale (v2) failed:\n')
+  for (const line of involvementProblems) console.error(line)
+  process.exit(1)
+}
+
+console.log('Involvement scale synchronised across CSS, theme and status: OK')
+
+/*
+ * The not-assessed hatch.
+ *
+ * ONE texture, consumed by the 3D material (design/texture.ts -> GLSL) and by
+ * the DOM (.ao-hatch in index.css). The numbers are duplicated because a shader
+ * cannot read a CSS custom property, and if the two drift the WebGL surface and
+ * the list item beside it stop reading as the same material — which is the
+ * entire mechanism by which "never assessed" is communicated.
+ */
+const textureSource = readFileSync(join(SRC, 'design', 'texture.ts'), 'utf8')
+const hatchBlock = textureSource.match(/export const hatch = {[^}]*}/s)?.[0] ?? ''
+const hatchTs = Object.fromEntries(
+  [...hatchBlock.matchAll(/(angle|period|line):\s*(\d+)/g)].map((m) => [m[1], Number(m[2])]),
+)
+
+const hatchTokensSource = readFileSync(join(SRC, 'design', 'tokens.css'), 'utf8')
+const hatchCss = Object.fromEntries(
+  [...hatchTokensSource.matchAll(/--hatch-(angle|period|line):\s*(\d+)/g)].map((m) => [
+    m[1],
+    Number(m[2]),
+  ]),
+)
+
+const cssSource = readFileSync(join(SRC, 'index.css'), 'utf8')
+const hatchRule = cssSource.match(/\.ao-hatch\s*{[^}]*}/s)?.[0] ?? ''
+const hatchDrawn = {
+  angle: Number(hatchRule.match(/repeating-linear-gradient\(\s*(\d+)deg/)?.[1] ?? NaN),
+  line: Number(hatchRule.match(/currentColor\s+(\d+)px/)?.[1] ?? NaN),
+  period: Number(hatchRule.match(/transparent\s+(\d+)px\s*\)/)?.[1] ?? NaN),
+}
+
+const hatchProblems = []
+for (const key of ['angle', 'period', 'line']) {
+  const values = {
+    'texture.ts': hatchTs[key],
+    'tokens.css': hatchCss[key],
+    '.ao-hatch': hatchDrawn[key],
+  }
+  const seen = new Set(Object.values(values))
+  if (seen.size !== 1 || [...seen][0] === undefined || Number.isNaN([...seen][0])) {
+    hatchProblems.push(
+      `  hatch ${key}: ` +
+        Object.entries(values)
+          .map(([name, value]) => `${name}=${value ?? 'missing'}`)
+          .join('  '),
+    )
+  }
+}
+
+if (hatchProblems.length > 0) {
+  console.error('\nNot-assessed hatch drift between sources:\n')
+  for (const line of hatchProblems) console.error(line)
+  console.error(
+    '\n  The hatch is how "never assessed" is distinguished from "assessed and clear".',
+  )
+  process.exit(1)
+}
+
+console.log('Not-assessed hatch synchronised across texture, tokens and CSS: OK')
+
+
+/*
  * Theme completeness.
  *
  * Every component consumes semantic tokens, so a token defined for the light

@@ -30,3 +30,4 @@ export type { DocumentPreviewProps } from './document-preview'
 
 export { TabRail } from './tab-rail'
 export type { TabRailItem, TabRailProps } from './tab-rail'
+export { InvolvementKey } from './involvement-key'

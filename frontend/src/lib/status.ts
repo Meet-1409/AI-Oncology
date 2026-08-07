@@ -116,3 +116,86 @@ export function severityColor(severity: number): string {
 export function severityLabel(severity: number): string {
   return isSeverityLevel(severity) ? SEVERITY_LABEL[severity] : 'Unknown'
 }
+
+/* ------------------------------------------------------------------ *
+ * Organ involvement — contract v2.
+ *
+ * Replaces the hand-set 0-5 severity dial with a coarse band derived from
+ * lesion burden. Literal hex for the same reason SEVERITY_COLOR is: three.js
+ * cannot parse `var(--x)`. Kept in sync with `--color-involvement-*` in
+ * design/tokens.css and `involvementScale` in design/theme.ts, enforced by
+ * tools/check-architecture.mjs.
+ * ------------------------------------------------------------------ */
+
+export type InvolvementBand = 'none' | 'low' | 'moderate' | 'high' | 'not_assessed'
+
+export const INVOLVEMENT_BANDS: readonly InvolvementBand[] = [
+  'none',
+  'low',
+  'moderate',
+  'high',
+  'not_assessed',
+] as const
+
+const INVOLVEMENT_COLOR: Readonly<Record<InvolvementBand, string>> = {
+  none: '#dde1e7',
+  low: '#f6b8b3',
+  moderate: '#de5b50',
+  high: '#841a13',
+  not_assessed: '#9aa0a6',
+}
+
+/**
+ * Involvement is never communicated by colour alone [00 §16.2] — and for
+ * `not_assessed` it is not communicated by colour at all, since its whole
+ * point is that it is NOT a shade of the disease scale.
+ */
+const INVOLVEMENT_LABEL: Readonly<Record<InvolvementBand, string>> = {
+  none: 'None found',
+  low: 'Low',
+  moderate: 'Moderate',
+  high: 'High',
+  not_assessed: 'Not assessed',
+}
+
+/**
+ * Plain language, and the same discipline as `severityMeaning`: describe
+ * position on a documented scale and NOTHING more — not size, not spread, not
+ * outlook [00 §5].
+ *
+ * `not_assessed` is the one that matters. "Not assessed" must never be allowed
+ * to read as reassurance: an organ that was never imaged is not a healthy
+ * organ [CLAUDE.md rule 2], and a patient reading their own record will take
+ * silence for good news unless the interface says otherwise.
+ */
+const INVOLVEMENT_MEANING: Readonly<Record<InvolvementBand, string>> = {
+  none: 'This part was looked at, and nothing was found in it.',
+  low: 'A small amount was found in this part.',
+  moderate: 'A moderate amount was found in this part.',
+  high: 'A large amount was found in this part.',
+  not_assessed:
+    'This part was not covered by the scans available, so nothing is known about it either way. This is not the same as nothing being found.',
+}
+
+/** True only for the band that carries the hatch — see design/texture.ts. */
+export function isNotAssessed(band: InvolvementBand): boolean {
+  return band === 'not_assessed'
+}
+
+export function isInvolvementBand(value: string): value is InvolvementBand {
+  return (INVOLVEMENT_BANDS as readonly string[]).includes(value)
+}
+
+export function involvementColor(band: string): string {
+  return isInvolvementBand(band) ? INVOLVEMENT_COLOR[band] : INVOLVEMENT_COLOR.not_assessed
+}
+
+export function involvementLabel(band: string): string {
+  return isInvolvementBand(band) ? INVOLVEMENT_LABEL[band] : 'Not assessed'
+}
+
+export function involvementMeaning(band: string): string {
+  return isInvolvementBand(band)
+    ? INVOLVEMENT_MEANING[band]
+    : INVOLVEMENT_MEANING.not_assessed
+}

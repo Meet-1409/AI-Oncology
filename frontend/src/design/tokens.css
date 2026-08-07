@@ -97,6 +97,31 @@
   --color-severity-4: #c22e23;
   --color-severity-5: #841a13;
 
+  /* PRIMITIVE — Organ involvement (contract v2).
+     Replaces the hand-set 0-5 severity dial with a coarse band DERIVED from
+     lesion burden. Drawn from the same red scale rather than a second one, so
+     the product has exactly one clinical red: low/moderate/high are severity
+     1/3/5, which keeps the documented rule that lighter is lower and darker is
+     higher [00 §6.7] and gives the three bands maximum separation.
+
+     `none` and `not-assessed` are BOTH absences of colour, and they are not
+     the same absence — see the hatch below. */
+  --color-involvement-none: #dde1e7;
+  --color-involvement-low: #f6b8b3;
+  --color-involvement-moderate: #de5b50;
+  --color-involvement-high: #841a13;
+  --color-involvement-not-assessed: #9aa0a6;
+
+  /* PRIMITIVE — The not-assessed hatch.
+     ONE definition, consumed by the 3D material, the organ list and the
+     legend. Screen-space, so the stripe has the same pixel period in the
+     WebGL scene as it does in the DOM beside it — which is the only way the
+     two read as the same material rather than two similar ideas.
+     Kept in sync with design/texture.ts by tools/check-architecture.mjs. */
+  --hatch-angle: 45;
+  --hatch-period: 6;
+  --hatch-line: 2;
+
   /* ================================================================
      TYPOGRAPHY — one family throughout.
      Hierarchy from size, weight and space; never from boxes or borders.
