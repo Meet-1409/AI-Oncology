@@ -20,7 +20,13 @@ export default defineConfig({
   },
   server: {
     host: true,
-    port: 5173,
+    // Honour an assigned PORT, falling back to 5173.
+    //
+    // Nothing here is pinned to a specific port — there are no OAuth
+    // callbacks, webhooks or CORS allowlists to satisfy — so hardcoding one
+    // only guarantees a collision when another dev server is already running.
+    // 5173 stays the default so `npm run dev` is unchanged for a human.
+    port: Number(process.env['PORT']) || 5173,
   },
   build: {
     // Surfaces regressions against the performance budget in the blueprint

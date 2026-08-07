@@ -4,8 +4,14 @@
     {
       "name": "frontend-dev",
       "runtimeExecutable": "C:\\Program Files\\nodejs\\npm.cmd",
-      "runtimeArgs": ["run", "dev", "--prefix", "frontend"],
-      "port": 5173
+      "runtimeArgs": [
+        "run",
+        "dev",
+        "--prefix",
+        "frontend"
+      ],
+      "port": 5173,
+      "autoPort": true
     }
   ]
 }
